@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strands | MemoryLink</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* =====================================================
+           RESET
+        ===================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        /* =====================================================
+           PAGE CONTAINER
+        ===================================================== */
+        .page-container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* =====================================================
+           SIDEBAR
+        ===================================================== */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(
+                180deg,
+                #051650 0%,
+                #0a2368 55%,
+                #18347d 100%
+            );
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 18px 17px;
+            display: flex;
+            flex-direction: column;
+            z-index: 9999;
+            overflow: hidden;
+            transition:
+                width 0.3s ease,
+                padding 0.3s ease,
+                transform 0.3s ease;
+        }
+
+        /* =====================================================
+           COLLAPSED SIDEBAR
+        ===================================================== */
+        .sidebar.collapsed {
+            width: 82px;
+            padding: 18px 12px;
+        }
+
+        /* =====================================================
+           SIDEBAR TOP
+        ===================================================== */
+        .sidebar-top {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 3px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            margin-bottom: 20px;
+        }
+
+        /* =====================================================
+           USER PROFILE
+        ===================================================== */
+        .user-profile {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border-radius: 50%;
+            background: white;
+            color: #051650;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .user-info {
+            min-width: 0;
+            overflow: hidden;
+            transition:
+                opacity 0.2s ease,
+                width 0.3s ease;
+        }
+
+        .user-info strong {
+            display: block;
+            color: white;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 3px;
+        }
+
+        .user-info span {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 10px;
+        }
+
+        /* =====================================================
+           SIDEBAR TOGGLE (Desktop)
+        ===================================================== */
+        .sidebar-toggle {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.10);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-1px);
+        }
+
+        /* =====================================================
+           MOBILE HAMBURGER BUTTON (always visible on mobile)
+        ===================================================== */
+        .mobile-hamburger {
+            display: none;
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-hamburger:hover {
+            background: rgba(255, 255, 255, 0.20);
+        }
+
+        /* =====================================================
+           COLLAPSED SIDEBAR TOP
+        ===================================================== */
+        .sidebar.collapsed .sidebar-top {
+            flex-direction: column;
+            gap: 14px;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .sidebar.collapsed .sidebar-toggle {
+            order: 1;
+        }
+
+        .sidebar.collapsed .user-profile {
+            order: 2;
+            flex: none;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .sidebar.collapsed .user-info {
+            width: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* =====================================================
+           MENU TITLE
+        ===================================================== */
+        .menu-title {
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 0 12px;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            transition: opacity 0.2s ease;
+        }
+
+        .sidebar.collapsed .menu-title {
+            opacity: 0;
+            height: 0;
+            margin-bottom: 4px;
+        }
+
+        /* =====================================================
+           MENU
+        ===================================================== */
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+        }
+
+        .menu a,
+        .sidebar-bottom a {
+            width: 100%;
+            color: rgba(255, 255, 255, 0.72);
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 13px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            transition:
+                background 0.25s ease,
+                color 0.25s ease,
+                transform 0.15s ease;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .menu a i,
+        .sidebar-bottom a i {
+            width: 20px;
+            min-width: 20px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .menu a:hover,
+        .sidebar-bottom a:hover {
+            background: rgba(255, 255, 255, 0.10);
+            color: white;
+            transform: translateX(2px);
+        }
+
+        .menu a.active {
+            background: rgba(255, 255, 255, 0.16);
+            color: white;
+            box-shadow: inset 3px 0 0 white;
+        }
+
+        /* =====================================================
+           COLLAPSED MENU
+        ===================================================== */
+        .sidebar.collapsed .menu a,
+        .sidebar.collapsed .sidebar-bottom a {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+            gap: 0;
+        }
+
+        .sidebar.collapsed .menu a:hover,
+        .sidebar.collapsed .sidebar-bottom a:hover {
+            transform: none;
+        }
+
+        .sidebar.collapsed .menu a span,
+        .sidebar.collapsed .sidebar-bottom a span {
+            display: none;
+        }
+
+        /* =====================================================
+           SIDEBAR BOTTOM
+        ===================================================== */
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 15px;
+            width: 100%;
+        }
+
+        .sidebar-bottom a {
+            margin-top: 5px;
+        }
+
+        /* =====================================================
+           MAIN
+        ===================================================== */
+        .main {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            height: 100vh;
+            padding: 0 35px 20px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition:
+                margin-left 0.3s ease,
+                width 0.3s ease;
+        }
+
+        .main.expanded {
+            margin-left: 82px;
+            width: calc(100% - 82px);
+        }
+
+        /* =====================================================
+           TOPBAR
+           SAME SIZE + COLOR AS DASHBOARD
+        ===================================================== */
+        .site-header {
+            height: 49px;
+            min-height: 49px;
+            margin-left: -35px;
+            margin-right: -35px;
+            padding: 0 25px;
+            background: #051650;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .site-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .school-name {
+            font-size: 21px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .memory-link-title {
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            line-height: 1;
+        }
+
+        /* =====================================================
+           STRAND CONTENT
+        ===================================================== */
+        .strand-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
+        .strand-content::-webkit-scrollbar {
+            width: 5px;
+        }
+        .strand-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        /* =====================================================
+           WELCOME BLUE BOX
+           SAME DESIGN AS DASHBOARD
+        ===================================================== */
+        .welcome-box {
+            width: 100%;
+            min-height: 170px;
+            background: linear-gradient(
+                135deg,
+                #051650,
+                #0a2368,
+                #18347d
+            );
+            border-radius: 22px;
+            padding: 27px 30px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow:
+                0 15px 35px rgba(5, 22, 80, 0.18);
+            flex-shrink: 0;
+            margin-top: 18px;
+            margin-bottom: 16px;
+        }
+
+        /* =====================================================
+           DECORATIVE CIRCLES
+        ===================================================== */
+        .welcome-box::before {
+            content: "";
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border: 2px solid rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            right: -80px;
+            top: -130px;
+        }
+
+        .welcome-box::after {
+            content: "";
+            position: absolute;
+            width: 190px;
+            height: 190px;
+            border: 2px solid rgba(255, 255, 255, 0.07);
+            border-radius: 50%;
+            right: 110px;
+            bottom: -135px;
+        }
+
+        /* =====================================================
+           WELCOME LABEL
+        ===================================================== */
+        .welcome-label {
+            width: fit-content;
+            background: transparent;
+            border-radius: 0;
+            padding: 0;
+            margin-bottom: 8px;
+
+            color: rgba(255, 255, 255, 0.62);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            line-height: 1.2;
+            text-transform: uppercase;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            position: relative;
+            z-index: 2;
+        }
+
+        .welcome-label i {
+            color: rgba(255, 255, 255, 0.88);
+            font-size: 11px;
+            width: auto;
+            min-width: 0;
+        }
+
+        /* =====================================================
+           WELCOME TITLE
+        ===================================================== */
+        .welcome-box h2 {
+            font-size: 25px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 6px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* =====================================================
+           WELCOME DESCRIPTION
+        ===================================================== */
+        .welcome-box p {
+            max-width: 700px;
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 13px;
+            line-height: 1.5;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* =====================================================
+           EMPTY STATE
+        ===================================================== */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            background: white;
+            border-radius: 18px;
+            border: 2px dashed #e2e8f0;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #94a3b8;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            color: #1e293b;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        /* =====================================================
+           STRAND SECTION TITLE
+        ===================================================== */
+        .strand-section-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .strand-section-title h3 {
+            color: #051650;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+        .strand-section-title span {
+            color: #64748b;
+            font-size: 10px;
+        }
+
+        /* =====================================================
+           STRAND GRID - FIXED: 2 columns that stretch full width
+           Same as admin version
+        ===================================================== */
+        .strand-grid {
+            flex: 1;
+            min-height: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        /* =====================================================
+           STRAND CARD
+        ===================================================== */
+        .strand-card {
+            background: white;
+            border-radius: 17px;
+            padding: 20px;
+            border: 1px solid #e7ebf3;
+            box-shadow:
+                0 5px 18px rgba(5, 22, 80, 0.055);
+            transition:
+                transform 0.2s ease,
+                box-shadow 0.2s ease,
+                border-color 0.2s ease;
+            cursor: pointer;
+            position: relative;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .strand-card:hover {
+            transform: translateY(-3px);
+            box-shadow:
+                0 10px 25px rgba(5, 22, 80, 0.10);
+            border-color: #d5dcf0;
+        }
+
+        /* Inactive strand styling */
+        .strand-card.inactive {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .strand-card.inactive:hover {
+            transform: none;
+            box-shadow: 0 5px 18px rgba(5, 22, 80, 0.055);
+        }
+
+        /* =====================================================
+           CARD TOP
+        ===================================================== */
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 17px;
+        }
+
+        .strand-icon {
+            width: 43px;
+            height: 43px;
+            border-radius: 11px;
+            background: #eef2ff;
+            color: #051650;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .status-badge {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .status-badge.active {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-badge.inactive {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* =====================================================
+           CARD CONTENT
+        ===================================================== */
+        .strand-card h3 {
+            color: #051650;
+            font-size: 17px;
+            font-weight: 800;
+            margin-bottom: 7px;
+        }
+
+        .strand-card p {
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            flex: 1;
+        }
+
+        /* =====================================================
+           STRAND INFO
+        ===================================================== */
+        .strand-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid #edf0f5;
+            margin-top: auto;
+        }
+
+        .strand-info span {
+            color: #64748b;
+            font-size: 10px;
+        }
+
+        .strand-info strong {
+            color: #051650;
+            font-size: 15px;
+        }
+
+        /* =====================================================
+           START BUTTON
+        ===================================================== */
+        .start-button {
+            width: 100%;
+            border: none;
+            background: #051650;
+            color: white;
+            padding: 10px;
+            border-radius: 9px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: 0.2s;
+        }
+
+        .start-button:hover {
+            background: #18347d;
+        }
+
+        .start-button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .start-button i {
+            margin-left: 5px;
+        }
+
+        /* =====================================================
+           MOBILE OVERLAY
+        ===================================================== */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 9998;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        /* =====================================================
+           TABLET
+        ===================================================== */
+        @media (max-width: 1050px) {
+
+            html,
+            body {
+                overflow: auto;
+            }
+
+            .page-container {
+                overflow: visible;
+            }
+
+            .main {
+                height: auto;
+                min-height: 100vh;
+                overflow: visible;
+            }
+
+            .strand-content {
+                display: block;
+                overflow: visible;
+            }
+
+            /* Keep 2 columns on tablet */
+            .strand-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 14px;
+            }
+
+            .strand-card {
+                min-height: 235px;
+            }
+
+            .school-name,
+            .memory-link-title {
+                font-size: 17px;
+            }
+
+            .welcome-box {
+                min-height: 170px;
+            }
+        }
+
+        /* =====================================================
+           MOBILE
+        ===================================================== */
+        @media (max-width: 750px) {
+
+            html,
+            body {
+                overflow: auto;
+            }
+
+            /* SIDEBAR */
+            .sidebar {
+                width: 280px;
+                transform: translateX(-100%);
+                padding: 18px 17px;
+            }
+
+            .sidebar.collapsed {
+                width: 280px;
+                padding: 18px 17px;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            /* MOBILE SIDEBAR TOP */
+            .sidebar .sidebar-top,
+            .sidebar.collapsed .sidebar-top {
+                flex-direction: row;
+                gap: 10px;
+                padding: 0 3px 16px;
+            }
+
+            .sidebar .sidebar-toggle,
+            .sidebar.collapsed .sidebar-toggle {
+                display: none; /* Hide the desktop toggle in sidebar */
+            }
+
+            .sidebar .user-profile,
+            .sidebar.collapsed .user-profile {
+                order: 1;
+                flex: 1;
+                justify-content: flex-start;
+                width: auto;
+            }
+
+            .sidebar .user-info,
+            .sidebar.collapsed .user-info {
+                width: auto;
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .sidebar .menu-title,
+            .sidebar.collapsed .menu-title {
+                opacity: 1;
+                height: auto;
+                margin-bottom: 10px;
+            }
+
+            .sidebar .menu a,
+            .sidebar .sidebar-bottom a,
+            .sidebar.collapsed .menu a,
+            .sidebar.collapsed .sidebar-bottom a {
+                justify-content: flex-start;
+                padding-left: 14px;
+                padding-right: 14px;
+                gap: 13px;
+            }
+
+            .sidebar .menu a span,
+            .sidebar .sidebar-bottom a span,
+            .sidebar.collapsed .menu a span,
+            .sidebar.collapsed .sidebar-bottom a span {
+                display: inline;
+            }
+
+            /* SHOW MOBILE HAMBURGER BUTTON */
+            .mobile-hamburger {
+                display: flex !important;
+            }
+
+            /* Hide desktop toggle in sidebar on mobile */
+            .sidebar-toggle {
+                display: none !important;
+            }
+
+            /* MAIN */
+            .main,
+            .main.expanded {
+                margin-left: 0;
+                width: 100%;
+                height: auto;
+                min-height: 100vh;
+                padding: 0 20px 30px;
+                overflow: visible;
+            }
+
+            /* TOPBAR */
+            .site-header {
+                height: 49px;
+                min-height: 49px;
+                margin-left: -20px;
+                margin-right: -20px;
+                padding: 0 18px;
+            }
+
+            .school-name {
+                font-size: 15px;
+            }
+
+            .memory-link-title {
+                font-size: 15px;
+            }
+
+            /* CONTENT */
+            .strand-content {
+                display: block;
+                overflow: visible;
+            }
+
+            /* WELCOME BOX */
+            .welcome-box {
+                min-height: 175px;
+                border-radius: 18px;
+                padding: 25px;
+                margin-top: 18px;
+                margin-bottom: 15px;
+            }
+
+            .welcome-box h2 {
+                font-size: 21px;
+            }
+
+            .welcome-box p {
+                font-size: 11px;
+            }
+
+            /* SECTION TITLE */
+            .strand-section-title {
+                margin-bottom: 12px;
+            }
+
+            .strand-section-title h3 {
+                font-size: 16px;
+            }
+
+            /* GRID - switch to 1 column on mobile */
+            .strand-grid {
+                grid-template-columns: 1fr;
+                gap: 13px;
+            }
+
+            .strand-card {
+                min-height: 235px;
+            }
+        }
+
+        /* =====================================================
+           SMALL MOBILE
+        ===================================================== */
+        @media (max-width: 480px) {
+
+            .school-name {
+                font-size: 12px;
+            }
+
+            .memory-link-title {
+                font-size: 12px;
+            }
+
+            .welcome-box h2 {
+                font-size: 18px;
+            }
+
+            .strand-card {
+                padding: 18px;
+            }
+        }
+    </style>
+    <script src="/js/db-sync.js"></script>
+</head>
+
+<body>
+
+<div class="page-container">
+
+    <!-- =================================================
+         SIDEBAR
+    ================================================= -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="sidebar-top">
+
+            <!-- USER PROFILE -->
+            <div class="user-profile">
+
+                <div class="user-avatar" id="userAvatar">
+                    S
+                </div>
+
+                <div class="user-info">
+                    <strong id="userName">
+                        Student
+                    </strong>
+
+                    <span id="userRole">
+                        Student
+                    </span>
+                </div>
+
+            </div>
+
+            <!-- TOGGLE (desktop only) -->
+            <button
+                class="sidebar-toggle"
+                type="button"
+                id="sidebarToggle"
+                aria-label="Toggle Sidebar">
+
+                <i class="fa-solid fa-bars"></i>
+
+            </button>
+
+        </div>
+
+        <!-- MAIN MENU -->
+        <div class="menu-title">
+            MAIN MENU
+        </div>
+
+        <!-- MENU -->
+        <nav class="menu">
+
+            <a href="/student_dashboard"
+               class="sidebar-link">
+
+                <i class="fa-solid fa-house"></i>
+
+                <span>
+                    Dashboard
+                </span>
+
+            </a>
+
+            <a href="/strands"
+               class="sidebar-link active">
+
+                <i class="fa-solid fa-book-open"></i>
+
+                <span>
+                    Learning Strands
+                </span>
+
+            </a>
+
+            <a href="/lessons"
+               class="sidebar-link">
+
+                <i class="fa-solid fa-graduation-cap"></i>
+
+                <span>
+                    Lessons
+                </span>
+
+            </a>
+
+            <a href="/flashcards"
+               class="sidebar-link">
+
+                <i class="fa-solid fa-layer-group"></i>
+
+                <span>
+                    Flashcards
+                </span>
+
+            </a>
+
+            <a href="/quizzes"
+               class="sidebar-link">
+
+                <i class="fa-solid fa-clipboard-question"></i>
+
+                <span>
+                    Quizzes
+                </span>
+
+            </a>
+
+        </nav>
+
+        <!-- SIDEBAR BOTTOM -->
+        <div class="sidebar-bottom">
+
+            <a href="student_settings.html"
+               class="sidebar-link">
+
+                <i class="fa-solid fa-gear"></i>
+
+                <span>
+                    Settings
+                </span>
+
+            </a>
+
+            <a href="/login"
+               id="logoutButton">
+
+                <i class="fa-solid fa-right-from-bracket"></i>
+
+                <span>
+                    Logout
+                </span>
+
+            </a>
+
+        </div>
+
+    </aside>
+
+    <!-- =================================================
+         MOBILE OVERLAY
+    ================================================= -->
+    <div
+        class="sidebar-overlay"
+        id="sidebarOverlay">
+    </div>
+
+    <!-- =================================================
+         MAIN
+    ================================================= -->
+    <main
+        class="main"
+        id="main">
+
+        <!-- =================================================
+             TOPBAR
+        ================================================= -->
+        <header class="site-header">
+            <div class="site-header-left">
+                <!-- MOBILE HAMBURGER BUTTON -->
+                <button
+                    class="mobile-hamburger"
+                    type="button"
+                    id="mobileHamburger"
+                    aria-label="Open Menu">
+
+                    <i class="fa-solid fa-bars"></i>
+
+                </button>
+
+                <div class="school-name">Xavier University Senior High School</div>
+            </div>
+            <div class="memory-link-title">MemoryLink</div>
+        </header>
+
+        <!-- =================================================
+             STRAND CONTENT
+        ================================================= -->
+        <div class="strand-content">
+
+            <!-- =================================================
+                 WELCOME BLUE BOX
+            ================================================= -->
+            <section class="welcome-box">
+
+                <div class="welcome-label">
+
+                    <i class="fa-solid fa-book-open" aria-hidden="true"></i>
+
+                    <span>STUDENT LEARNING CENTER</span>
+
+                </div>
+
+                <h2 id="welcomeMessage">
+                    Choose Your Learning Strand
+                </h2>
+
+                <p>
+                    Explore learning materials designed for your
+                    chosen strand, including lessons, flashcards,
+                    and quizzes.
+                </p>
+
+            </section>
+
+            <!-- =================================================
+                 STRAND TITLE
+            ================================================= -->
+            <div class="strand-section-title">
+
+                <h3>
+                    Available Strands
+                </h3>
+
+                <span id="strandCount">
+                    0 strands available
+                </span>
+
+            </div>
+
+            <!-- =================================================
+                 STRAND GRID
+            ================================================= -->
+            <div class="strand-grid" id="strandGrid">
+                <!-- Strands will be rendered here by JavaScript -->
+            </div>
+
+        </div>
+
+    </main>
+
+</div>
+
+<!-- =====================================================
+     JAVASCRIPT
+====================================================== -->
+<script>
+
+    /* =====================================================
+       STORAGE KEY (matches admin_strands.html)
+    ===================================================== */
+    const STORAGE_KEY = "memoryLinkStrands";
+
+    /* =====================================================
+       DEFAULT STRANDS (fallback if no data in memoryStore)
+    ===================================================== */
+    const defaultStrands = [
+        { id: 1, name: "STEM A", description: "Science, Technology, Engineering, and Mathematics learning resources for STEM A students.", icon: "fa-flask", status: "active" },
+        { id: 2, name: "STEM B", description: "Science, Technology, Engineering, and Mathematics learning resources for STEM B students.", icon: "fa-flask", status: "active" }
+    ];
+
+    /* =====================================================
+       GET STRANDS FROM LOCALSTORAGE
+    ===================================================== */
+    function getStrands() {
+        const stored = memoryStore.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                const parsed = JSON.parse(stored);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    return parsed;
+                }
+            } catch (error) {
+                console.error("Error parsing strands:", error);
+            }
+        }
+        // If no data, save defaults and return them
+        memoryStore.setItem(STORAGE_KEY, JSON.stringify(defaultStrands));
+        return defaultStrands.slice();
+    }
+
+    /* =====================================================
+       ICON MAPPING FOR DISPLAY
+    ===================================================== */
+    function getIconClass(icon) {
+        if (icon && icon.startsWith('fa-')) {
+            return icon;
+        }
+        return 'fa-book';
+    }
+
+    /* =====================================================
+       ESCAPE HTML
+    ===================================================== */
+    function escapeHTML(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    /* =====================================================
+       SELECT STRAND - saves to memoryStore and redirects to /lessons with filter
+       Same logic as admin_lessons
+    ===================================================== */
+    function selectStrand(strand) {
+        // Save the selected strand name so lessons page can filter
+        memoryStore.setItem('selectedStrand', strand);
+        // Redirect to lessons page with strand parameter (same as admin_lessons logic)
+        window.location.href = '/lessons?strand=' + encodeURIComponent(strand);
+    }
+
+    /* =====================================================
+       RENDER STRANDS
+    ===================================================== */
+    function renderStrands() {
+        const strands = getStrands();
+        const grid = document.getElementById('strandGrid');
+        const countSpan = document.getElementById('strandCount');
+
+        // Update count
+        const activeCount = strands.filter(s => String(s.status || 'active').toLowerCase() === 'active').length;
+        countSpan.textContent = activeCount + ' strand' + (activeCount !== 1 ? 's' : '') + ' available';
+
+        if (strands.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <i class="fa-solid fa-book-open"></i>
+                    <h3>No Strands Available</h3>
+                    <p>No learning strands have been created yet. Please check back later.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Filter only active strands for students
+        const activeStrands = strands.filter(s => String(s.status || 'active').toLowerCase() === 'active');
+
+        if (activeStrands.length === 0) {
+            grid.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <i class="fa-solid fa-hourglass"></i>
+                    <h3>No Active Strands</h3>
+                    <p>There are currently no active learning strands. Please check back later.</p>
+                </div>
+            `;
+            return;
+        }
+
+        // Build grid - each card redirects to /lessons with strand filter
+        grid.innerHTML = activeStrands.map(strand => `
+            <div class="strand-card" onclick="selectStrand('${escapeHTML(strand.name)}')">
+                <div class="card-top">
+                    <div class="strand-icon">
+                        <i class="fa-solid ${getIconClass(strand.icon)}"></i>
+                    </div>
+                    <span class="status-badge active">Active</span>
+                </div>
+                <h3>${escapeHTML(strand.name)}</h3>
+                <p>${escapeHTML(strand.description || 'No description available.')}</p>
+                <div class="strand-info">
+                    <span>Status</span>
+                    <strong>Available</strong>
+                </div>
+                <button class="start-button" type="button" onclick="event.stopPropagation(); selectStrand('${escapeHTML(strand.name)}')">
+                    Start Learning
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    /* =====================================================
+       CHECK LOGIN
+    ===================================================== */
+    const savedUser = memoryStore.getItem('memoryLinkUser');
+
+    if (!savedUser) {
+        window.location.replace('/login');
+    }
+
+    let user = null;
+
+    /* =====================================================
+       READ USER
+    ===================================================== */
+    try {
+        user = JSON.parse(savedUser);
+    } catch (error) {
+        memoryStore.removeItem('memoryLinkUser');
+        window.location.replace('/login');
+    }
+
+    /* =====================================================
+       STUDENT ONLY - Redirect admin to dashboard
+    ===================================================== */
+    if (user && user.role === 'admin') {
+        window.location.replace('/dashboard');
+    }
+
+    /* =====================================================
+       DISPLAY USER
+    ===================================================== */
+    if (user) {
+        const username = user.username || 'Student';
+        document.getElementById('userName').textContent = username;
+        document.getElementById('userRole').textContent = 'Student';
+        document.getElementById('userAvatar').textContent = username.charAt(0).toUpperCase();
+    }
+
+    /* =====================================================
+       SIDEBAR ELEMENTS
+    ===================================================== */
+    const sidebar = document.getElementById('sidebar');
+    const main = document.getElementById('main');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const mobileHamburger = document.getElementById('mobileHamburger');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+    /* =====================================================
+       SIDEBAR TOGGLE (Desktop & Mobile)
+    ===================================================== */
+    function toggleSidebar() {
+        if (window.innerWidth <= 750) {
+            sidebar.classList.toggle('show');
+            sidebarOverlay.classList.toggle('show');
+        } else {
+            sidebar.classList.toggle('collapsed');
+            main.classList.toggle('expanded');
+        }
+    }
+
+    // Desktop toggle (inside sidebar)
+    sidebarToggle.addEventListener('click', toggleSidebar);
+
+    // Mobile hamburger (in header)
+    mobileHamburger.addEventListener('click', toggleSidebar);
+
+    /* =====================================================
+       OVERLAY CLICK
+    ===================================================== */
+    sidebarOverlay.addEventListener('click', function () {
+        sidebar.classList.remove('show');
+        sidebarOverlay.classList.remove('show');
+    });
+
+    /* =====================================================
+       SIDEBAR LINKS
+    ===================================================== */
+    document.querySelectorAll('.sidebar-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (window.innerWidth <= 750) {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            }
+        });
+    });
+
+    /* =====================================================
+       LOGOUT
+    ===================================================== */
+    document.getElementById('logoutButton').addEventListener('click', function (event) {
+        event.preventDefault();
+        memoryStore.removeItem('memoryLinkUser');
+        memoryStore.removeItem('selectedStrand');
+        window.location.replace('/login');
+    });
+
+    /* =====================================================
+       CLOSE MOBILE SIDEBAR ON RESIZE
+    ===================================================== */
+    window.addEventListener('resize', function () {
+        if (window.innerWidth > 750) {
+            sidebar.classList.remove('show');
+            sidebarOverlay.classList.remove('show');
+        }
+    });
+
+    /* =====================================================
+       INIT - RENDER STRANDS
+    ===================================================== */
+    renderStrands();
+
+</script>
+
+</body>
+</html>

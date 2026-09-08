@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Dashboard · MemoryLink</title>
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    /* ----- RESET & BASE (preserve original look) ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f4f7fc;
+      color: #1e293b;
+    }
+    a {
+      text-decoration: none;
+    }
+
+    /* ----- DASHBOARD CONTAINER (exactly as original) ----- */
+    .dashboard-container {
+      display: flex;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ----- SIDEBAR (original, without Add Lesson) ----- */
+    .sidebar {
+      width: 250px;
+      height: 100vh;
+      background: linear-gradient(180deg, #051650 0%, #0a2368 55%, #18347d 100%);
+      color: white;
+      position: fixed;
+      left: 0;
+      top: 0;
+      padding: 18px 17px;
+      display: flex;
+      flex-direction: column;
+      z-index: 9999;
+      overflow: hidden;
+      transition: width 0.3s ease, padding 0.3s ease, transform 0.3s ease;
+    }
+    .sidebar.collapsed {
+      width: 82px;
+      padding: 18px 12px;
+    }
+    .sidebar-top {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 3px 16px;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      margin-bottom: 20px;
+    }
+    .sidebar-toggle {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.10);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+    .sidebar-toggle:hover {
+      background: rgba(255,255,255,0.18);
+      transform: translateY(-1px);
+    }
+    .user-profile {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      border-radius: 50%;
+      background: white;
+      color: #051650;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 800;
+    }
+    .user-info {
+      min-width: 0;
+      overflow: hidden;
+      transition: opacity 0.2s ease, width 0.3s ease;
+    }
+    .user-info strong {
+      display: block;
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+    .user-info span {
+      color: rgba(255,255,255,0.55);
+      font-size: 10px;
+    }
+    .sidebar.collapsed .sidebar-top {
+      flex-direction: column;
+      gap: 14px;
+      padding-left: 0;
+      padding-right: 0;
+    }
+    .sidebar.collapsed .sidebar-toggle {
+      order: 1;
+    }
+    .sidebar.collapsed .user-profile {
+      order: 2;
+      flex: none;
+      justify-content: center;
+      width: 100%;
+    }
+    .sidebar.collapsed .user-info {
+      width: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .menu-title {
+      color: rgba(255,255,255,0.45);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 0 12px;
+      margin-bottom: 10px;
+      white-space: nowrap;
+      transition: opacity 0.2s ease;
+    }
+    .sidebar.collapsed .menu-title {
+      opacity: 0;
+      height: 0;
+      margin-bottom: 4px;
+    }
+    .menu {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
+    }
+    .menu a, .sidebar-bottom a {
+      width: 100%;
+      color: rgba(255,255,255,0.72);
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 13px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.25s ease, color 0.25s ease, transform 0.15s ease;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .menu a i, .sidebar-bottom a i {
+      width: 20px;
+      min-width: 20px;
+      text-align: center;
+      font-size: 15px;
+    }
+    .menu a:hover, .sidebar-bottom a:hover {
+      background: rgba(255,255,255,0.10);
+      color: white;
+      transform: translateX(2px);
+    }
+    .menu a.active {
+      background: rgba(255,255,255,0.16);
+      color: white;
+      box-shadow: inset 3px 0 0 white;
+    }
+    .sidebar.collapsed .menu a, .sidebar.collapsed .sidebar-bottom a {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+      gap: 0;
+    }
+    .sidebar.collapsed .menu a:hover, .sidebar.collapsed .sidebar-bottom a:hover {
+      transform: none;
+    }
+    .sidebar.collapsed .menu a span, .sidebar.collapsed .sidebar-bottom a span {
+      display: none;
+    }
+    .sidebar-bottom {
+      margin-top: auto;
+      padding-top: 15px;
+      width: 100%;
+    }
+    .sidebar-bottom a {
+      margin-top: 5px;
+    }
+
+    /* ----- MAIN (original) ----- */
+    .main {
+      margin-left: 250px;
+      width: calc(100% - 250px);
+      height: 100vh;
+      padding: 0 35px 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: margin-left 0.3s ease, width 0.3s ease;
+    }
+    .main.expanded {
+      margin-left: 82px;
+      width: calc(100% - 82px);
+    }
+    .site-header {
+      height: 49px;
+      min-height: 49px;
+      margin-left: -35px;
+      margin-right: -35px;
+      padding: 0 25px;
+      background: #051650;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: white;
+    }
+    .mobile-menu-btn {
+      display: none;
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.12);
+      color: white;
+      font-size: 17px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      transition: 0.25s ease;
+    }
+    .mobile-menu-btn:hover {
+      background: rgba(255,255,255,0.20);
+    }
+    .school-name {
+      font-size: 21px;
+      font-weight: 800;
+    }
+    .memory-link-title {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+    }
+    .dashboard-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    /* welcome card */
+    .welcome-card {
+      flex: 0 0 170px;
+      border-radius: 22px;
+      padding: 27px 30px;
+      color: white;
+      background: linear-gradient(135deg, #051650, #0a2368, #18347d);
+      position: relative;
+      overflow: hidden;
+      margin-top: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 15px 35px rgba(5,22,80,0.18);
+    }
+    .welcome-card::before {
+      content: "";
+      position: absolute;
+      width: 280px;
+      height: 280px;
+      border: 2px solid rgba(255,255,255,0.08);
+      border-radius: 50%;
+      right: -80px;
+      top: -130px;
+    }
+    .welcome-card::after {
+      content: "";
+      position: absolute;
+      width: 190px;
+      height: 190px;
+      border: 2px solid rgba(255,255,255,0.07);
+      border-radius: 50%;
+      right: 110px;
+      bottom: -135px;
+    }
+    .welcome-content {
+      position: relative;
+      z-index: 2;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 11px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-bottom: 9px;
+    }
+    .welcome-content h2 {
+      font-size: 25px;
+      margin-bottom: 6px;
+    }
+    .welcome-content p {
+      color: rgba(255,255,255,0.78);
+      font-size: 13px;
+      max-width: 700px;
+      line-height: 1.5;
+    }
+
+    /* stats */
+    .stats {
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 17px;
+      padding: 17px 18px;
+      min-height: 125px;
+      box-shadow: 0 5px 20px rgba(5,22,80,0.06);
+      border: 1px solid #edf1f7;
+    }
+    .stat-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #eef2ff;
+      color: #051650;
+    }
+    .stat-change {
+      font-size: 10px;
+      color: #16a34a;
+      font-weight: 700;
+    }
+    .stat-card h3 {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+    .stat-number {
+      color: #051650;
+      font-size: 25px;
+      font-weight: 800;
+    }
+
+    /* content grid */
+    .content-grid {
+      flex: 1;
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 18px;
+      padding-bottom: 0;
+    }
+    .panel {
+      background: white;
+      border-radius: 18px;
+      padding: 20px;
+      border: 1px solid #edf1f7;
+      box-shadow: 0 5px 20px rgba(5,22,80,0.05);
+      min-height: 0;
+      overflow: hidden;
+    }
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .panel-header h3 {
+      color: #051650;
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .panel-header a {
+      color: #051650;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* ACTIVITY (system guide items) - CLICKABLE as original */
+    .activity {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 13px 0;
+      border-bottom: 1px solid #f1f5f9;
+      cursor: pointer;
+      transition: background 0.2s ease, padding-left 0.2s ease;
+      border-radius: 8px;
+      padding-left: 8px;
+      padding-right: 8px;
+      margin-left: -8px;
+      margin-right: -8px;
+    }
+    .activity-item:hover {
+      background: #f8fafc;
+      padding-left: 12px;
+    }
+    .activity-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: #eef2ff;
+      color: #051650;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .activity-text {
+      flex: 1;
+    }
+    .activity-text strong {
+      display: block;
+      font-size: 12px;
+      color: #334155;
+      margin-bottom: 3px;
+    }
+    .activity-text span {
+      color: #94a3b8;
+      font-size: 10px;
+    }
+    .activity-time {
+      color: #94a3b8;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    /* quick actions */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      height: calc(100% - 45px);
+    }
+    .quick-action {
+      min-height: 110px;
+      padding: 20px 12px;
+      border-radius: 14px;
+      background: #f8fafc;
+      border: 1px solid #edf1f7;
+      color: #334155;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: 0.25s;
+      cursor: pointer;
+    }
+    .quick-action:hover {
+      background: #eef2ff;
+      border-color: #dbe3ff;
+      transform: translateY(-2px);
+    }
+    .quick-action i {
+      display: block;
+      color: #051650;
+      font-size: 22px;
+      margin-bottom: 9px;
+    }
+    .quick-action span {
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    /* mobile overlay */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 9998;
+    }
+    .sidebar-overlay.show {
+      display: block;
+    }
+
+    /* ===== MODAL (system guide) - consistent design ===== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 99999;
+      justify-content: center;
+      align-items: center;
+      animation: fadeIn 0.3s ease;
+      padding: 1rem;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-box {
+      background: white;
+      border-radius: 24px;
+      max-width: 480px;
+      width: 100%;
+      padding: 2rem 1.8rem 1.8rem;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+      animation: slideUp 0.3s ease;
+      position: relative;
+      max-height: 95vh;
+      overflow-y: auto;
+    }
+    .modal-icon-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.2rem;
+    }
+    .modal-icon-title .modal-icon {
+      width: 52px;
+      height: 52px;
+      background: #eef2ff;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      color: #051650;
+      flex-shrink: 0;
+    }
+    .modal-icon-title h3 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #051650;
+      line-height: 1.2;
+    }
+    .modal-sub {
+      color: #475569;
+      font-size: 0.95rem;
+      margin: 0.25rem 0 1rem 0;
+      line-height: 1.5;
+    }
+    .modal-features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8rem;
+      margin: 1rem 0 1rem;
+    }
+    .modal-feature {
+      background: #f8fafc;
+      border-radius: 1rem;
+      padding: 0.9rem 0.7rem;
+      border: 1px solid #edf1f7;
+      text-align: center;
+    }
+    .modal-feature i {
+      font-size: 1.4rem;
+      color: #051650;
+      display: block;
+      margin-bottom: 0.2rem;
+    }
+    .modal-feature strong {
+      display: block;
+      font-size: 0.85rem;
+      color: #0f172a;
+    }
+    .modal-feature span {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    .modal-process {
+      background: #f1f5f9;
+      border-radius: 1rem;
+      padding: 0.9rem 1.2rem;
+      margin: 1rem 0 1.2rem;
+      border-left: 4px solid #051650;
+    }
+    .modal-process p {
+      font-weight: 700;
+      color: #051650;
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+    }
+    .modal-process ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.2rem 0.8rem;
+    }
+    .modal-process ul li {
+      font-size: 0.82rem;
+      color: #1e293b;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .modal-process ul li i {
+      color: #18347d;
+      font-size: 0.6rem;
+    }
+    .modal-btn {
+      background: #051650;
+      color: white;
+      border: none;
+      padding: 0.7rem 2rem;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 0.2rem;
+    }
+    .modal-btn:hover {
+      background: #0a2368;
+    }
+    .modal-close-icon {
+      position: absolute;
+      top: 1rem;
+      right: 1.2rem;
+      font-size: 1.3rem;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: 0.2s;
+      background: none;
+      border: none;
+    }
+    .modal-close-icon:hover {
+      color: #1e293b;
+    }
+    @keyframes fadeIn {
+      from { opacity:0; }
+      to { opacity:1; }
+    }
+    @keyframes slideUp {
+      from { opacity:0; transform:translateY(30px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+
+    /* ----- responsive (original) ----- */
+    @media (max-width:1050px) {
+      html, body { overflow:auto; }
+      .dashboard-container { overflow:visible; }
+      .main { height:auto; min-height:100vh; overflow:visible; }
+      .dashboard-content { display:block; }
+      .welcome-card { height:auto; min-height:170px; }
+      .stats { grid-template-columns:repeat(3,1fr); }
+      .content-grid { grid-template-columns:1fr; min-height:auto; }
+      .panel { min-height:300px; }
+    }
+    @media (max-width:750px) {
+      html, body { overflow:auto; }
+      .sidebar { width:280px; transform:translateX(-100%); padding:18px 17px; transition: transform 0.3s ease; }
+      .sidebar.show { transform:translateX(0); }
+      .sidebar.collapsed { width:280px; padding:18px 17px; transform:translateX(-100%); }
+      .sidebar.collapsed.show { transform:translateX(0); }
+      .sidebar .sidebar-top, .sidebar.collapsed .sidebar-top { flex-direction:row; gap:10px; padding:0 3px 16px; }
+      .sidebar .sidebar-toggle, .sidebar.collapsed .sidebar-toggle { order:2; }
+      .sidebar .user-profile, .sidebar.collapsed .user-profile { order:1; flex:1; justify-content:flex-start; width:auto; }
+      .sidebar .user-info, .sidebar.collapsed .user-info { width:auto; opacity:1; pointer-events:auto; }
+      .sidebar .menu-title, .sidebar.collapsed .menu-title { opacity:1; height:auto; margin-bottom:10px; }
+      .sidebar .menu a, .sidebar .sidebar-bottom a,
+      .sidebar.collapsed .menu a, .sidebar.collapsed .sidebar-bottom a {
+        justify-content:flex-start; padding-left:14px; padding-right:14px; gap:13px;
+      }
+      .sidebar .menu a span, .sidebar .sidebar-bottom a span,
+      .sidebar.collapsed .menu a span, .sidebar.collapsed .sidebar-bottom a span { display:inline; }
+      .main, .main.expanded { margin-left:0; width:100%; height:auto; min-height:100vh; padding:0 20px 30px; overflow:visible; }
+      .dashboard-content { display:block; }
+      .site-header { margin-left:-20px; margin-right:-20px; padding:0 14px; gap:10px; justify-content:flex-start; }
+      .mobile-menu-btn { display:flex; flex-shrink:0; }
+      .school-name { font-size:15px; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+      .memory-link-title { font-size:15px; white-space:nowrap; }
+      .welcome-card { margin-top:18px; padding:25px; min-height:175px; height:auto; }
+      .welcome-content h2 { font-size:21px; }
+      .stats { grid-template-columns:1fr 1fr; gap:12px; }
+      .stat-card { padding:17px; }
+      .stat-number { font-size:23px; }
+      .content-grid { grid-template-columns:1fr; gap:15px; }
+      .panel { min-height:300px; }
+      .quick-actions { height:auto; }
+    }
+    @media (max-width:480px) {
+      .stats { grid-template-columns:1fr; }
+      .quick-actions { grid-template-columns:1fr 1fr; }
+      .school-name { font-size:12px; }
+      .memory-link-title { font-size:12px; }
+      .mobile-menu-btn { width:36px; height:36px; min-width:36px; }
+      .modal-features { grid-template-columns:1fr; }
+    }
+  </style>
+    <script src="/js/db-sync.js"></script>
+</head>
+<body>
+
+<div class="dashboard-container">
+
+  <!-- ===== SIDEBAR (original, without Add Lesson) ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="user-profile">
+        <div class="user-avatar" id="userAvatar">S</div>
+        <div class="user-info">
+          <strong id="userName">Student</strong>
+          <span id="userRole">Student</span>
+        </div>
+      </div>
+      <button class="sidebar-toggle" type="button" id="sidebarToggle" aria-label="Toggle Sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+    <div class="menu-title">MAIN MENU</div>
+    <nav class="menu">
+      <a href="/student_dashboard" class="sidebar-link active"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+      <a href="/strands" class="sidebar-link"><i class="fa-solid fa-book-open"></i><span>Learning Strands</span></a>
+      <a href="/lessons" class="sidebar-link"><i class="fa-solid fa-graduation-cap"></i><span>Lessons</span></a>
+      <!-- Add Lesson link removed as requested -->
+      <a href="/flashcards" class="sidebar-link"><i class="fa-solid fa-layer-group"></i><span>Flashcards</span></a>
+      <a href="/quizzes" class="sidebar-link"><i class="fa-solid fa-clipboard-question"></i><span>Quizzes</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <a href="student_settings.html" class="sidebar-link"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+      <a href="/login" id="logoutButton"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+    </div>
+  </aside>
+
+  <!-- mobile overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main" id="main">
+    <header class="site-header">
+      <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Open Menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="school-name">Xavier University Senior High School</div>
+      <div class="memory-link-title">MemoryLink</div>
+    </header>
+
+    <div class="dashboard-content">
+      <!-- welcome -->
+      <section class="welcome-card">
+        <div class="welcome-content">
+          <div class="badge"><i class="fa-solid fa-graduation-cap"></i> Student Learning Center</div>
+          <h2 id="welcomeMessage">Welcome back, Student! 👋</h2>
+          <p>Explore your learning strands, study lessons, review flashcards, and test your knowledge through quizzes. Keep learning and reach your goals with MemoryLink.</p>
+        </div>
+      </section>
+
+      <!-- stats -->
+      <section class="stats">
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-icon"><i class="fa-solid fa-book-open"></i></div><span class="stat-change">Available</span></div>
+          <h3>Lessons</h3>
+          <div class="stat-number" id="lessonCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div><span class="stat-change">Available</span></div>
+          <h3>Flashcards</h3>
+          <div class="stat-number" id="flashcardCount">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-top"><div class="stat-icon"><i class="fa-solid fa-clipboard-question"></i></div><span class="stat-change">Available</span></div>
+          <h3>Quizzes</h3>
+          <div class="stat-number" id="quizCount">0</div>
+        </div>
+      </section>
+
+      <!-- lower content -->
+      <section class="content-grid">
+        <!-- SYSTEM GUIDE (activity panel) - these are CLICKABLE as before -->
+        <div class="panel">
+          <div class="panel-header">
+            <h3>SYSTEM GUIDE</h3>
+            <a href="/lessons">Learn More</a>
+          </div>
+          <div class="activity" id="activityContainer">
+            <!-- each activity-item opens its corresponding modal -->
+            <div class="activity-item" data-modal="modalLearning">
+              <div class="activity-icon"><i class="fa-solid fa-book-open"></i></div>
+              <div class="activity-text">
+                <strong>Learning</strong>
+                <span>Explore learning strands and access lessons to build your knowledge and understanding of different topics.</span>
+              </div>
+            </div>
+            <div class="activity-item" data-modal="modalReview">
+              <div class="activity-icon"><i class="fa-solid fa-layer-group"></i></div>
+              <div class="activity-text">
+                <strong>Review & Assessment</strong>
+                <span>Review important concepts through flashcards and test your knowledge with interactive quizzes.</span>
+              </div>
+            </div>
+            <div class="activity-item" data-modal="modalContribution">
+              <div class="activity-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+              <div class="activity-text">
+                <strong>Content Contribution</strong>
+                <span>Share your own lessons, flashcards, and quizzes to help provide more learning resources for other users.</span>
+              </div>
+            </div>
+            <div class="activity-item" data-modal="modalKeepLearning">
+              <div class="activity-icon"><i class="fa-solid fa-star"></i></div>
+              <div class="activity-text">
+                <strong>Keep learning</strong>
+                <span>You're doing great!</span>
+              </div>
+              <span class="activity-time">⭐</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="panel">
+          <div class="panel-header"><h3>Quick Actions</h3></div>
+          <div class="quick-actions">
+            <a href="/strands" class="quick-action"><i class="fa-solid fa-book-open"></i><span>Learning Strands</span></a>
+            <a href="/lessons" class="quick-action"><i class="fa-solid fa-graduation-cap"></i><span>Study Lessons</span></a>
+            <a href="/add-lesson" class="quick-action"><i class="fa-solid fa-plus-circle"></i><span>Add Lesson</span></a>
+            <a href="/flashcards" class="quick-action"><i class="fa-solid fa-layer-group"></i><span>Flashcards</span></a>
+            <a href="/quizzes" class="quick-action"><i class="fa-solid fa-clipboard-question"></i><span>Take a Quiz</span></a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- ============================================================
+     MODALS (system guide) – all consistent design
+     ============================================================ -->
+
+<!-- MODAL 1 : Learning -->
+<div class="modal-overlay" id="modalLearning">
+  <div class="modal-box">
+    <button class="modal-close-icon" data-close="modalLearning"><i class="fa-regular fa-xmark"></i></button>
+    <div class="modal-icon-title">
+      <div class="modal-icon"><i class="fa-solid fa-book-open"></i></div>
+      <h3>📚 Learning Strands</h3>
+    </div>
+    <p class="modal-sub">Choose from the available learning strands to find topics that match your learning needs.</p>
+    <div class="modal-features">
+      <div class="modal-feature">
+        <i class="fa-solid fa-graduation-cap"></i>
+        <strong>📖 Lessons</strong>
+        <span>Access lessons containing learning materials and information related to your selected strand.</span>
+      </div>
+      <div class="modal-feature">
+        <i class="fa-regular fa-circle-check"></i>
+        <strong>How it works</strong>
+        <span>Select a Strand → Choose a Lesson → Study → Continue</span>
+      </div>
+    </div>
+    <div class="modal-process">
+      <p><i class="fa-regular fa-arrow-right"></i> How it works:</p>
+      <ul>
+        <li><i class="fa-regular fa-circle"></i> Select a Learning Strand.</li>
+        <li><i class="fa-regular fa-circle"></i> Choose a Lesson.</li>
+        <li><i class="fa-regular fa-circle"></i> Read and study the provided materials.</li>
+        <li><i class="fa-regular fa-circle"></i> Continue to the next lesson when you're ready.</li>
+      </ul>
+    </div>
+    <button class="modal-btn" data-close="modalLearning">Got it</button>
+  </div>
+</div>
+
+<!-- MODAL 2 : Review & Assessment -->
+<div class="modal-overlay" id="modalReview">
+  <div class="modal-box">
+    <button class="modal-close-icon" data-close="modalReview"><i class="fa-regular fa-xmark"></i></button>
+    <div class="modal-icon-title">
+      <div class="modal-icon"><i class="fa-solid fa-brain"></i></div>
+      <h3>🧠 Review &amp; Assessment</h3>
+    </div>
+    <p class="modal-sub">Strengthen your understanding by reviewing important concepts and testing your knowledge.</p>
+    <div class="modal-features">
+      <div class="modal-feature">
+        <i class="fa-solid fa-layer-group"></i>
+        <strong>🗂️ Flashcards</strong>
+        <span>Use flashcards to review key terms, definitions, and important concepts from your lessons.</span>
+      </div>
+      <div class="modal-feature">
+        <i class="fa-solid fa-clipboard-question"></i>
+        <strong>📝 Quizzes</strong>
+        <span>Answer quizzes to check your understanding and assess what you have learned.</span>
+      </div>
+    </div>
+    <div class="modal-process">
+      <p><i class="fa-regular fa-arrow-right"></i> How it works:</p>
+      <ul>
+        <li><i class="fa-regular fa-circle"></i> Select a Lesson.</li>
+        <li><i class="fa-regular fa-circle"></i> Review the available Flashcards.</li>
+        <li><i class="fa-regular fa-circle"></i> Take the Quiz.</li>
+        <li><i class="fa-regular fa-circle"></i> Check your results and identify areas that need improvement.</li>
+      </ul>
+    </div>
+    <button class="modal-btn" data-close="modalReview">Got it</button>
+  </div>
+</div>
+
+<!-- MODAL 3 : Content Contribution -->
+<div class="modal-overlay" id="modalContribution">
+  <div class="modal-box">
+    <button class="modal-close-icon" data-close="modalContribution"><i class="fa-regular fa-xmark"></i></button>
+    <div class="modal-icon-title">
+      <div class="modal-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+      <h3>📤 Content Contribution</h3>
+    </div>
+    <p class="modal-sub">Help improve the learning system by contributing your own educational materials.</p>
+    <div class="modal-features">
+      <div class="modal-feature">
+        <i class="fa-regular fa-plus"></i>
+        <strong>➕ Add Learning Materials</strong>
+        <span>You can submit your own: 📖 Lessons · 🗂️ Flashcards · 📝 Quizzes</span>
+      </div>
+      <div class="modal-feature">
+        <i class="fa-regular fa-clock"></i>
+        <strong>⏳ Admin Approval</strong>
+        <span>All submitted materials must undergo review before they can be published.</span>
+      </div>
+    </div>
+    <div class="modal-process">
+      <p><i class="fa-regular fa-arrow-right"></i> Submission Process:</p>
+      <ul>
+        <li><i class="fa-regular fa-circle"></i> Add Content</li>
+        <li><i class="fa-regular fa-circle"></i> Submit</li>
+        <li><i class="fa-regular fa-circle"></i> Pending Review</li>
+        <li><i class="fa-regular fa-circle"></i> Admin Approval</li>
+        <li><i class="fa-regular fa-circle"></i> Published</li>
+      </ul>
+    </div>
+    <div style="background:#fef9e7; border-radius:1rem; padding:0.7rem 1rem; margin:1rem 0 1.2rem; border-left:4px solid #f59e0b;">
+      <p style="font-size:0.85rem; color:#92400e; margin:0;">
+        <i class="fa-regular fa-circle-exclamation"></i> 
+        <strong>Important:</strong> Your submitted content will remain pending until an administrator reviews and approves it. 
+        If approved, it will be published and made available to other users.
+      </p>
+    </div>
+    <button class="modal-btn" data-close="modalContribution">Got it</button>
+  </div>
+</div>
+
+<!-- MODAL 4 : Keep Learning (extra) -->
+<div class="modal-overlay" id="modalKeepLearning">
+  <div class="modal-box">
+    <button class="modal-close-icon" data-close="modalKeepLearning"><i class="fa-regular fa-xmark"></i></button>
+    <div class="modal-icon-title">
+      <div class="modal-icon"><i class="fa-solid fa-star"></i></div>
+      <h3>🌟 Keep Learning</h3>
+    </div>
+    <p class="modal-sub">You're on a roll! Consistency is key. Keep visiting MemoryLink daily to build knowledge and skills that will last a lifetime.</p>
+    <div class="modal-features">
+      <div class="modal-feature">
+        <i class="fa-regular fa-calendar"></i>
+        <strong>Daily practice</strong>
+        <span>Small steps every day lead to big results.</span>
+      </div>
+      <div class="modal-feature">
+        <i class="fa-regular fa-face-smile"></i>
+        <strong>Stay motivated</strong>
+        <span>Track your progress and celebrate your wins.</span>
+      </div>
+    </div>
+    <div class="modal-process">
+      <p><i class="fa-regular fa-arrow-right"></i> Keep going:</p>
+      <ul>
+        <li><i class="fa-regular fa-circle"></i> Review one lesson daily.</li>
+        <li><i class="fa-regular fa-circle"></i> Practice with flashcards.</li>
+        <li><i class="fa-regular fa-circle"></i> Take a quiz each week.</li>
+        <li><i class="fa-regular fa-circle"></i> Contribute content when ready.</li>
+      </ul>
+    </div>
+    <button class="modal-btn" data-close="modalKeepLearning">Got it</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     SCRIPT (original + modal triggers)
+     ============================================================ -->
+<script>
+  (function() {
+    // ----- CHECK LOGIN (original) -----
+    const savedUser = memoryStore.getItem("memoryLinkUser");
+    if (!savedUser) {
+      // window.location.replace("/login");
+      // For demo, we just keep going
+    }
+    let user = null;
+    try { user = JSON.parse(savedUser); } catch(e) {}
+    if (user && user.role === "admin") {
+      // window.location.replace("/dashboard");
+    }
+    if (user) {
+      const username = user.username || "Student";
+      document.getElementById("userName").textContent = username;
+      document.getElementById("userRole").textContent = "Student";
+      document.getElementById("userAvatar").textContent = username.charAt(0).toUpperCase();
+      document.getElementById("welcomeMessage").textContent = "Welcome back, " + username + "! 👋";
+    }
+
+    // ----- LOAD STATS (original) -----
+    function loadStudentContent() {
+      let lessons = [], flashcards = [], quizzes = [];
+      try { const d = memoryStore.getItem("memoryLinkLessons"); if (d) lessons = JSON.parse(d); } catch(e) {}
+      try { const d = memoryStore.getItem("memoryLinkFlashcards"); if (d) flashcards = JSON.parse(d); } catch(e) {}
+      try { const d = memoryStore.getItem("memoryLinkQuizzes"); if (d) quizzes = JSON.parse(d); } catch(e) {}
+      document.getElementById("lessonCount").textContent = Array.isArray(lessons) ? lessons.length : 0;
+      document.getElementById("flashcardCount").textContent = Array.isArray(flashcards) ? flashcards.length : 0;
+      document.getElementById("quizCount").textContent = Array.isArray(quizzes) ? quizzes.length : 0;
+    }
+    loadStudentContent();
+    window.addEventListener("storage", function(e) {
+      if (e.key === "memoryLinkLessons" || e.key === "memoryLinkFlashcards" || e.key === "memoryLinkQuizzes") {
+        loadStudentContent();
+      }
+    });
+
+    // ----- SIDEBAR TOGGLE (original) -----
+    const sidebar = document.getElementById("sidebar");
+    const main = document.getElementById("main");
+    const sidebarToggle = document.getElementById("sidebarToggle");
+    const sidebarOverlay = document.getElementById("sidebarOverlay");
+    const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+
+    sidebarToggle.addEventListener("click", function() {
+      if (window.innerWidth <= 750) {
+        sidebar.classList.toggle("show");
+        sidebarOverlay.classList.toggle("show");
+      } else {
+        sidebar.classList.toggle("collapsed");
+        main.classList.toggle("expanded");
+      }
+    });
+    mobileMenuBtn.addEventListener("click", function() {
+      if (window.innerWidth <= 750) {
+        sidebar.classList.add("show");
+        sidebarOverlay.classList.add("show");
+      }
+    });
+    sidebarOverlay.addEventListener("click", function() {
+      sidebar.classList.remove("show");
+      sidebarOverlay.classList.remove("show");
+    });
+    document.querySelectorAll(".sidebar-link").forEach(function(link) {
+      link.addEventListener("click", function() {
+        if (window.innerWidth <= 750) {
+          sidebar.classList.remove("show");
+          sidebarOverlay.classList.remove("show");
+        }
+      });
+    });
+
+    // active menu
+    let currentPage = window.location.pathname.split("/").pop();
+    if (!currentPage) currentPage = "student_dashboard";
+    document.querySelectorAll(".menu a").forEach(function(link) {
+      const linkPage = link.getAttribute("href").split("/").pop();
+      if (linkPage === currentPage) link.classList.add("active");
+    });
+
+    // logout
+    document.getElementById("logoutButton").addEventListener("click", function(e) {
+      e.preventDefault();
+      memoryStore.removeItem("memoryLinkUser");
+      window.location.replace("/login");
+    });
+
+    // ============================================================
+    //  MODAL TRIGGERS – activity items open their respective modals
+    // ============================================================
+    const activityItems = document.querySelectorAll('.activity-item[data-modal]');
+    const allModals = document.querySelectorAll('.modal-overlay');
+
+    // open modal from activity item
+    activityItems.forEach(item => {
+      item.addEventListener('click', function(e) {
+        // if click is on a link inside, ignore
+        if (e.target.closest('a')) return;
+        const modalId = this.dataset.modal;
+        const targetModal = document.getElementById(modalId);
+        if (targetModal) {
+          // close any open modal
+          allModals.forEach(m => m.classList.remove('active'));
+          targetModal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+        }
+      });
+    });
+
+    // close via data-close attribute
+    document.querySelectorAll('[data-close]').forEach(el => {
+      el.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const id = this.dataset.close;
+        const modal = document.getElementById(id);
+        if (modal) {
+          modal.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+    });
+
+    // close via overlay click
+    allModals.forEach(overlay => {
+      overlay.addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.classList.remove('active');
+          document.body.style.overflow = '';
+        }
+      });
+    });
+
+    // close with Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        allModals.forEach(m => {
+          if (m.classList.contains('active')) {
+            m.classList.remove('active');
+            document.body.style.overflow = '';
+          }
+        });
+      }
+    });
+
+  })();
+</script>
+</body>
+</html>

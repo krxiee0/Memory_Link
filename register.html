@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Register | MemoryLink</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            background: #eef2ff;
+        }
+
+        /* =====================================================
+           PAGE
+        ===================================================== */
+
+        .register-page {
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 25px;
+
+            position: relative;
+            overflow: hidden;
+
+            background:
+                radial-gradient(
+                    ellipse at 10% 20%,
+                    rgba(5, 22, 80, 0.12) 0%,
+                    transparent 50%
+                ),
+                radial-gradient(
+                    ellipse at 90% 80%,
+                    rgba(37, 99, 235, 0.10) 0%,
+                    transparent 50%
+                ),
+                linear-gradient(
+                    135deg,
+                    #eef2ff 0%,
+                    #f5f7ff 50%,
+                    #f8fafc 100%
+                );
+        }
+
+        /* =====================================================
+           BACKGROUND SHAPES
+        ===================================================== */
+
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            pointer-events: none;
+        }
+
+        .shape1 {
+            width: 400px;
+            height: 400px;
+
+            top: -200px;
+            left: -150px;
+
+            background:
+                radial-gradient(
+                    circle,
+                    #051650 0%,
+                    #18347d 100%
+                );
+
+            opacity: 0.30;
+        }
+
+        .shape2 {
+            width: 350px;
+            height: 350px;
+
+            right: -100px;
+            bottom: -150px;
+
+            background:
+                radial-gradient(
+                    circle,
+                    #1e40af 0%,
+                    #2563eb 100%
+                );
+
+            opacity: 0.25;
+        }
+
+        .shape3 {
+            width: 150px;
+            height: 150px;
+
+            top: 10%;
+            right: 8%;
+
+            background:
+                radial-gradient(
+                    circle,
+                    #334c9c 0%,
+                    #6275c4 100%
+                );
+
+            opacity: 0.20;
+        }
+
+        /* =====================================================
+           MAIN WRAPPER
+        ===================================================== */
+
+        .register-wrapper {
+            width: 1100px;
+            max-width: 100%;
+
+            min-height: 580px;
+            max-height: 94vh;
+
+            display: grid;
+            grid-template-columns: 0.85fr 1.15fr;
+
+            position: relative;
+            z-index: 5;
+
+            overflow: hidden;
+
+            border-radius: 32px;
+
+            background: rgba(255, 255, 255, 0.96);
+
+            box-shadow:
+                0 30px 80px rgba(5, 22, 80, 0.18),
+                0 10px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        /* =====================================================
+           LEFT SIDE
+        ===================================================== */
+
+        .register-welcome {
+            position: relative;
+
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            padding: 50px 40px 45px 45px;
+
+            overflow: hidden;
+
+            color: white;
+
+            background:
+                linear-gradient(
+                    160deg,
+                    #051650 0%,
+                    #0a2368 45%,
+                    #18347d 100%
+                );
+        }
+
+        .register-welcome::before {
+            content: "";
+
+            position: absolute;
+
+            width: 350px;
+            height: 350px;
+
+            right: -140px;
+            top: -120px;
+
+            border: 2px solid rgba(255, 255, 255, 0.08);
+
+            border-radius: 50%;
+        }
+
+        .register-welcome::after {
+            content: "";
+
+            position: absolute;
+
+            width: 250px;
+            height: 250px;
+
+            left: -120px;
+            bottom: -120px;
+
+            border: 2px solid rgba(255, 255, 255, 0.06);
+
+            border-radius: 50%;
+        }
+
+        /* =====================================================
+           BACK BUTTON
+        ===================================================== */
+
+        .back-arrow {
+            position: absolute;
+
+            top: 22px;
+            left: 25px;
+
+            width: 40px;
+            height: 40px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            color: white;
+
+            font-size: 16px;
+
+            text-decoration: none;
+
+            border-radius: 12px;
+
+            background: rgba(255, 255, 255, 0.10);
+
+            border: 1px solid rgba(255, 255, 255, 0.15);
+
+            transition: 0.25s ease;
+
+            z-index: 20;
+        }
+
+        .back-arrow:hover {
+            background: rgba(255, 255, 255, 0.20);
+            transform: translateX(-3px);
+        }
+
+        /* =====================================================
+           LOGO
+        ===================================================== */
+
+        .logo {
+            width: 72px;
+            height: 72px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin-bottom: 25px;
+
+            border-radius: 20px;
+
+            background: rgba(255, 255, 255, 0.12);
+
+            border: 1px solid rgba(255, 255, 255, 0.20);
+
+            font-size: 32px;
+
+            position: relative;
+            z-index: 5;
+        }
+
+        /* =====================================================
+           LEFT TEXT
+        ===================================================== */
+
+        .register-welcome h1 {
+            position: relative;
+            z-index: 5;
+
+            margin-bottom: 10px;
+
+            font-size: 38px;
+            font-weight: 900;
+
+            letter-spacing: -1px;
+        }
+
+        .register-welcome h2 {
+            position: relative;
+            z-index: 5;
+
+            margin-bottom: 14px;
+
+            font-size: 24px;
+            line-height: 1.3;
+            font-weight: 700;
+        }
+
+        .register-welcome p {
+            position: relative;
+            z-index: 5;
+
+            max-width: 90%;
+
+            margin-bottom: 30px;
+
+            font-size: 14px;
+            line-height: 1.7;
+
+            color: rgba(255, 255, 255, 0.80);
+        }
+
+        /* =====================================================
+           FEATURES
+        ===================================================== */
+
+        .features {
+            position: relative;
+            z-index: 5;
+
+            display: flex;
+            flex-direction: column;
+
+            gap: 13px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+
+            gap: 14px;
+
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .feature-item i {
+            width: 38px;
+            height: 38px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+
+            border-radius: 12px;
+
+            background: rgba(255, 255, 255, 0.12);
+
+            font-size: 16px;
+        }
+
+        /* =====================================================
+           RIGHT SIDE
+        ===================================================== */
+
+        .register-box {
+            padding: 38px 45px;
+
+            background: white;
+
+            overflow-y: auto;
+        }
+
+        .register-box::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .register-box::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .register-box::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 20px;
+        }
+
+        /* =====================================================
+           TITLE
+        ===================================================== */
+
+        .register-box h2 {
+            margin-bottom: 5px;
+
+            color: #051650;
+
+            font-size: 30px;
+            font-weight: 800;
+
+            letter-spacing: -0.7px;
+        }
+
+        .subtitle {
+            margin-bottom: 20px;
+
+            color: #64748b;
+
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* =====================================================
+           MESSAGE
+        ===================================================== */
+
+        .message {
+            display: none;
+
+            align-items: center;
+
+            gap: 10px;
+
+            margin-bottom: 15px;
+
+            padding: 11px 14px;
+
+            border-radius: 12px;
+
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .message.show {
+            display: flex;
+        }
+
+        .message.error {
+            color: #b91c1c;
+
+            background: #fee2e2;
+
+            border: 1px solid #fecaca;
+        }
+
+        .message.success {
+            color: #15803d;
+
+            background: #dcfce7;
+
+            border: 1px solid #bbf7d0;
+        }
+
+        /* =====================================================
+           FORM GRID
+        ===================================================== */
+
+        .form-grid {
+            display: grid;
+
+            grid-template-columns: 1fr 1fr;
+
+            gap: 13px 14px;
+        }
+
+        .input-group {
+            width: 100%;
+        }
+
+        .input-group.full-width {
+            grid-column: span 2;
+        }
+
+        /* =====================================================
+           LABEL
+        ===================================================== */
+
+        .input-group label {
+            display: block;
+
+            margin-bottom: 5px;
+
+            color: #1e293b;
+
+            font-size: 11px;
+            font-weight: 700;
+
+            text-transform: uppercase;
+
+            letter-spacing: 0.3px;
+        }
+
+        /* =====================================================
+           INPUT WRAPPER
+        ===================================================== */
+
+        .input-wrapper {
+            position: relative;
+
+            width: 100%;
+        }
+
+        /* =====================================================
+           INPUT ICON
+        ===================================================== */
+
+        .input-icon {
+            position: absolute;
+
+            left: 14px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            color: #94a3b8;
+
+            font-size: 14px;
+
+            pointer-events: none;
+
+            z-index: 2;
+        }
+
+        /* =====================================================
+           INPUT / SELECT
+        ===================================================== */
+
+        .input-wrapper input,
+        .input-wrapper select {
+            width: 100%;
+            height: 46px;
+
+            padding: 0 15px 0 42px;
+
+            color: #1e293b;
+
+            background: #f8fafc;
+
+            border: 1.5px solid #e2e8f0;
+
+            border-radius: 12px;
+
+            outline: none;
+
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+
+            transition: 0.2s ease;
+        }
+
+        .input-wrapper input::placeholder {
+            color: #94a3b8;
+        }
+
+        .input-wrapper input:focus,
+        .input-wrapper select:focus {
+            background: white;
+
+            border-color: #18347d;
+
+            box-shadow:
+                0 0 0 4px rgba(5, 22, 80, 0.08);
+        }
+
+        .input-wrapper input:focus ~ .input-icon {
+            color: #18347d;
+        }
+
+        /* =====================================================
+           VALID
+        ===================================================== */
+
+        .input-wrapper input.valid,
+        .input-wrapper select.valid {
+            border-color: #22c55e;
+        }
+
+        /* =====================================================
+           INVALID
+        ===================================================== */
+
+        .input-wrapper input.invalid,
+        .input-wrapper select.invalid {
+            border-color: #ef4444;
+
+            background: #fffafa;
+        }
+
+        .field-error {
+            display: none;
+
+            margin-top: 4px;
+            padding-left: 2px;
+
+            color: #dc2626;
+
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .field-error.show {
+            display: block;
+        }
+
+        /* =====================================================
+           SELECT
+        ===================================================== */
+
+        .input-wrapper select {
+            cursor: pointer;
+
+            appearance: none;
+            -webkit-appearance: none;
+
+            padding-right: 40px;
+
+            background-image:
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+
+            background-repeat: no-repeat;
+
+            background-position: right 14px center;
+        }
+
+        /* =====================================================
+           PASSWORD TOGGLE
+        ===================================================== */
+
+        .toggle-password {
+            position: absolute;
+
+            right: 10px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            width: 30px;
+            height: 30px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border: none;
+
+            background: transparent;
+
+            color: #94a3b8;
+
+            cursor: pointer;
+
+            z-index: 5;
+        }
+
+        .toggle-password:hover {
+            color: #475569;
+        }
+
+        /* =====================================================
+           PASSWORD STRENGTH
+        ===================================================== */
+
+        .password-strength {
+            display: none;
+
+            margin-top: 5px;
+        }
+
+        .password-strength.show {
+            display: block;
+        }
+
+        .strength-bar {
+            width: 100%;
+            height: 4px;
+
+            overflow: hidden;
+
+            background: #e2e8f0;
+
+            border-radius: 20px;
+        }
+
+        .strength-fill {
+            width: 0%;
+            height: 100%;
+
+            background: #ef4444;
+
+            transition: 0.25s ease;
+        }
+
+        .strength-text {
+            margin-top: 3px;
+
+            color: #64748b;
+
+            font-size: 10px;
+        }
+
+        /* =====================================================
+           BUTTON
+        ===================================================== */
+
+        .register-button {
+            width: 100%;
+            height: 50px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 10px;
+
+            margin-top: 18px;
+
+            border: none;
+            border-radius: 14px;
+
+            color: white;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #051650 0%,
+                    #18347d 100%
+                );
+
+            font-family: 'Inter', sans-serif;
+
+            font-size: 14px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            box-shadow:
+                0 10px 25px rgba(5, 22, 80, 0.25);
+
+            transition: 0.25s ease;
+        }
+
+        .register-button:hover {
+            transform: translateY(-2px);
+
+            box-shadow:
+                0 14px 30px rgba(5, 22, 80, 0.32);
+        }
+
+        .register-button:active {
+            transform: translateY(0);
+        }
+
+        .register-button:disabled {
+            opacity: 0.65;
+
+            cursor: not-allowed;
+
+            transform: none;
+
+            box-shadow: none;
+        }
+
+        /* =====================================================
+           LOGIN
+        ===================================================== */
+
+        .login-text {
+            margin-top: 16px;
+
+            text-align: center;
+
+            color: #94a3b8;
+
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .login-text a {
+            color: #051650;
+
+            font-weight: 700;
+
+            text-decoration: none;
+        }
+
+        .login-text a:hover {
+            color: #18347d;
+
+            text-decoration: underline;
+        }
+
+        /* =====================================================
+           RESPONSIVE TABLET
+        ===================================================== */
+
+        @media (max-width: 1024px) {
+
+            .register-wrapper {
+                width: 520px;
+
+                max-width: 100%;
+
+                min-height: auto;
+
+                max-height: none;
+
+                grid-template-columns: 1fr;
+            }
+
+            .register-welcome {
+                display: none;
+            }
+
+            .register-box {
+                padding: 35px 30px;
+            }
+        }
+
+        /* =====================================================
+           RESPONSIVE MOBILE
+        ===================================================== */
+
+        @media (max-width: 600px) {
+
+            .register-page {
+                align-items: flex-start;
+
+                padding: 12px;
+            }
+
+            .register-wrapper {
+                width: 100%;
+
+                margin-top: 5px;
+
+                border-radius: 22px;
+            }
+
+            .register-box {
+                padding: 25px 18px;
+            }
+
+            .register-box h2 {
+                font-size: 25px;
+            }
+
+            .subtitle {
+                font-size: 12px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+
+                gap: 12px;
+            }
+
+            .input-group.full-width {
+                grid-column: span 1;
+            }
+
+            .input-wrapper input,
+            .input-wrapper select {
+                height: 45px;
+            }
+
+            .register-button {
+                height: 48px;
+            }
+        }
+
+        @media (max-width: 380px) {
+
+            .register-box {
+                padding: 22px 15px;
+            }
+
+            .register-box h2 {
+                font-size: 23px;
+            }
+        }
+    </style>
+<script src="/js/db-sync.js"></script>
+</head>
+
+<body class="register-page">
+
+    <!-- Background -->
+    <div class="shape shape1"></div>
+    <div class="shape shape2"></div>
+    <div class="shape shape3"></div>
+
+
+    <!-- =====================================================
+         MAIN CONTAINER
+    ====================================================== -->
+
+    <div class="register-wrapper">
+
+
+        <!-- =================================================
+             LEFT SIDE
+        ================================================== -->
+
+        <div class="register-welcome">
+
+            <a href="login"
+                class="back-arrow"
+                title="Back to Sign In">
+
+                <i class="fa-solid fa-arrow-left"></i>
+
+            </a>
+
+
+            <div class="logo">
+
+                <i class="fa-solid fa-brain"></i>
+
+            </div>
+
+
+            <h1>
+                MemoryLink
+            </h1>
+
+
+            <h2>
+                Start Your Learning<br>
+                Journey Today.
+            </h2>
+
+
+            <p>
+                Create your student account and access
+                interactive lessons, smart flashcards,
+                and exciting quizzes.
+            </p>
+
+
+            <div class="features">
+
+                <div class="feature-item">
+
+                    <i class="fa-solid fa-graduation-cap"></i>
+
+                    <span>
+                        Exclusive for XU Students
+                    </span>
+
+                </div>
+
+
+                <div class="feature-item">
+
+                    <i class="fa-solid fa-book-open"></i>
+
+                    <span>
+                        Interactive Learning Materials
+                    </span>
+
+                </div>
+
+
+                <div class="feature-item">
+
+                    <i class="fa-solid fa-brain"></i>
+
+                    <span>
+                        Smart Learning Experience
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             RIGHT SIDE
+        ================================================== -->
+
+        <div class="register-box">
+
+
+            <h2>
+                Create Account
+            </h2>
+
+
+            <p class="subtitle">
+                Register using your Xavier University student information.
+            </p>
+
+
+            <!-- MESSAGE -->
+
+            <div id="messageBox"
+                class="message">
+
+                <i id="messageIcon"
+                    class="fa-solid fa-circle-info">
+                </i>
+
+                <span id="messageText"></span>
+
+            </div>
+
+
+            <!-- =================================================
+                 REGISTER FORM
+            ================================================== -->
+
+            <form id="registerForm"
+                autocomplete="off">
+
+                <div class="form-grid">
+
+
+                    <!-- FULL NAME -->
+
+                    <div class="input-group full-width">
+
+                        <label for="fullname">
+                            Full Name
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-user input-icon"></i>
+
+                            <input
+                                type="text"
+                                id="fullname"
+                                placeholder="Enter your full name"
+                                autocomplete="name">
+
+                        </div>
+
+                        <div id="fullnameError"
+                            class="field-error">
+                            Please enter your full name.
+                        </div>
+
+                    </div>
+
+
+                    <!-- STUDENT ID -->
+
+                    <div class="input-group">
+
+                        <label for="studentId">
+                            XU Student ID
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-id-card input-icon"></i>
+
+                            <input
+                                type="text"
+                                id="studentId"
+                                placeholder="e.g. 2023-12345">
+
+                        </div>
+
+                        <div id="studentIdError"
+                            class="field-error">
+                            Please enter your student ID.
+                        </div>
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+
+                    <div class="input-group">
+
+                        <label for="email">
+                            XU Email Address
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-envelope input-icon"></i>
+
+                            <input
+                                type="email"
+                                id="email"
+                                placeholder="student@xu.edu.ph"
+                                autocomplete="email">
+
+                        </div>
+
+                        <div id="emailError"
+                            class="field-error">
+                            Please use a valid @xu.edu.ph email.
+                        </div>
+
+                    </div>
+
+
+                    <!-- YEAR LEVEL -->
+
+                    <div class="input-group">
+
+                        <label for="year">
+                            Year Level & Track
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-layer-group input-icon"></i>
+
+                            <select id="year">
+
+                                <option value="">
+                                    Select year & track
+                                </option>
+
+                                <option value="11-STEM-A">
+                                    11 - STEM A
+                                </option>
+
+                                <option value="11-STEM-B">
+                                    11 - STEM B
+                                </option>
+
+                                <option value="12-STEM-A">
+                                    12 - STEM A
+                                </option>
+
+                                <option value="12-STEM-B">
+                                    12 - STEM B
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <div id="yearError"
+                            class="field-error">
+                            Please select your year level and track.
+                        </div>
+
+                    </div>
+
+
+                    <!-- USERNAME -->
+
+                    <div class="input-group full-width">
+
+                        <label for="username">
+                            Username
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-at input-icon"></i>
+
+                            <input
+                                type="text"
+                                id="username"
+                                placeholder="Choose a username"
+                                autocomplete="username">
+
+                        </div>
+
+                        <div id="usernameError"
+                            class="field-error">
+                            Username must be at least 3 characters.
+                        </div>
+
+                    </div>
+
+
+                    <!-- PASSWORD -->
+
+                    <div class="input-group">
+
+                        <label for="password">
+                            Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-lock input-icon"></i>
+
+                            <input
+                                type="password"
+                                id="password"
+                                placeholder="Create password"
+                                autocomplete="new-password">
+
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                onclick="togglePassword(
+                                    'password',
+                                    'eyeIcon1'
+                                )">
+
+                                <i id="eyeIcon1"
+                                    class="fa-solid fa-eye">
+                                </i>
+
+                            </button>
+
+                        </div>
+
+
+                        <div id="passwordStrength"
+                            class="password-strength">
+
+                            <div class="strength-bar">
+
+                                <div id="strengthFill"
+                                    class="strength-fill">
+                                </div>
+
+                            </div>
+
+                            <div id="strengthText"
+                                class="strength-text">
+                            </div>
+
+                        </div>
+
+
+                        <div id="passwordError"
+                            class="field-error">
+                            Password must be at least 6 characters.
+                        </div>
+
+                    </div>
+
+
+                    <!-- CONFIRM PASSWORD -->
+
+                    <div class="input-group">
+
+                        <label for="confirmPassword">
+                            Confirm Password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <i class="fa-solid fa-lock input-icon"></i>
+
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                placeholder="Confirm password"
+                                autocomplete="new-password">
+
+                            <button
+                                type="button"
+                                class="toggle-password"
+                                onclick="togglePassword(
+                                    'confirmPassword',
+                                    'eyeIcon2'
+                                )">
+
+                                <i id="eyeIcon2"
+                                    class="fa-solid fa-eye">
+                                </i>
+
+                            </button>
+
+                        </div>
+
+                        <div id="confirmPasswordError"
+                            class="field-error">
+                            Passwords do not match.
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- REGISTER BUTTON -->
+
+                <button
+                    type="submit"
+                    class="register-button"
+                    id="registerButton">
+
+                    <span id="buttonText">
+                        Create Student Account
+                    </span>
+
+                    <i id="buttonArrow"
+                        class="fa-solid fa-arrow-right">
+                    </i>
+
+                </button>
+
+            </form>
+
+
+            <!-- LOGIN -->
+
+            <p class="login-text">
+
+                Already have an account?
+
+                <a href="login">
+                    Sign In
+                </a>
+
+            </p>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         JAVASCRIPT - FIXED: Saves to memoryLinkUsers
+    ====================================================== -->
+
+    <script>
+
+        /* =====================================================
+           ELEMENTS
+        ===================================================== */
+
+        const form =
+            document.getElementById("registerForm");
+
+        const messageBox =
+            document.getElementById("messageBox");
+
+        const messageText =
+            document.getElementById("messageText");
+
+        const messageIcon =
+            document.getElementById("messageIcon");
+
+        const registerButton =
+            document.getElementById("registerButton");
+
+        const buttonText =
+            document.getElementById("buttonText");
+
+        const buttonArrow =
+            document.getElementById("buttonArrow");
+
+
+        /* =====================================================
+           SHOW / HIDE PASSWORD
+        ===================================================== */
+
+        function togglePassword(inputId, iconId) {
+
+            const input =
+                document.getElementById(inputId);
+
+            const icon =
+                document.getElementById(iconId);
+
+
+            if (input.type === "password") {
+
+                input.type = "text";
+
+                icon.classList.remove("fa-eye");
+
+                icon.classList.add("fa-eye-slash");
+
+            } else {
+
+                input.type = "password";
+
+                icon.classList.remove("fa-eye-slash");
+
+                icon.classList.add("fa-eye");
+
+            }
+        }
+
+
+        /* =====================================================
+           SHOW MESSAGE
+        ===================================================== */
+
+        function showMessage(type, text) {
+
+            messageBox.className =
+                "message show " + type;
+
+            messageText.textContent =
+                text;
+
+
+            if (type === "success") {
+
+                messageIcon.className =
+                    "fa-solid fa-circle-check";
+
+            } else {
+
+                messageIcon.className =
+                    "fa-solid fa-circle-exclamation";
+            }
+        }
+
+
+        /* =====================================================
+           HIDE MESSAGE
+        ===================================================== */
+
+        function hideMessage() {
+
+            messageBox.className =
+                "message";
+
+            messageText.textContent =
+                "";
+        }
+
+
+        /* =====================================================
+           SET FIELD ERROR
+        ===================================================== */
+
+        function fieldError(
+            inputId,
+            errorId,
+            text
+        ) {
+
+            const input =
+                document.getElementById(inputId);
+
+            const error =
+                document.getElementById(errorId);
+
+
+            input.classList.remove("valid");
+
+            input.classList.add("invalid");
+
+            error.textContent =
+                text;
+
+            error.classList.add("show");
+        }
+
+
+        /* =====================================================
+           CLEAR FIELD ERROR
+        ===================================================== */
+
+        function fieldValid(
+            inputId,
+            errorId
+        ) {
+
+            const input =
+                document.getElementById(inputId);
+
+            const error =
+                document.getElementById(errorId);
+
+
+            input.classList.remove("invalid");
+
+            input.classList.add("valid");
+
+            error.classList.remove("show");
+        }
+
+
+        /* =====================================================
+           VALIDATE FORM
+        ===================================================== */
+
+        function validateForm() {
+
+            let valid = true;
+
+
+            const fullname =
+                document
+                    .getElementById("fullname")
+                    .value
+                    .trim();
+
+
+            const studentId =
+                document
+                    .getElementById("studentId")
+                    .value
+                    .trim();
+
+
+            const email =
+                document
+                    .getElementById("email")
+                    .value
+                    .trim()
+                    .toLowerCase();
+
+
+            const year =
+                document
+                    .getElementById("year")
+                    .value;
+
+
+            const username =
+                document
+                    .getElementById("username")
+                    .value
+                    .trim();
+
+
+            const password =
+                document
+                    .getElementById("password")
+                    .value;
+
+
+            const confirmPassword =
+                document
+                    .getElementById("confirmPassword")
+                    .value;
+
+
+            /* FULL NAME */
+
+            if (fullname.length < 2) {
+
+                fieldError(
+                    "fullname",
+                    "fullnameError",
+                    "Please enter your full name."
+                );
+
+                valid = false;
+
+            } else {
+
+                fieldValid(
+                    "fullname",
+                    "fullnameError"
+                );
+            }
+
+
+            /* STUDENT ID */
+
+            if (studentId.length < 4) {
+
+                fieldError(
+                    "studentId",
+                    "studentIdError",
+                    "Please enter a valid student ID."
+                );
+
+                valid = false;
+
+            } else {
+
+                fieldValid(
+                    "studentId",
+                    "studentIdError"
+                );
+            }
+
+
+            /* EMAIL */
+
+            const emailPattern =
+                /^[^\s@]+@xu\.edu\.ph$/i;
+
+
+            if (!emailPattern.test(email)) {
+
+                fieldError(
+                    "email",
+                    "emailError",
+                    "Please use a valid @xu.edu.ph email."
+                );
+
+                valid = false;
+
+            } else {
+
+                fieldValid(
+                    "email",
+                    "emailError"
+                );
+            }
+
+
+            /* YEAR */
+
+            if (!year) {
+
+                fieldError(
+                    "year",
+                    "yearError",
+                    "Please select your year level and track."
+                );
+
+                valid = false;
+
+            } else {
+
+                fieldValid(
+                    "year",
+                    "yearError"
+                );
+            }
+
+
+            /* USERNAME */
+
+            if (username.length < 3) {
+
+                fieldError(
+                    "username",
+                    "usernameError",
+                    "Username must be at least 3 characters."
+                );
+
+                valid = false;
+
+            } else {
+
+                fieldValid(
+                    "username",
+                    "usernameError"
+                );
+            }
+
+
+            /* PASSWORD */
+
+            if (password.length < 6) {
+
+                fieldError(
+                    "password",
+                    "passwordError",
+                    "Password must be at least 6 characters."
+                );
+
+                valid = false;
+
+            } else {
+
+                fieldValid(
+                    "password",
+                    "passwordError"
+                );
+            }
+
+
+            /* CONFIRM PASSWORD */
+
+            if (
+                confirmPassword.length === 0 ||
+                confirmPassword !== password
+            ) {
+
+                fieldError(
+                    "confirmPassword",
+                    "confirmPasswordError",
+                    "Passwords do not match."
+                );
+
+                valid = false;
+
+            } else {
+
+                fieldValid(
+                    "confirmPassword",
+                    "confirmPasswordError"
+                );
+            }
+
+
+            return valid;
+        }
+
+
+        /* =====================================================
+           PASSWORD STRENGTH
+        ===================================================== */
+
+        document
+            .getElementById("password")
+            .addEventListener(
+                "input",
+                function () {
+
+                    const password =
+                        this.value;
+
+                    const box =
+                        document.getElementById(
+                            "passwordStrength"
+                        );
+
+                    const fill =
+                        document.getElementById(
+                            "strengthFill"
+                        );
+
+                    const text =
+                        document.getElementById(
+                            "strengthText"
+                        );
+
+
+                    if (!password) {
+
+                        box.classList.remove("show");
+
+                        return;
+                    }
+
+
+                    box.classList.add("show");
+
+
+                    let score = 0;
+
+
+                    if (password.length >= 6)
+                        score++;
+
+                    if (password.length >= 10)
+                        score++;
+
+                    if (/[A-Z]/.test(password))
+                        score++;
+
+                    if (/[0-9]/.test(password))
+                        score++;
+
+                    if (/[^A-Za-z0-9]/.test(password))
+                        score++;
+
+
+                    if (score <= 1) {
+
+                        fill.style.width = "25%";
+
+                        text.textContent =
+                            "Weak password";
+
+                    } else if (score <= 3) {
+
+                        fill.style.width = "60%";
+
+                        text.textContent =
+                            "Medium password";
+
+                    } else {
+
+                        fill.style.width = "100%";
+
+                        text.textContent =
+                            "Strong password";
+                    }
+                }
+            );
+
+
+        /* =====================================================
+           GET STUDENTS - FIXED: Use memoryLinkUsers
+        ===================================================== */
+
+        function getStudents() {
+            try {
+                const data = memoryStore.getItem("memoryLinkUsers");
+                return data ? JSON.parse(data) : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+
+        /* =====================================================
+           SAVE ACCOUNT - FIXED: Use memoryLinkUsers
+        ===================================================== */
+
+        function saveStudent(student) {
+            // Use the same key as Admin Dashboard
+            let students = getStudents();
+
+            // CHECK USERNAME
+            const usernameExists = students.some(
+                user =>
+                    user.username &&
+                    user.username.toLowerCase() ===
+                    student.username.toLowerCase()
+            );
+
+            if (usernameExists) {
+                throw new Error(
+                    "This username is already registered."
+                );
+            }
+
+            // CHECK EMAIL
+            const emailExists = students.some(
+                user =>
+                    user.email &&
+                    user.email.toLowerCase() ===
+                    student.email.toLowerCase()
+            );
+
+            if (emailExists) {
+                throw new Error(
+                    "This email address is already registered."
+                );
+            }
+
+            // CHECK STUDENT ID
+            const studentIdExists = students.some(
+                user =>
+                    user.studentId ===
+                    student.studentId
+            );
+
+            if (studentIdExists) {
+                throw new Error(
+                    "This student ID is already registered."
+                );
+            }
+
+            // CREATE ID
+            student.id = Date.now();
+            student.createdAt = new Date().toISOString();
+
+            // SAVE to memoryLinkUsers (same as Admin Dashboard)
+            students.push(student);
+
+            memoryStore.setItem(
+                "memoryLinkUsers",
+                JSON.stringify(students)
+            );
+
+            console.log("✅ Student saved to memoryLinkUsers:", student);
+            console.log("👥 All users:", getStudents());
+        }
+
+
+        /* =====================================================
+           SET BUTTON LOADING
+        ===================================================== */
+
+        function setLoading(status) {
+
+            registerButton.disabled =
+                status;
+
+
+            if (status) {
+
+                buttonText.textContent =
+                    "Creating Account...";
+
+                buttonArrow.style.display =
+                    "none";
+
+            } else {
+
+                buttonText.textContent =
+                    "Create Student Account";
+
+                buttonArrow.style.display =
+                    "inline-block";
+            }
+        }
+
+
+        /* =====================================================
+           REGISTER
+        ===================================================== */
+
+        form.addEventListener(
+            "submit",
+            async function (event) {
+
+                event.preventDefault();
+
+
+                hideMessage();
+
+
+                /* VALIDATE */
+
+                if (!validateForm()) {
+
+                    showMessage(
+                        "error",
+                        "Please complete all required fields correctly."
+                    );
+
+                    return;
+                }
+
+
+                /* GET VALUES */
+
+                const fullName =
+                    document
+                        .getElementById("fullname")
+                        .value
+                        .trim();
+
+
+                const studentId =
+                    document
+                        .getElementById("studentId")
+                        .value
+                        .trim();
+
+
+                const email =
+                    document
+                        .getElementById("email")
+                        .value
+                        .trim()
+                        .toLowerCase();
+
+
+                const yearLevel =
+                    document
+                        .getElementById("year")
+                        .value;
+
+
+                const username =
+                    document
+                        .getElementById("username")
+                        .value
+                        .trim();
+
+
+                const password =
+                    document
+                        .getElementById("password")
+                        .value;
+
+
+                /* STUDENT OBJECT */
+
+                const student = {
+
+                    fullName: fullName,
+
+                    studentId: studentId,
+
+                    email: email,
+
+                    yearLevel: yearLevel,
+
+                    username: username,
+
+                    password: password,
+
+                    role: "student"
+                };
+
+
+                setLoading(true);
+
+
+                /* =================================================
+                   SAVE TO LOCAL STORAGE
+                ================================================== */
+
+                try {
+                    const response = await fetch("/api/auth/register", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({
+                            fullName: student.fullName,
+                            studentId: student.studentId,
+                            email: student.email,
+                            course: "N/A",
+                            yearLevel: student.yearLevel,
+                            username: student.username,
+                            password: student.password,
+                            role: "student"
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.message || "Registration failed.");
+
+                    showMessage("success", "Account created successfully! Redirecting to login...");
+                    form.reset();
+                    document.querySelectorAll(".valid").forEach(element => element.classList.remove("valid"));
+
+                    setTimeout(function () {
+                        window.location.href = "/login";
+                    }, 1500);
+                } catch (error) {
+                    showMessage("error", error.message || "Unable to connect to the server/database.");
+                    setLoading(false);
+                }
+
+            }
+        );
+
+
+        /* =====================================================
+           LIVE VALIDATION
+        ===================================================== */
+
+        document
+            .getElementById("fullname")
+            .addEventListener(
+                "input",
+                function () {
+
+                    if (
+                        this.value.trim().length >= 2
+                    ) {
+
+                        fieldValid(
+                            "fullname",
+                            "fullnameError"
+                        );
+                    }
+                }
+            );
+
+
+        document
+            .getElementById("studentId")
+            .addEventListener(
+                "input",
+                function () {
+
+                    if (
+                        this.value.trim().length >= 4
+                    ) {
+
+                        fieldValid(
+                            "studentId",
+                            "studentIdError"
+                        );
+                    }
+                }
+            );
+
+
+        document
+            .getElementById("email")
+            .addEventListener(
+                "input",
+                function () {
+
+                    const pattern =
+                        /^[^\s@]+@xu\.edu\.ph$/i;
+
+
+                    if (
+                        pattern.test(
+                            this.value.trim()
+                        )
+                    ) {
+
+                        fieldValid(
+                            "email",
+                            "emailError"
+                        );
+                    }
+                }
+            );
+
+
+        document
+            .getElementById("year")
+            .addEventListener(
+                "change",
+                function () {
+
+                    if (this.value) {
+
+                        fieldValid(
+                            "year",
+                            "yearError"
+                        );
+                    }
+                }
+            );
+
+
+        document
+            .getElementById("username")
+            .addEventListener(
+                "input",
+                function () {
+
+                    if (
+                        this.value.trim().length >= 3
+                    ) {
+
+                        fieldValid(
+                            "username",
+                            "usernameError"
+                        );
+                    }
+                }
+            );
+
+
+        document
+            .getElementById("confirmPassword")
+            .addEventListener(
+                "input",
+                function () {
+
+                    const password =
+                        document
+                            .getElementById(
+                                "password"
+                            )
+                            .value;
+
+
+                    if (
+                        this.value &&
+                        this.value === password
+                    ) {
+
+                        fieldValid(
+                            "confirmPassword",
+                            "confirmPasswordError"
+                        );
+                    }
+                }
+            );
+
+    </script>
+
+</body>
+
+</html>

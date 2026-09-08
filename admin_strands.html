@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Strands · MemoryLink</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; }
+    body { font-family: "Segoe UI", Arial, sans-serif; background: #f4f7fc; color: #1e293b; }
+    a { text-decoration: none; }
+
+    .dashboard-container { display: flex; width: 100%; height: 100vh; overflow: hidden; }
+
+    .sidebar {
+      width: 250px; height: 100vh;
+      background: linear-gradient(180deg, #051650 0%, #0a2368 55%, #18347d 100%);
+      color: white; position: fixed; left: 0; top: 0;
+      padding: 18px 17px; display: flex; flex-direction: column;
+      z-index: 9999; overflow: hidden;
+      transition: width 0.3s ease, padding 0.3s ease, transform 0.3s ease;
+    }
+    .sidebar.collapsed { width: 82px; padding: 18px 12px; }
+
+    .sidebar-top {
+      width: 100%; display: flex; align-items: center; gap: 10px;
+      padding: 0 3px 16px; border-bottom: 1px solid rgba(255,255,255,0.12);
+      margin-bottom: 20px;
+    }
+    .sidebar-toggle {
+      width: 40px; height: 40px; min-width: 40px;
+      border: none; border-radius: 10px;
+      background: rgba(255,255,255,0.10); color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; cursor: pointer; transition: all 0.25s ease;
+    }
+    .sidebar-toggle:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
+
+    .user-profile { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; }
+    .user-avatar {
+      width: 40px; height: 40px; min-width: 40px;
+      border-radius: 50%; background: white; color: #051650;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 800;
+    }
+    .user-info { min-width: 0; overflow: hidden; transition: opacity 0.2s ease, width 0.3s ease; }
+    .user-info strong { display: block; color: white; font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px; }
+    .user-info span { color: rgba(255,255,255,0.55); font-size: 10px; }
+
+    .sidebar.collapsed .sidebar-top { flex-direction: column; gap: 14px; padding-left: 0; padding-right: 0; }
+    .sidebar.collapsed .sidebar-toggle { order: 1; }
+    .sidebar.collapsed .user-profile { order: 2; flex: none; justify-content: center; width: 100%; }
+    .sidebar.collapsed .user-info { width: 0; opacity: 0; pointer-events: none; }
+
+    .menu-title { color: rgba(255,255,255,0.45); font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 0 12px; margin-bottom: 10px; white-space: nowrap; transition: opacity 0.2s ease; }
+    .sidebar.collapsed .menu-title { opacity: 0; height: 0; margin-bottom: 4px; }
+
+    .menu { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+    .menu a, .sidebar-bottom a {
+      width: 100%; color: rgba(255,255,255,0.72);
+      display: flex; align-items: center; gap: 13px;
+      padding: 13px 14px; border-radius: 12px;
+      font-size: 13px; font-weight: 600;
+      transition: background 0.25s ease, color 0.25s ease, transform 0.15s ease;
+      cursor: pointer; white-space: nowrap;
+    }
+    .menu a i, .sidebar-bottom a i { width: 20px; min-width: 20px; text-align: center; font-size: 15px; }
+    .menu a:hover, .sidebar-bottom a:hover { background: rgba(255,255,255,0.10); color: white; transform: translateX(2px); }
+    .menu a.active { background: rgba(255,255,255,0.16); color: white; box-shadow: inset 3px 0 0 white; }
+
+    .sidebar.collapsed .menu a, .sidebar.collapsed .sidebar-bottom a { justify-content: center; padding-left: 0; padding-right: 0; gap: 0; }
+    .sidebar.collapsed .menu a:hover, .sidebar.collapsed .sidebar-bottom a:hover { transform: none; }
+    .sidebar.collapsed .menu a span, .sidebar.collapsed .sidebar-bottom a span { display: none; }
+
+    .sidebar-bottom { margin-top: auto; padding-top: 15px; width: 100%; }
+    .sidebar-bottom a { margin-top: 5px; }
+
+    .main {
+      margin-left: 250px; width: calc(100% - 250px); height: 100vh;
+      padding: 0 35px 20px; overflow: hidden;
+      display: flex; flex-direction: column;
+      transition: margin-left 0.3s ease, width 0.3s ease;
+    }
+    .main.expanded { margin-left: 82px; width: calc(100% - 82px); }
+
+    /* ===== HEADER WITH BURGER MENU ===== */
+    .site-header {
+      height: 49px; min-height: 49px;
+      margin-left: -35px; margin-right: -35px;
+      padding: 0 25px; background: #051650;
+      display: flex; align-items: center; justify-content: space-between;
+      color: white; flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex; align-items: center; gap: 12px;
+      flex: 1; min-width: 0;
+    }
+
+    /* Mobile burger button - hidden on desktop */
+    .mobile-burger-btn {
+      display: none;
+      width: 40px; height: 40px; min-width: 40px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.15);
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+    }
+    .mobile-burger-btn:hover { background: rgba(255,255,255,0.25); }
+    .mobile-burger-btn i { font-size: 22px; color: white; }
+
+    .school-name { font-size: 21px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .memory-link-title { font-size: 21px; font-weight: 800; letter-spacing: 0.3px; white-space: nowrap; flex-shrink: 0; }
+
+    .dashboard-content {
+      flex: 1; display: flex; flex-direction: column; min-height: 0;
+      overflow: hidden; padding-right: 2px;
+    }
+
+    .welcome-card {
+      flex: 0 0 170px; 
+      border-radius: 22px; padding: 27px 30px;
+      color: white; background: linear-gradient(135deg, #051650, #0a2368, #18347d);
+      position: relative; overflow: hidden; margin-top: 18px; margin-bottom: 16px;
+      box-shadow: 0 15px 35px rgba(5,22,80,0.18);
+      flex-shrink: 0;
+    }
+    .welcome-card::before { content: ""; position: absolute; width: 280px; height: 280px; border: 2px solid rgba(255,255,255,0.08); border-radius: 50%; right: -80px; top: -130px; }
+    .welcome-card::after { content: ""; position: absolute; width: 190px; height: 190px; border: 2px solid rgba(255,255,255,0.07); border-radius: 50%; right: 110px; bottom: -135px; }
+    .welcome-content { position: relative; z-index: 2; }
+    .badge { display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; background: rgba(255,255,255,0.12); border-radius: 20px; font-size: 10px; font-weight: 700; margin-bottom: 9px; }
+    .welcome-content h2 { font-size: 25px; margin-bottom: 6px; }
+    .welcome-content p { color: rgba(255,255,255,0.78); font-size: 13px; max-width: 700px; line-height: 1.5; }
+
+    .action-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 15px; margin: 10px 0 16px; flex-shrink: 0;
+    }
+
+    .panel {
+      background: white; border-radius: 18px; padding: 28px;
+      border: 1px solid #edf1f7; box-shadow: 0 5px 20px rgba(5,22,80,0.05);
+      flex: 1; min-height: 0; 
+      display: flex; flex-direction: column;
+      overflow: hidden;
+      margin-top: 0;
+    }
+
+    .strand-grid-wrapper {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-right: 4px;
+      margin-right: -4px;
+    }
+    .strand-grid-wrapper::-webkit-scrollbar { width: 5px; }
+    .strand-grid-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .strand-grid-wrapper::-webkit-scrollbar-track { background: transparent; }
+
+    .strand-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+      max-width: 1050px; margin: 0 auto;
+      padding-bottom: 8px;
+    }
+
+    .strand-card-link {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .strand-card-link:hover {
+      transform: translateY(-4px);
+    }
+    .strand-card-link:hover .strand-card {
+      border-color: #051650;
+      box-shadow: 0 12px 30px rgba(5,22,80,0.12);
+    }
+
+    .strand-card {
+      border: 1px solid #e8edf5; border-radius: 20px;
+      padding: 26px; min-height: 235px;
+      background: #fff;
+      display: flex; flex-direction: column; justify-content: flex-start;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+      height: 100%;
+    }
+    .strand-icon {
+      width: 56px; height: 56px; border-radius: 16px;
+      background: #eef2ff; color: #051650;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px; font-size: 22px;
+    }
+    .strand-card h4 { color: #051650; font-size: 20px; margin-bottom: 10px; }
+    .strand-card p { color: #64748b; font-size: 13px; line-height: 1.7; min-height: 48px; }
+    .strand-footer { margin-top: auto; padding-top: 16px; border-top: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+    .strand-footer span { font-size: 12px; }
+    .active-badge { color: #16a34a; font-weight: 700; }
+    .card-actions { display: flex; gap: 6px; }
+    .card-actions button { width: 31px; height: 31px; border: none; border-radius: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .edit-btn { background: #eef2ff; color: #051650; }
+    .delete-btn { background: #fee2e2; color: #dc2626; }
+    .card-actions button:hover { transform: scale(1.06); }
+
+    .click-hint {
+      font-size: 11px;
+      color: #94a3b8;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-left: 8px;
+    }
+    .click-hint i { font-size: 12px; }
+
+    .modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(15,23,42,0.55); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; z-index: 99999; padding: 20px;
+    }
+    .modal.show { display: flex; }
+    .modal-box {
+      width: 100%; max-width: 500px; background: white;
+      border-radius: 20px; padding: 28px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.18);
+      animation: modalIn 0.2s ease;
+    }
+    @keyframes modalIn { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+    .modal-header h2 { color: #051650; font-size: 20px; }
+    .close-btn { width: 34px; height: 34px; border: none; background: #f1f5f9; color: #64748b; border-radius: 9px; cursor: pointer; }
+    .form-group { margin-bottom: 17px; }
+    .form-group label { display: block; color: #334155; font-size: 12px; font-weight: 700; margin-bottom: 7px; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; border: 1px solid #e2e8f0; border-radius: 11px;
+      padding: 12px 13px; font-family: inherit; font-size: 13px; outline: none;
+    }
+    .form-group textarea { resize: vertical; min-height: 90px; }
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: #051650; box-shadow: 0 0 0 3px rgba(5,22,80,0.08); }
+    .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
+    .cancel-btn, .save-btn { height: 42px; padding: 0 18px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: 12px; }
+    .cancel-btn { border: 1px solid #e2e8f0; background: white; color: #64748b; }
+    .save-btn { border: none; background: #051650; color: white; }
+
+    .confirm-modal {
+      display: none; position: fixed; inset: 0;
+      background: rgba(15,23,42,0.55); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; z-index: 100000; padding: 20px;
+    }
+    .confirm-modal.show { display: flex; }
+    .confirm-box {
+      width: 100%; max-width: 420px; background: white; border-radius: 20px;
+      padding: 28px; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.18);
+      animation: modalIn 0.2s ease;
+    }
+    .confirm-icon { width: 58px; height: 58px; margin: 0 auto 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 23px; background: #eef2ff; color: #051650; }
+    .confirm-icon.delete { background: #fee2e2; color: #dc2626; }
+    .confirm-box h3 { color: #051650; font-size: 20px; margin-bottom: 8px; }
+    .confirm-box p { color: #64748b; font-size: 13px; line-height: 1.6; }
+    .confirm-actions { display: flex; gap: 10px; justify-content: center; margin-top: 24px; }
+    .confirm-actions button { min-width: 120px; height: 42px; border-radius: 10px; border: none; cursor: pointer; font-size: 12px; font-weight: 700; }
+    .confirm-cancel { background: #f1f5f9; color: #64748b; }
+    .confirm-proceed { background: #051650; color: white; }
+    .confirm-proceed.delete { background: #dc2626; }
+
+    .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 9998; }
+    .sidebar-overlay.show { display: block; }
+
+    .search-box { flex: 1; max-width: 400px; position: relative; }
+    .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+    .search-box input { width: 100%; height: 42px; padding: 0 15px 0 43px; border: 1px solid #e2e8f0; background: white; border-radius: 12px; outline: none; font-size: 13px; }
+    .search-box input:focus { border-color: #051650; box-shadow: 0 0 0 3px rgba(5,22,80,0.08); }
+    .add-btn {
+      height: 42px; padding: 0 20px; border: none; border-radius: 12px;
+      background: linear-gradient(135deg, #051650, #18347d);
+      color: white; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: 9px;
+      box-shadow: 0 8px 18px rgba(5,22,80,0.20); transition: 0.25s; flex-shrink: 0;
+    }
+    .add-btn:hover { transform: translateY(-2px); }
+
+    /* =========================================
+       MOBILE RESPONSIVE
+    ========================================== */
+
+    @media (max-width: 1050px) {
+      html, body { overflow: auto; }
+      .dashboard-container { overflow: visible; }
+      .main { height: auto; min-height: 100vh; overflow: visible; }
+      .dashboard-content { display: block; overflow: visible; padding-right: 0; }
+      .welcome-card { height: auto; min-height: 170px; flex: 0 0 auto; }
+      .strand-grid { grid-template-columns: repeat(2, 1fr); }
+      .panel { min-height: 400px; overflow: visible; }
+      .strand-grid-wrapper { overflow-y: visible; max-height: none; }
+    }
+
+    @media (max-width: 750px) {
+      html, body { overflow: auto; }
+
+      /* SHOW BURGER BUTTON ON MOBILE */
+      .mobile-burger-btn { display: flex !important; }
+
+      .sidebar {
+        width: 280px; transform: translateX(-100%); padding: 18px 17px;
+        transition: transform 0.3s ease;
+      }
+      .sidebar.collapsed { width: 280px; padding: 18px 17px; transform: translateX(-100%); }
+      .sidebar.show { transform: translateX(0); }
+
+      /* Hide desktop toggle on mobile */
+      .sidebar .sidebar-toggle { display: none !important; }
+
+      .sidebar .user-profile, .sidebar.collapsed .user-profile {
+        flex: 1 !important; justify-content: flex-start !important; width: auto !important;
+      }
+      .sidebar .user-info, .sidebar.collapsed .user-info {
+        width: auto !important; opacity: 1 !important; pointer-events: auto !important;
+      }
+      .sidebar .menu-title, .sidebar.collapsed .menu-title {
+        opacity: 1 !important; height: auto !important; margin-bottom: 10px !important;
+      }
+      .sidebar .menu a, .sidebar .sidebar-bottom a,
+      .sidebar.collapsed .menu a, .sidebar.collapsed .sidebar-bottom a {
+        justify-content: flex-start !important; padding-left: 14px !important; padding-right: 14px !important; gap: 13px !important;
+      }
+      .sidebar .menu a span, .sidebar .sidebar-bottom a span,
+      .sidebar.collapsed .menu a span, .sidebar.collapsed .sidebar-bottom a span { display: inline !important; }
+
+      .main, .main.expanded {
+        margin-left: 0 !important; width: 100% !important; height: auto !important;
+        min-height: 100vh !important; padding: 0 20px 30px !important; overflow: visible !important;
+      }
+      .dashboard-content { display: block !important; overflow: visible !important; padding-right: 0 !important; }
+
+      .site-header {
+        margin-left: -20px !important; margin-right: -20px !important;
+        padding: 0 14px !important; gap: 8px !important;
+      }
+      .header-left { gap: 8px !important; flex: 1 !important; min-width: 0 !important; }
+      .school-name { font-size: 14px !important; }
+      .memory-link-title { font-size: 14px !important; }
+
+      .welcome-card { margin-top: 18px !important; padding: 25px !important; min-height: 175px !important; height: auto !important; flex: 0 0 auto !important; }
+      .welcome-content h2 { font-size: 21px !important; }
+
+      .action-bar { flex-direction: column; align-items: stretch; }
+      .search-box { max-width: none; }
+      .add-btn { justify-content: center; }
+
+      .strand-grid { grid-template-columns: 1fr !important; gap: 16px !important; }
+      .panel { min-height: 300px !important; overflow: visible !important; padding: 18px !important; margin-top: 18px !important; border-radius: 16px !important; }
+      .strand-card { min-height: 190px !important; padding: 20px !important; }
+      .strand-card-link:hover { transform: none !important; }
+      .strand-grid-wrapper { overflow-y: visible !important; max-height: none !important; }
+    }
+
+    @media (max-width: 480px) {
+      .main, .main.expanded { padding-left: 12px !important; padding-right: 12px !important; }
+      .site-header { margin-left: -12px !important; margin-right: -12px !important; }
+      .welcome-card { padding: 20px !important; }
+      .panel { padding: 14px !important; }
+      .strand-card { padding: 16px !important; min-height: 170px !important; }
+      .strand-card h4 { font-size: 18px !important; }
+      .strand-card p { font-size: 12px !important; }
+      .mobile-burger-btn { width: 36px !important; height: 36px !important; min-width: 36px !important; }
+      .mobile-burger-btn i { font-size: 18px !important; }
+    }
+  </style>
+<script src="/js/db-sync.js"></script>
+</head>
+<body>
+<div class="dashboard-container">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="user-profile">
+        <div class="user-avatar" id="userAvatar">A</div>
+        <div class="user-info">
+          <strong id="userName">Admin</strong>
+          <span id="userRole">Administrator</span>
+        </div>
+      </div>
+      <!-- Desktop toggle button (hidden on mobile) -->
+      <button class="sidebar-toggle" type="button" id="sidebarToggle" aria-label="Toggle Sidebar">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+    </div>
+    <div class="menu-title">MAIN MENU</div>
+    <nav class="menu">
+      <a href="/dashboard" class="sidebar-link"><i class="fa-solid fa-house"></i><span>Dashboard</span></a>
+      <a href="/admin_strands" class="sidebar-link active"><i class="fa-solid fa-book-open"></i><span>Learning Strands</span></a>
+      <a href="/admin_lessons" class="sidebar-link"><i class="fa-solid fa-graduation-cap"></i><span>Lessons</span></a>
+      <a href="/admin_flashcards" class="sidebar-link"><i class="fa-solid fa-layer-group"></i><span>Flashcards</span></a>
+      <a href="/admin_quizzes" class="sidebar-link"><i class="fa-solid fa-clipboard-question"></i><span>Quizzes</span></a>
+    </nav>
+    <div class="sidebar-bottom">
+      <a href="admin_settings.html" class="sidebar-link"><i class="fa-solid fa-gear"></i><span>Settings</span></a>
+      <a href="/login" id="logoutButton"><i class="fa-solid fa-right-from-bracket"></i><span>Logout</span></a>
+    </div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <main class="main" id="main">
+    <!-- HEADER WITH BURGER MENU -->
+    <header class="site-header">
+      <div class="header-left">
+        <!-- BURGER BUTTON - VISIBLE ON MOBILE ONLY -->
+        <button class="mobile-burger-btn" id="mobileBurgerBtn" type="button" aria-label="Open Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="school-name">Xavier University Senior High School</div>
+      </div>
+      <div class="memory-link-title">MemoryLink</div>
+    </header>
+
+    <div class="dashboard-content">
+      <section class="welcome-card">
+        <div class="welcome-content">
+          <div class="badge"><i class="fa-solid fa-book-open"></i> Manage Learning Strands</div>
+          <h2>Learning Strands</h2>
+          <p>Manage the learning strands available to students. Add, edit, or remove strands to organize your educational content.</p>
+        </div>
+      </section>
+
+      <div class="action-bar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="searchInput" placeholder="Search strands..." oninput="filterStrands()">
+        </div>
+        <button class="add-btn" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> Add Strand</button>
+      </div>
+
+      <section class="panel">
+        <div class="strand-grid-wrapper" id="strandGridWrapper">
+          <div class="strand-grid" id="strandGrid"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL -->
+<div class="modal" id="strandModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2 id="modalTitle">Add Learning Strand</h2>
+      <button class="close-btn" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <form id="strandForm">
+      <div class="form-group">
+        <label for="strandName">Strand Name</label>
+        <input type="text" id="strandName" placeholder="Example: STEM" required>
+      </div>
+      <div class="form-group">
+        <label for="strandDescription">Description</label>
+        <textarea id="strandDescription" placeholder="Enter a short description..." required></textarea>
+      </div>
+      <div class="form-group">
+        <label for="strandIcon">Icon</label>
+        <select id="strandIcon">
+          <option value="fa-flask">Science</option>
+          <option value="fa-calculator">Mathematics</option>
+          <option value="fa-laptop-code">Programming</option>
+          <option value="fa-book" selected>General</option>
+          <option value="fa-palette">Arts</option>
+          <option value="fa-briefcase">Business</option>
+          <option value="fa-heart-pulse">Health</option>
+          <option value="fa-gears">Technical</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="strandStatus">Status</label>
+        <select id="strandStatus">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="save-btn">Save Strand</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="confirm-modal" id="confirmModal">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon"><i class="fa-solid fa-floppy-disk"></i></div>
+    <h3 id="confirmTitle">Confirm Action</h3>
+    <p id="confirmMessage">Are you sure you want to continue?</p>
+    <div class="confirm-actions">
+      <button type="button" class="confirm-cancel" onclick="closeConfirmModal()">Cancel</button>
+      <button type="button" class="confirm-proceed" id="confirmProceed">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ─── auth ────────────────────────────────────────────────────
+  const savedUser = memoryStore.getItem("memoryLinkUser");
+  if (!savedUser) window.location.replace("/login");
+  let user = null;
+  try { user = JSON.parse(savedUser); } catch { memoryStore.removeItem("memoryLinkUser"); window.location.replace("/login"); }
+  if (user && user.role !== "admin") window.location.replace("/strands");
+  if (user) {
+    document.getElementById("userName").textContent = user.username || "Admin";
+    document.getElementById("userRole").textContent = "Administrator";
+    document.getElementById("userAvatar").textContent = (user.username || "A").charAt(0).toUpperCase();
+  }
+
+  // ─── storage ──────────────────────────────────────────────────
+  const STORAGE_KEY = "memoryLinkStrands";
+  const defaultStrands = [
+    { id: 1, name: "STEM A", description: "Science, Technology, Engineering, and Mathematics learning resources for STEM A students.", icon: "fa-flask", status: "active" },
+    { id: 2, name: "STEM B", description: "Science, Technology, Engineering, and Mathematics learning resources for STEM B students.", icon: "fa-flask", status: "active" }
+  ];
+
+  function getStrands() {
+    const stored = memoryStore.getItem(STORAGE_KEY);
+    if (stored) {
+      try { return JSON.parse(stored); } catch {}
+    }
+    memoryStore.setItem(STORAGE_KEY, JSON.stringify(defaultStrands));
+    return defaultStrands.slice();
+  }
+  function saveStrands(strands) { memoryStore.setItem(STORAGE_KEY, JSON.stringify(strands)); }
+
+  // ─── render ──────────────────────────────────────────────────
+  function displayStrands(filter = "") {
+    const strands = getStrands();
+    const grid = document.getElementById("strandGrid");
+    grid.innerHTML = "";
+    const filtered = strands.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()) || s.description.toLowerCase().includes(filter.toLowerCase()));
+    filtered.forEach(strand => {
+      const link = document.createElement("a");
+      link.className = "strand-card-link";
+      link.href = `/admin_lessons?strand=${encodeURIComponent(strand.name)}`;
+      
+      const card = document.createElement("div");
+      card.className = "strand-card";
+      card.innerHTML = `
+        <div class="strand-icon"><i class="fa-solid ${strand.icon}"></i></div>
+        <h4>${escapeHTML(strand.name)}</h4>
+        <p>${escapeHTML(strand.description)}</p>
+        <div class="strand-footer">
+          <span>
+            <span class="active-badge">${strand.status === 'active' ? 'Active' : 'Inactive'}</span>
+            <span class="click-hint"><i class="fa-solid fa-arrow-right"></i> Click to view lessons</span>
+          </span>
+          <div class="card-actions" onclick="event.stopPropagation(); event.preventDefault();">
+            <button class="edit-btn" onclick="editStrand(${strand.id})"><i class="fa-solid fa-pen"></i></button>
+            <button class="delete-btn" onclick="deleteStrand(${strand.id})"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        </div>
+      `;
+      link.appendChild(card);
+      grid.appendChild(link);
+    });
+  }
+  
+  function filterStrands() {
+    const val = document.getElementById("searchInput").value;
+    displayStrands(val);
+  }
+
+  function escapeHTML(v) { return String(v).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
+
+  // ─── modal ──────────────────────────────────────────────────
+  function openAddModal() {
+    document.getElementById("modalTitle").textContent = "Add Learning Strand";
+    document.getElementById("strandForm").reset();
+    document.getElementById("strandStatus").value = "active";
+    document.getElementById("strandIcon").value = "fa-book";
+    document.getElementById("strandForm").dataset.editId = "";
+    document.getElementById("strandModal").classList.add("show");
+    document.getElementById("strandName").focus();
+  }
+  function closeModal() { document.getElementById("strandModal").classList.remove("show"); }
+  function editStrand(id) {
+    event.stopPropagation();
+    event.preventDefault();
+    const strands = getStrands();
+    const strand = strands.find(s => s.id === id);
+    if (!strand) return;
+    document.getElementById("modalTitle").textContent = "Edit Learning Strand";
+    document.getElementById("strandName").value = strand.name;
+    document.getElementById("strandDescription").value = strand.description;
+    document.getElementById("strandIcon").value = strand.icon;
+    document.getElementById("strandStatus").value = strand.status;
+    document.getElementById("strandForm").dataset.editId = id;
+    document.getElementById("strandModal").classList.add("show");
+  }
+
+  // ─── confirm modal ──────────────────────────────────────────
+  let confirmAction = null;
+  function openConfirmModal(options) {
+    const modal = document.getElementById("confirmModal");
+    document.getElementById("confirmTitle").textContent = options.title;
+    document.getElementById("confirmMessage").textContent = options.message;
+    document.getElementById("confirmProceed").textContent = options.buttonText || "Confirm";
+    const icon = document.getElementById("confirmIcon");
+    icon.classList.remove("delete");
+    document.getElementById("confirmProceed").classList.remove("delete");
+    if (options.type === "delete") {
+      icon.classList.add("delete");
+      document.getElementById("confirmProceed").classList.add("delete");
+      icon.innerHTML = '<i class="fa-solid fa-trash"></i>';
+    } else {
+      icon.innerHTML = '<i class="fa-solid fa-floppy-disk"></i>';
+    }
+    confirmAction = options.onConfirm || null;
+    modal.classList.add("show");
+  }
+  function closeConfirmModal() { document.getElementById("confirmModal").classList.remove("show"); confirmAction = null; }
+  document.getElementById("confirmProceed").addEventListener("click", function() {
+    if (typeof confirmAction === "function") confirmAction();
+  });
+  document.getElementById("confirmModal").addEventListener("click", function(e) {
+    if (e.target === this) closeConfirmModal();
+  });
+
+  // ─── save / delete ──────────────────────────────────────────
+  let pendingSaveData = null;
+  document.getElementById("strandForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    pendingSaveData = {
+      name: document.getElementById("strandName").value.trim(),
+      description: document.getElementById("strandDescription").value.trim(),
+      icon: document.getElementById("strandIcon").value,
+      status: document.getElementById("strandStatus").value,
+      editId: this.dataset.editId
+    };
+    openConfirmModal({
+      type: "save",
+      title: pendingSaveData.editId ? "Save Changes?" : "Save New Strand?",
+      message: pendingSaveData.editId ? "Are you sure you want to save the changes made to this learning strand?" : "Are you sure you want to add this new learning strand?",
+      buttonText: pendingSaveData.editId ? "Save Changes" : "Save Strand",
+      onConfirm: function() {
+        if (!pendingSaveData) return;
+        const { name, description, icon, status, editId } = pendingSaveData;
+        let strands = getStrands();
+        if (editId) {
+          const idx = strands.findIndex(s => s.id == Number(editId));
+          if (idx !== -1) strands[idx] = { ...strands[idx], name, description, icon, status };
+        } else {
+          strands.push({ id: Date.now(), name, description, icon, status });
+        }
+        saveStrands(strands);
+        pendingSaveData = null;
+        closeConfirmModal();
+        closeModal();
+        displayStrands();
+      }
+    });
+  });
+
+  function deleteStrand(id) {
+    event.stopPropagation();
+    event.preventDefault();
+    const strands = getStrands();
+    const strand = strands.find(s => s.id === id);
+    if (!strand) return;
+    openConfirmModal({
+      type: "delete",
+      title: "Delete Strand?",
+      message: `Are you sure you want to delete "${strand.name}"? This action cannot be undone.`,
+      buttonText: "Delete",
+      onConfirm: function() {
+        const updated = strands.filter(s => s.id !== id);
+        saveStrands(updated);
+        closeConfirmModal();
+        displayStrands();
+      }
+    });
+  }
+
+  // ─── sidebar ──────────────────────────────────────────────────
+  const sidebar = document.getElementById("sidebar");
+  const main = document.getElementById("main");
+  const sidebarToggle = document.getElementById("sidebarToggle");
+  const overlay = document.getElementById("sidebarOverlay");
+  const mobileBurgerBtn = document.getElementById("mobileBurgerBtn");
+
+  // Desktop toggle - collapse/expand
+  sidebarToggle.addEventListener("click", function() {
+    if (window.innerWidth <= 750) {
+      // Mobile: close sidebar
+      sidebar.classList.remove("show");
+      overlay.classList.remove("show");
+    } else {
+      // Desktop: collapse/expand
+      sidebar.classList.toggle("collapsed");
+      main.classList.toggle("expanded");
+    }
+  });
+
+  // Mobile burger - open sidebar
+  mobileBurgerBtn.addEventListener("click", function() {
+    sidebar.classList.add("show");
+    overlay.classList.add("show");
+  });
+
+  overlay.addEventListener("click", function() {
+    sidebar.classList.remove("show");
+    overlay.classList.remove("show");
+  });
+
+  document.querySelectorAll(".sidebar-link").forEach(l => {
+    l.addEventListener("click", function() {
+      if (window.innerWidth <= 750) { sidebar.classList.remove("show"); overlay.classList.remove("show"); }
+    });
+  });
+
+  document.getElementById("strandModal").addEventListener("click", function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  document.getElementById("logoutButton").addEventListener("click", function(e) {
+    e.preventDefault();
+    memoryStore.removeItem("memoryLinkUser");
+    window.location.replace("/login");
+  });
+
+  // ─── init ────────────────────────────────────────────────────
+  displayStrands();
+</script>
+</body>
+</html>

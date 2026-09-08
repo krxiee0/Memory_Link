@@ -1,0 +1,4457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lessons | MemoryLink</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* =====================================================
+           RESET
+        ===================================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        button {
+            font-family: inherit;
+        }
+
+        /* =====================================================
+           PAGE CONTAINER
+        ===================================================== */
+        .page-container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* =====================================================
+           SIDEBAR
+        ===================================================== */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(180deg, #051650 0%, #0a2368 55%, #18347d 100%);
+            color: white;
+            position: fixed;
+            left: 0;
+            top: 0;
+            padding: 18px 17px;
+            display: flex;
+            flex-direction: column;
+            z-index: 9999;
+            overflow: hidden;
+            transition: width 0.3s ease, padding 0.3s ease, transform 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .sidebar.collapsed {
+            width: 82px;
+            padding: 18px 12px;
+        }
+
+        .sidebar-top {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 3px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .user-profile {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border-radius: 50%;
+            background: white;
+            color: #051650;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .user-info {
+            min-width: 0;
+            overflow: hidden;
+            transition: opacity 0.2s ease, width 0.3s ease;
+        }
+
+        .user-info strong {
+            display: block;
+            color: white;
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 3px;
+        }
+
+        .user-info span {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 10px;
+        }
+
+        .sidebar-toggle {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.10);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            flex-shrink: 0;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-1px);
+        }
+
+        .mobile-hamburger {
+            display: none;
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-hamburger:hover {
+            background: rgba(255, 255, 255, 0.20);
+        }
+
+        .sidebar.collapsed .sidebar-top {
+            flex-direction: column;
+            gap: 14px;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .sidebar.collapsed .sidebar-toggle {
+            order: 1;
+        }
+
+        .sidebar.collapsed .user-profile {
+            order: 2;
+            flex: none;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .sidebar.collapsed .user-info {
+            width: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .menu-title {
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            padding: 0 12px;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            transition: opacity 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .sidebar.collapsed .menu-title {
+            opacity: 0;
+            height: 0;
+            margin-bottom: 4px;
+        }
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            width: 100%;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .menu::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .menu::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .menu::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+        }
+
+        .menu a,
+        .sidebar-bottom a {
+            width: 100%;
+            color: rgba(255, 255, 255, 0.72);
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            padding: 13px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.25s ease, color 0.25s ease, transform 0.15s ease;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .menu a i,
+        .sidebar-bottom a i {
+            width: 20px;
+            min-width: 20px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        .menu a:hover,
+        .sidebar-bottom a:hover {
+            background: rgba(255, 255, 255, 0.10);
+            color: white;
+            transform: translateX(2px);
+        }
+
+        .menu a.active {
+            background: rgba(255, 255, 255, 0.16);
+            color: white;
+            box-shadow: inset 3px 0 0 white;
+        }
+
+        .sidebar.collapsed .menu a,
+        .sidebar.collapsed .sidebar-bottom a {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+            gap: 0;
+        }
+
+        .sidebar.collapsed .menu a:hover,
+        .sidebar.collapsed .sidebar-bottom a:hover {
+            transform: none;
+        }
+
+        .sidebar.collapsed .menu a span,
+        .sidebar.collapsed .sidebar-bottom a span {
+            display: none;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            padding-top: 15px;
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        .sidebar-bottom a {
+            margin-top: 5px;
+        }
+
+        /* =====================================================
+           MAIN
+        ===================================================== */
+        .main {
+            margin-left: 250px;
+            width: calc(100% - 250px);
+            height: 100vh;
+            padding: 0 35px 20px;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s ease, width 0.3s ease;
+            overflow: hidden;
+        }
+
+        .main.expanded {
+            margin-left: 82px;
+            width: calc(100% - 82px);
+        }
+
+        .scrollable-content {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 4px;
+            min-height: 0;
+        }
+
+        .scrollable-content::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .scrollable-content::-webkit-scrollbar-track {
+            background: #f1f4f9;
+            border-radius: 10px;
+        }
+
+        .scrollable-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .scrollable-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        /* =====================================================
+           TOPBAR
+        ===================================================== */
+        .site-header {
+            height: 49px;
+            min-height: 49px;
+            margin-left: -35px;
+            margin-right: -35px;
+            padding: 0 25px;
+            background: #051650;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .site-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .school-name {
+            font-size: 21px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .memory-link-title {
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            line-height: 1;
+        }
+
+        /* =====================================================
+           STRAND HEADER
+        ===================================================== */
+        .strand-header {
+            min-height: 150px;
+            max-height: 160px;
+            margin-bottom: 14px;
+            margin-top: 14px;
+            padding: 22px 28px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, #051650 0%, #0a2368 55%, #18347d 100%);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(5, 22, 80, 0.16);
+            flex-shrink: 0;
+        }
+
+        .strand-header::before {
+            content: "";
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border: 2px solid rgba(255, 255, 255, 0.09);
+            border-radius: 50%;
+            right: -80px;
+            top: -100px;
+        }
+
+        .strand-header::after {
+            content: "";
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            border: 2px solid rgba(255, 255, 255, 0.07);
+            border-radius: 50%;
+            right: 70px;
+            bottom: -110px;
+        }
+
+        .strand-header-content {
+            position: relative;
+            z-index: 2;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .strand-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+            color: rgba(255, 255, 255, 0.62);
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 1.15px;
+            text-transform: uppercase;
+        }
+
+        .strand-label i {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 10px;
+        }
+
+        .strand-header h2 {
+            margin: 0 0 4px;
+            color: #fff;
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1.2;
+        }
+
+        .strand-header p {
+            margin: 0;
+            max-width: 600px;
+            color: rgba(255, 255, 255, 0.76);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .filter-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 4px 10px 4px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 600;
+            flex-shrink: 0;
+            margin-top: 4px;
+        }
+
+        .filter-badge .clear-filter {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            font-size: 12px;
+            padding: 0 2px;
+        }
+
+        .filter-badge .clear-filter:hover {
+            color: white;
+        }
+
+        /* =====================================================
+           SECTION HEADER
+        ===================================================== */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .section-header h2 {
+            color: #051650;
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .section-header span {
+            color: #64748b;
+            font-size: 11px;
+        }
+
+        .search-wrapper {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #edf1f7;
+            border-radius: 40px;
+            padding: 5px 14px 5px 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            transition: all 0.2s;
+            flex: 1;
+            max-width: 280px;
+            min-width: 140px;
+        }
+
+        .search-wrapper:focus-within {
+            border-color: #051650;
+            box-shadow: 0 0 0 3px rgba(5,22,80,0.08);
+        }
+
+        .search-wrapper i {
+            color: #94a3b8;
+            font-size: 13px;
+            margin-right: 8px;
+        }
+
+        .search-wrapper input {
+            border: none;
+            outline: none;
+            background: transparent;
+            padding: 6px 0;
+            font-size: 12px;
+            width: 100%;
+            color: #1e293b;
+        }
+
+        .search-wrapper input::placeholder {
+            color: #94a3b8;
+        }
+
+        /* =====================================================
+           ADD LESSON BUTTON
+        ===================================================== */
+        .add-lesson-btn {
+            background: #051650;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .add-lesson-btn:hover {
+            background: #123a8f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(5,22,80,0.2);
+        }
+
+        .add-lesson-btn i {
+            font-size: 14px;
+        }
+
+        /* =====================================================
+           LESSON GRID - FIXED FOR MOBILE
+        ===================================================== */
+        .lesson-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            padding-bottom: 16px;
+        }
+
+        .lesson-card {
+            background: #ffffff;
+            border-radius: 17px;
+            padding: 18px 20px;
+            border: 1px solid #edf1f7;
+            box-shadow: 0 5px 20px rgba(5, 22, 80, 0.05);
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            min-height: 220px;
+        }
+
+        .lesson-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(5, 22, 80, 0.08);
+            border-color: #dde4ff;
+        }
+
+        /* PENDING - Blue */
+        .lesson-card.status-pending {
+            border-left: 5px solid #3b82f6;
+            background: #f0f7ff;
+        }
+
+        .lesson-card.status-pending .lesson-number {
+            background: #3b82f6;
+            color: white;
+        }
+
+        /* APPROVED - Neutral (NO GREEN) */
+        .lesson-card.status-approved {
+            border-left: 1px solid #edf1f7;
+        }
+
+        .lesson-card.status-approved .lesson-number {
+            background: #eef2ff;
+            color: #051650;
+        }
+
+        /* REJECTED - Red */
+        .lesson-card.status-rejected {
+            border-left: 5px solid #ef4444;
+            background: #fff5f5;
+        }
+
+        .lesson-card.status-rejected .lesson-number {
+            background: #ef4444;
+            color: white;
+        }
+
+        .lesson-card.status-pending .lesson-button {
+            background: #3b82f6;
+        }
+
+        .lesson-card.status-pending .lesson-button:hover {
+            background: #2563eb;
+        }
+
+        .lesson-card.status-rejected .lesson-button {
+            background: #ef4444;
+        }
+
+        .lesson-card.status-rejected .lesson-button:hover {
+            background: #dc2626;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+            flex-shrink: 0;
+        }
+
+        .status-badge.pending {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status-badge.approved {
+            background: #eef2ff;
+            color: #051650;
+        }
+
+        .status-badge.rejected {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .lesson-number {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            margin-bottom: 12px;
+            border-radius: 12px;
+            background: #eef2ff;
+            color: #051650;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .lesson-card h3 {
+            color: #051650;
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            line-height: 1.35;
+            word-break: break-word;
+        }
+
+        .lesson-card p {
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .lesson-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-top: 10px;
+            border-top: 1px solid #edf1f7;
+            color: #64748b;
+            font-size: 10px;
+            flex-wrap: wrap;
+            margin-top: auto;
+        }
+
+        .lesson-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .lesson-meta i {
+            color: #123a8f;
+        }
+
+        .lesson-button {
+            width: 100%;
+            border: none;
+            background: #051650;
+            color: #fff;
+            padding: 9px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 12px;
+            flex-shrink: 0;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .lesson-button:hover {
+            background: #123a8f;
+            transform: translateY(-1px);
+        }
+
+        .lesson-button:active {
+            transform: translateY(0);
+        }
+
+        .edit-lesson-btn {
+            background: #f59e0b !important;
+            color: white !important;
+            border: none;
+            border-radius: 10px;
+            padding: 9px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 12px;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .edit-lesson-btn:hover {
+            background: #d97706 !important;
+            transform: translateY(-1px);
+        }
+
+        .empty-state {
+            display: none;
+            background: #ffffff;
+            border-radius: 17px;
+            padding: 40px 20px;
+            text-align: center;
+            border: 1px solid #edf1f7;
+            box-shadow: 0 5px 20px rgba(5, 22, 80, 0.05);
+        }
+
+        .empty-state i {
+            font-size: 40px;
+            color: #051650;
+            margin-bottom: 12px;
+        }
+
+        .empty-state h3 {
+            font-size: 17px;
+            color: #051650;
+            margin-bottom: 6px;
+        }
+
+        .empty-state p {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* =====================================================
+           ADD LESSON MODAL - IMPROVED CONTENT STEP
+        ===================================================== */
+        .add-lesson-modal .modal-box {
+            max-width: 700px;
+            max-height: 92vh;
+            height: auto;
+            min-height: 450px;
+        }
+
+        .add-lesson-modal .modal-body {
+            padding: 18px 24px 24px;
+        }
+
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 20px;
+            padding: 0 4px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+
+        .step-dot {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #94a3b8;
+            white-space: nowrap;
+        }
+
+        .step-dot.active {
+            color: #051650;
+        }
+
+        .step-dot .circle {
+            width: 26px;
+            height: 26px;
+            min-width: 26px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 700;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active .circle {
+            background: #051650;
+            color: white;
+        }
+
+        .step-dot.done .circle {
+            background: #22c55e;
+            color: white;
+        }
+
+        .step-line {
+            flex: 1;
+            height: 2px;
+            background: #e2e8f0;
+            min-width: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .step-line.done {
+            background: #22c55e;
+        }
+
+        .step-content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+
+        .form-group label .required {
+            color: #ef4444;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: inherit;
+            background: #fafbfe;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            color: #1e293b;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #051650;
+            box-shadow: 0 0 0 3px rgba(5,22,80,0.08);
+            background: white;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group select {
+            appearance: auto;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* =====================================================
+           WYSIWYG EDITOR STYLES
+        ===================================================== */
+        .sub-lesson-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f1f5f9;
+            border-radius: 12px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .sub-lesson-nav-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sub-lesson-nav-left .lesson-counter {
+            font-size: 13px;
+            font-weight: 700;
+            color: #051650;
+        }
+
+        .sub-lesson-nav-left .lesson-total {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .sub-lesson-nav-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .sub-lesson-nav-buttons button {
+            border: none;
+            background: white;
+            color: #64748b;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .sub-lesson-nav-buttons button:hover:not(:disabled) {
+            background: #051650;
+            color: white;
+        }
+
+        .sub-lesson-nav-buttons button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* WYSIWYG Editor */
+        .wysiwyg-editor-wrapper {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fafbfe;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .wysiwyg-editor-wrapper:focus-within {
+            border-color: #051650;
+            box-shadow: 0 0 0 3px rgba(5,22,80,0.08);
+        }
+
+        .wysiwyg-toolbar {
+            display: flex;
+            gap: 4px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            flex-wrap: wrap;
+        }
+
+        .wysiwyg-toolbar button {
+            border: 1px solid transparent;
+            background: transparent;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 32px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .wysiwyg-toolbar button:hover {
+            background: #e2e8f0;
+            border-color: #cbd5e1;
+        }
+
+        .wysiwyg-toolbar button.active {
+            background: #eef2ff;
+            color: #051650;
+            border-color: #dde4ff;
+        }
+
+        .wysiwyg-toolbar .toolbar-divider {
+            width: 1px;
+            background: #e2e8f0;
+            margin: 0 4px;
+        }
+
+        .wysiwyg-editor {
+            padding: 16px;
+            min-height: 250px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.8;
+            color: #1e293b;
+            outline: none;
+            background: white;
+        }
+
+        .wysiwyg-editor:empty::before {
+            content: "Write your lesson content here. Use the toolbar above to format text.";
+            color: #94a3b8;
+        }
+
+        .wysiwyg-editor b,
+        .wysiwyg-editor strong {
+            font-weight: 700;
+        }
+
+        .wysiwyg-editor i,
+        .wysiwyg-editor em {
+            font-style: italic;
+        }
+
+        .wysiwyg-editor u {
+            text-decoration: underline;
+        }
+
+        .wysiwyg-editor h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin: 8px 0;
+            color: #0f172a;
+        }
+
+        .wysiwyg-editor ul,
+        .wysiwyg-editor ol {
+            padding-left: 24px;
+            margin: 6px 0;
+        }
+
+        .wysiwyg-editor li {
+            margin-bottom: 2px;
+        }
+
+        .wysiwyg-editor p {
+            margin: 4px 0;
+        }
+
+        /* Content label */
+        .content-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content-label i {
+            color: #94a3b8;
+        }
+
+        /* Flashcard & Quiz entry styles */
+        .flashcard-entry, .quiz-entry {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+        }
+
+        .flashcard-entry .form-group,
+        .quiz-entry .form-group {
+            margin-bottom: 8px;
+        }
+
+        .flashcard-entry .form-group:last-child,
+        .quiz-entry .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .flashcard-entry .form-group label,
+        .quiz-entry .form-group label {
+            font-size: 11px;
+        }
+
+        .add-item-btn {
+            background: #eef2ff;
+            color: #051650;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .add-item-btn:hover {
+            background: #dde4ff;
+            transform: translateY(-1px);
+        }
+
+        .remove-item-btn {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            float: right;
+        }
+
+        .remove-item-btn:hover {
+            background: #fecaca;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .form-actions-left {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-actions-right {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-actions button {
+            padding: 10px 22px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-actions .btn-cancel {
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+        }
+
+        .form-actions .btn-cancel:hover {
+            background: #f8fafc;
+        }
+
+        .form-actions .btn-back {
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+        }
+
+        .form-actions .btn-back:hover {
+            background: #f8fafc;
+        }
+
+        .form-actions .btn-next {
+            border: none;
+            background: #051650;
+            color: white;
+        }
+
+        .form-actions .btn-next:hover {
+            background: #123a8f;
+            transform: translateY(-1px);
+        }
+
+        .form-actions .btn-submit {
+            border: none;
+            background: #22c55e;
+            color: white;
+        }
+
+        .form-actions .btn-submit:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+        }
+
+        .form-actions .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .form-actions .btn-next:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Review summary styles */
+        .review-section {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+        }
+
+        .review-section h5 {
+            color: #051650;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .review-section .review-item {
+            font-size: 12px;
+            color: #475569;
+            padding: 2px 0;
+        }
+
+        .review-section .review-item strong {
+            color: #1e293b;
+        }
+
+        /* =====================================================
+           MODAL STYLES
+        ===================================================== */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(4px);
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            padding: 16px;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-box {
+            width: 100%;
+            max-width: 96vw;
+            max-height: 92vh;
+            height: 92vh;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.18);
+            animation: modalIn 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reading-modal-box {
+            max-width: 98vw;
+            max-height: 94vh;
+            height: 94vh;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-header {
+            padding: 18px 22px;
+            border-bottom: 1px solid #edf1f7;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .modal-header h2 {
+            color: #051650;
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        .modal-header h2 i {
+            margin-right: 8px;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+            border-radius: 9px;
+            cursor: pointer;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .modal-close:hover {
+            background: #e2e8f0;
+            color: #051650;
+        }
+
+        .modal-body {
+            padding: 18px 22px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .modal-body::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .modal-body::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .lesson-info-banner {
+            background: #f4f7ff;
+            border: 1px solid #e4e9ff;
+            border-radius: 14px;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+        }
+
+        .lesson-info-banner h3 {
+            color: #051650;
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0 0 3px 0;
+        }
+
+        .lesson-info-banner p {
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .sub-lesson-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .sub-lesson-item {
+            border: 1px solid #e6ebf3;
+            background: white;
+            border-radius: 13px;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sub-lesson-item:hover {
+            border-color: #051650;
+            background: #f7f9ff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(5,22,80,0.08);
+        }
+
+        .sub-lesson-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sub-lesson-number {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            border-radius: 10px;
+            background: #eef2ff;
+            color: #051650;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        .sub-lesson-info {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .sub-lesson-info strong {
+            display: block;
+            color: #051650;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .sub-lesson-info span {
+            display: block;
+            color: #94a3b8;
+            font-size: 9px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sub-lesson-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 8px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .sub-lesson-status.has-content {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .sub-lesson-status.empty {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .sub-lesson-actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            padding-left: 42px;
+        }
+
+        .sub-lesson-actions button {
+            border: none;
+            border-radius: 8px;
+            padding: 4px 12px;
+            font-size: 9px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            height: 26px;
+        }
+
+        .sub-lesson-actions button i {
+            font-size: 10px;
+        }
+
+        .sub-lesson-actions button:hover {
+            transform: translateY(-2px);
+        }
+
+        .quiz-action-btn {
+            background: #eef2ff;
+            color: #051650;
+        }
+
+        .quiz-action-btn:hover {
+            background: #dde4ff;
+            box-shadow: 0 4px 12px rgba(5,22,80,0.15);
+        }
+
+        .flashcard-action-btn {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .flashcard-action-btn:hover {
+            background: #fde68a;
+            box-shadow: 0 4px 12px rgba(146,64,14,0.15);
+        }
+
+        /* =====================================================
+           READING MODAL - UPDATED DESIGN
+        ===================================================== */
+        .reading-modal-box {
+            max-width: 98vw;
+            max-height: 94vh;
+            height: 94vh;
+        }
+
+        .reading-header {
+            padding: 18px 24px;
+            background: linear-gradient(135deg, #051650, #0a2368, #18347d);
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .reading-header-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .reading-category {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.12);
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .reading-header h2 {
+            font-size: 20px;
+            margin: 8px 0 3px 0;
+            line-height: 1.3;
+        }
+
+        .reading-progress-text {
+            color: rgba(255,255,255,0.65);
+            font-size: 10px;
+        }
+
+        .reading-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: rgba(255,255,255,0.12);
+            color: white;
+            border-radius: 9px;
+            cursor: pointer;
+            flex-shrink: 0;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .reading-close:hover {
+            background: rgba(255,255,255,0.20);
+        }
+
+        .reading-progress-bar-track {
+            height: 3px;
+            background: rgba(255,255,255,0.15);
+            margin-top: 12px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .reading-progress-bar {
+            height: 100%;
+            width: 10%;
+            background: white;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        .reading-body {
+            padding: 24px 28px;
+            overflow-y: auto;
+            flex: 1 1 auto;
+            min-height: 0;
+            background: #fafbfe;
+        }
+
+        .reading-body::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .reading-body::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .reading-content {
+            color: #1e293b;
+            font-size: 15px;
+            line-height: 2;
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        .reading-content b,
+        .reading-content strong {
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .reading-content i,
+        .reading-content em {
+            font-style: italic;
+        }
+
+        .reading-content u {
+            text-decoration: underline;
+        }
+
+        .reading-content ul,
+        .reading-content ol {
+            padding-left: 28px;
+            margin: 10px 0;
+        }
+
+        .reading-content li {
+            margin-bottom: 4px;
+        }
+
+        .reading-content h1,
+        .reading-content h2,
+        .reading-content h3 {
+            margin: 16px 0 8px 0;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .reading-content h1 { 
+            font-size: 24px; 
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+        }
+        .reading-content h2 { 
+            font-size: 20px; 
+        }
+        .reading-content h3 { 
+            font-size: 17px; 
+        }
+
+        .reading-content p {
+            margin: 10px 0;
+        }
+
+        .reading-content:empty::before {
+            content: "No content available for this lesson.";
+            color: #94a3b8;
+            font-style: italic;
+        }
+
+        .reading-content .lesson-divider {
+            border: none;
+            border-top: 2px dashed #e2e8f0;
+            margin: 24px 0;
+        }
+
+        .reading-footer {
+            border-top: 1px solid #edf1f7;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #ffffff;
+            flex-shrink: 0;
+            margin-top: auto;
+        }
+
+        .reading-footer button {
+            height: 36px;
+            border-radius: 9px;
+            padding: 0 16px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: 0.2s;
+        }
+
+        .back-btn {
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+        }
+
+        .back-btn:hover {
+            background: #f8fafc;
+        }
+
+        .nav-btn {
+            border: none;
+            background: #051650;
+            color: white;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #123a8f;
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .reading-navigation {
+            display: flex;
+            gap: 6px;
+        }
+
+        /* =====================================================
+           SIDEBAR OVERLAY
+        ===================================================== */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.35);
+            z-index: 9998;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        /* =====================================================
+           RESPONSIVE - FIXED
+        ===================================================== */
+        @media (max-width: 1050px) {
+            .main {
+                padding: 0 25px 16px;
+            }
+            .site-header {
+                margin-left: -25px;
+                margin-right: -25px;
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+            .school-name, .memory-link-title { font-size: 17px; }
+            .strand-header { min-height: 140px; max-height: 150px; padding: 18px 22px; }
+            .strand-header h2 { font-size: 19px; }
+            .lesson-grid { 
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+            }
+        }
+
+        @media (max-width: 750px) {
+            .mobile-hamburger {
+                display: flex !important;
+            }
+
+            .sidebar-toggle {
+                display: none !important;
+            }
+
+            .sidebar {
+                width: 280px;
+                transform: translateX(-100%);
+                padding: 18px 17px;
+            }
+            .sidebar.collapsed {
+                width: 280px;
+                padding: 18px 17px;
+                transform: translateX(-100%);
+            }
+            .sidebar.show { transform: translateX(0); }
+
+            .sidebar .sidebar-top,
+            .sidebar.collapsed .sidebar-top {
+                flex-direction: row;
+                gap: 10px;
+                padding: 0 3px 16px;
+            }
+            .sidebar .sidebar-toggle,
+            .sidebar.collapsed .sidebar-toggle { order: 2; }
+            .sidebar .user-profile,
+            .sidebar.collapsed .user-profile {
+                order: 1;
+                flex: 1;
+                justify-content: flex-start;
+                width: auto;
+            }
+            .sidebar .user-info,
+            .sidebar.collapsed .user-info {
+                width: auto;
+                opacity: 1;
+                pointer-events: auto;
+            }
+            .sidebar .menu-title,
+            .sidebar.collapsed .menu-title {
+                opacity: 1;
+                height: auto;
+                margin-bottom: 10px;
+            }
+            .sidebar .menu a,
+            .sidebar .sidebar-bottom a,
+            .sidebar.collapsed .menu a,
+            .sidebar.collapsed .sidebar-bottom a {
+                justify-content: flex-start;
+                padding-left: 14px;
+                padding-right: 14px;
+                gap: 13px;
+            }
+            .sidebar .menu a span,
+            .sidebar .sidebar-bottom a span,
+            .sidebar.collapsed .menu a span,
+            .sidebar.collapsed .sidebar-bottom a span {
+                display: inline;
+            }
+
+            .main, .main.expanded {
+                margin-left: 0;
+                width: 100%;
+                height: 100vh;
+                padding: 0 16px 16px;
+            }
+
+            .site-header {
+                height: 44px;
+                min-height: 44px;
+                margin-left: -16px;
+                margin-right: -16px;
+                padding: 0 14px;
+            }
+            .school-name { font-size: 14px; }
+            .memory-link-title { font-size: 14px; }
+
+            .strand-header {
+                min-height: 110px;
+                max-height: 130px;
+                padding: 14px 16px;
+                border-radius: 16px;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+            .strand-header h2 { font-size: 17px; }
+            .strand-header p { font-size: 11px; line-height: 1.4; max-width: 90%; }
+            .strand-label { font-size: 8px; }
+
+            .section-header {
+                margin-bottom: 10px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+            .section-header h2 { font-size: 15px; }
+            .search-wrapper { 
+                max-width: 100%; 
+                flex: 1;
+            }
+            .section-header > div {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+                width: 100%;
+            }
+            .add-lesson-btn {
+                flex: 1;
+                justify-content: center;
+                padding: 8px 12px;
+                font-size: 11px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .add-lesson-modal .modal-box {
+                max-width: 100vw;
+                max-height: 98vh;
+                height: auto;
+                min-height: 300px;
+            }
+
+            .step-indicator {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                gap: 2px;
+            }
+            .step-dot {
+                font-size: 8px;
+                gap: 4px;
+            }
+            .step-dot .circle {
+                width: 20px;
+                height: 20px;
+                min-width: 20px;
+                font-size: 8px;
+            }
+            .step-line {
+                min-width: 8px;
+            }
+
+            .form-actions {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .form-actions-left,
+            .form-actions-right {
+                width: 100%;
+                justify-content: center;
+            }
+            .form-actions button {
+                padding: 8px 16px;
+                font-size: 11px;
+            }
+
+            .lesson-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            .lesson-card { 
+                min-height: 200px; 
+                padding: 14px 16px; 
+            }
+
+            .modal { padding: 8px; }
+            .modal-box {
+                max-width: 100vw;
+                max-height: 98vh;
+                height: 98vh;
+                border-radius: 12px;
+            }
+            .reading-modal-box {
+                max-width: 100vw;
+                max-height: 98vh;
+                height: 98vh;
+            }
+            .modal-header { padding: 14px 16px; }
+            .modal-header h2 { font-size: 16px; }
+            .modal-body { padding: 14px 16px; }
+
+            .sub-lesson-list { grid-template-columns: 1fr; }
+            .sub-lesson-actions { 
+                padding-left: 0; 
+                padding-top: 4px; 
+                justify-content: flex-start;
+            }
+            .sub-lesson-actions button { 
+                font-size: 8px; 
+                padding: 3px 8px; 
+                height: 24px; 
+            }
+
+            .reading-modal-box { max-height: 98vh; height: 98vh; }
+            .reading-body { 
+                padding: 16px 18px; 
+            }
+            .reading-header { padding: 14px 16px; }
+            .reading-header h2 { font-size: 16px; }
+            .reading-content { font-size: 14px; }
+            .reading-footer { 
+                padding: 10px 14px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .back-btn { 
+                width: 100%; 
+                justify-content: center; 
+            }
+            .reading-navigation { 
+                width: 100%; 
+                justify-content: center;
+            }
+            .reading-navigation button { 
+                flex: 1; 
+                justify-content: center; 
+            }
+
+            .sub-lesson-nav {
+                flex-direction: column;
+                gap: 8px;
+                align-items: stretch;
+            }
+            .sub-lesson-nav-buttons {
+                justify-content: center;
+            }
+
+            .flashcard-entry, .quiz-entry {
+                padding: 10px 12px;
+            }
+
+            .wysiwyg-editor {
+                min-height: 180px;
+                max-height: 300px;
+                font-size: 13px;
+                padding: 12px;
+            }
+            .wysiwyg-toolbar button {
+                padding: 2px 6px;
+                font-size: 10px;
+                min-width: 28px;
+                height: 26px;
+            }
+            .wysiwyg-toolbar {
+                padding: 6px 8px;
+                gap: 2px;
+            }
+
+            .title-wrapper {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .modal { padding: 4px; }
+            .modal-box {
+                max-width: 100vw;
+                max-height: 100vh;
+                height: 100vh;
+                border-radius: 8px;
+            }
+            .reading-modal-box {
+                max-width: 100vw;
+                max-height: 100vh;
+                height: 100vh;
+            }
+            .school-name { font-size: 12px; }
+            .memory-link-title { font-size: 12px; }
+            .strand-header h2 { font-size: 15px; }
+            .strand-header p { font-size: 10px; }
+            .lesson-card { 
+                padding: 12px 14px; 
+                min-height: 180px;
+            }
+            .lesson-grid {
+                gap: 8px;
+            }
+            .reading-body { padding: 12px 14px; }
+            .reading-content { font-size: 13px; }
+            .reading-footer { padding: 8px 12px; }
+            .reading-footer button { font-size: 9px; padding: 0 8px; height: 30px; }
+            .sub-lesson-actions button { 
+                font-size: 7px; 
+                padding: 2px 6px; 
+                height: 22px; 
+            }
+            .sub-lesson-actions button i { font-size: 8px; }
+
+            .step-dot .circle {
+                width: 18px;
+                height: 18px;
+                min-width: 18px;
+                font-size: 7px;
+            }
+            .step-dot {
+                font-size: 7px;
+                gap: 2px;
+            }
+
+            .lesson-card h3 {
+                font-size: 13px;
+            }
+            .lesson-card p {
+                font-size: 10px;
+            }
+            .lesson-meta {
+                font-size: 9px;
+                gap: 8px;
+            }
+            .lesson-number {
+                width: 32px;
+                height: 32px;
+                min-width: 32px;
+                font-size: 12px;
+                margin-bottom: 8px;
+            }
+            .status-badge {
+                font-size: 8px;
+                padding: 1px 8px;
+            }
+            .add-lesson-btn {
+                font-size: 10px;
+                padding: 6px 10px;
+            }
+            .add-lesson-btn i {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .lesson-grid {
+                grid-template-columns: 1fr;
+            }
+            .section-header > div {
+                flex-direction: column;
+                width: 100%;
+            }
+            .search-wrapper {
+                width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+    <script src="/js/db-sync.js"></script>
+</head>
+
+<body>
+    <!-- SIDEBAR OVERLAY -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+            <div class="user-profile">
+                <div class="user-avatar" id="userAvatar">@</div>
+                <div class="user-info">
+                    <strong id="userName">Student</strong>
+                    <span id="userRole">Student</span>
+                </div>
+            </div>
+            <button aria-label="Toggle Sidebar" class="sidebar-toggle" id="sidebarToggle" type="button">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+
+        <div class="menu-title">MAIN MENU</div>
+
+        <nav class="menu">
+            <a class="sidebar-link" href="/student_dashboard">
+                <i class="fa-solid fa-house"></i>
+                <span>Dashboard</span>
+            </a>
+            <a class="sidebar-link" href="/strands">
+                <i class="fa-solid fa-book-open"></i>
+                <span>Learning Strands</span>
+            </a>
+            <a class="sidebar-link active" href="/lessons" id="lessonsNavLink">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Lessons</span>
+            </a>
+            <a class="sidebar-link" href="/flashcards">
+                <i class="fa-solid fa-layer-group"></i>
+                <span>Flashcards</span>
+            </a>
+            <a class="sidebar-link" href="/quizzes">
+                <i class="fa-solid fa-clipboard-question"></i>
+                <span>Quizzes</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+            <a class="sidebar-link" href="student_settings.html">
+                <i class="fa-solid fa-gear"></i>
+                <span>Settings</span>
+            </a>
+            <a href="/login" id="logoutButton">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main" id="main">
+
+        <header class="site-header">
+            <div class="site-header-left">
+                <button class="mobile-hamburger" type="button" id="mobileHamburger" aria-label="Open Menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="school-name">Xavier University Senior High School</div>
+            </div>
+            <div class="memory-link-title">MemoryLink</div>
+        </header>
+
+        <!-- STRAND HEADER -->
+        <div class="strand-header" id="strandHeader">
+            <div class="strand-header-content">
+                <div class="strand-label">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span id="strandLabelText">Learning Strand</span>
+                </div>
+                <h2 id="strandName">All Lessons</h2>
+                <p id="strandDescription">Browse all available lessons across all strands.</p>
+                <div id="filterBadgeContainer"></div>
+            </div>
+        </div>
+
+        <!-- SECTION HEADER -->
+        <div class="section-header">
+            <h2>Available Lessons</h2>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                <button class="add-lesson-btn" onclick="openAddLessonModal()">
+                    <i class="fa-solid fa-plus"></i> Add Lesson
+                </button>
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search lessons..." />
+                </div>
+                <span id="lessonCount">Loading lessons...</span>
+            </div>
+        </div>
+
+        <!-- SCROLLABLE CONTENT -->
+        <div class="scrollable-content" id="scrollableContent">
+
+            <!-- LESSON GRID -->
+            <div class="lesson-grid" id="lessonGrid">
+                <div class="lesson-card" id="loadingCard">
+                    <div class="lesson-number">
+                        <i class="fa-solid fa-spinner fa-spin"></i>
+                    </div>
+                    <h3>Loading Lessons</h3>
+                    <p>Please wait while your lessons are being loaded.</p>
+                </div>
+            </div>
+
+            <!-- EMPTY STATE -->
+            <div class="empty-state" id="emptyState">
+                <i class="fa-solid fa-book-open"></i>
+                <h3>No Lessons Available</h3>
+                <p id="emptyStateMessage">There are currently no lessons available.</p>
+                <button class="add-lesson-btn" style="margin: 12px auto 0;" onclick="openAddLessonModal()">
+                    <i class="fa-solid fa-plus"></i> Add Your First Lesson
+                </button>
+            </div>
+
+        </div>
+        <!-- END SCROLLABLE CONTENT -->
+
+    </main>
+
+    <!-- ADD LESSON MODAL -->
+    <div class="modal add-lesson-modal" id="addLessonModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-plus-circle"></i> <span id="addLessonModalTitle">Add New Lesson</span></h2>
+                <button class="modal-close" onclick="closeAddLessonModal()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addLessonForm" onsubmit="return false;">
+
+                    <!-- Step Indicator -->
+                    <div class="step-indicator" id="stepIndicator">
+                        <div class="step-dot active" data-step="1">
+                            <span class="circle">1</span>
+                            <span>Details</span>
+                        </div>
+                        <div class="step-line" id="stepLine1"></div>
+                        <div class="step-dot" data-step="2">
+                            <span class="circle">2</span>
+                            <span>Content</span>
+                        </div>
+                        <div class="step-line" id="stepLine2"></div>
+                        <div class="step-dot" data-step="3">
+                            <span class="circle">3</span>
+                            <span>Flashcards</span>
+                        </div>
+                        <div class="step-line" id="stepLine3"></div>
+                        <div class="step-dot" data-step="4">
+                            <span class="circle">4</span>
+                            <span>Quizzes</span>
+                        </div>
+                        <div class="step-line" id="stepLine4"></div>
+                        <div class="step-dot" data-step="5">
+                            <span class="circle">5</span>
+                            <span>Review</span>
+                        </div>
+                    </div>
+
+                    <!-- STEP 1: Basic Details -->
+                    <div class="step-content active" data-step="1">
+                        <div class="form-group">
+                            <label>Lesson Title <span class="required">*</span></label>
+                            <input type="text" id="lessonTitleInput" placeholder="e.g., Mathematics 101" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Strand/Category <span class="required">*</span></label>
+                            <select id="lessonCategoryInput" required>
+                                <option value="">Select Strand...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Description <span class="required">*</span></label>
+                            <textarea id="lessonDescriptionInput" placeholder="Brief description of the lesson..." required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Number of Sub-Lessons <span class="required">*</span></label>
+                                <input type="number" id="lessonCountInput" min="1" max="10" value="3" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Duration (minutes)</label>
+                                <input type="number" id="lessonDurationInput" min="5" max="120" value="20">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: Sub-Lesson Content (WYSIWYG) -->
+                    <div class="step-content" data-step="2">
+                        <div class="sub-lesson-nav">
+                            <div class="sub-lesson-nav-left">
+                                <span class="lesson-counter" id="subLessonCounter">Lesson 1</span>
+                                <span class="lesson-total" id="subLessonTotal">of 3</span>
+                            </div>
+                            <div class="sub-lesson-nav-buttons">
+                                <button onclick="navigateSubLesson(-1)" id="prevSubLessonBtn" disabled>
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </button>
+                                <button onclick="navigateSubLesson(1)" id="nextSubLessonBtn">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="content-label">
+                            <i class="fa-solid fa-pencil"></i> 
+                            <span>Content for <span id="subLessonContentLabel">Lesson 1</span></span>
+                        </div>
+
+                        <!-- WYSIWYG Editor -->
+                        <div class="wysiwyg-editor-wrapper">
+                            <div class="wysiwyg-toolbar">
+                                <button onclick="formatText('bold')" title="Bold"><b>B</b></button>
+                                <button onclick="formatText('italic')" title="Italic"><i>I</i></button>
+                                <button onclick="formatText('underline')" title="Underline"><u>U</u></button>
+                                <div class="toolbar-divider"></div>
+                                <button onclick="formatText('h3')" title="Heading 3">H3</button>
+                                <button onclick="formatText('insertUnorderedList')" title="Bullet List">• List</button>
+                                <button onclick="formatText('insertOrderedList')" title="Numbered List">1. List</button>
+                                <button onclick="formatText('paragraph')" title="Paragraph">P</button>
+                                <div class="toolbar-divider"></div>
+                                <button onclick="formatText('removeFormat')" title="Remove Format"><i class="fa-solid fa-eraser"></i></button>
+                                <button onclick="formatText('code')" title="Code"><i class="fa-solid fa-code"></i></button>
+                            </div>
+                            <div class="wysiwyg-editor" id="wysiwygEditor" contenteditable="true"></div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: Flashcards -->
+                    <div class="step-content" data-step="3">
+                        <div class="sub-lesson-nav" style="margin-bottom:16px;">
+                            <div class="sub-lesson-nav-left">
+                                <span class="lesson-counter" id="flashcardStepLabel">Flashcards for Lesson 1</span>
+                                <span class="lesson-total" id="flashcardStepProgress">of 3</span>
+                            </div>
+                            <div class="sub-lesson-nav-buttons">
+                                <button onclick="navigateFlashcard(-1)" id="prevFlashcardBtn" disabled>
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </button>
+                                <button onclick="navigateFlashcard(1)" id="nextFlashcardBtn">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:10px;">
+                            <label style="font-size:12px; font-weight:700; color:#1e293b;">Add flashcards for this lesson</label>
+                            <div id="flashcardContainer">
+                                <div class="flashcard-entry">
+                                    <div class="form-group">
+                                        <label>Term <span class="required">*</span></label>
+                                        <input type="text" class="flashcard-term" placeholder="e.g., What is a noun?" style="font-size:12px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Definition <span class="required">*</span></label>
+                                        <input type="text" class="flashcard-definition" placeholder="e.g., A person, place, or thing" style="font-size:12px;">
+                                    </div>
+                                    <button type="button" class="remove-item-btn" onclick="removeFlashcard(this)" style="display:none;">
+                                        <i class="fa-solid fa-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" class="add-item-btn" onclick="addFlashcard()">
+                                <i class="fa-solid fa-plus"></i> Add Flashcard
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 4: Quizzes -->
+                    <div class="step-content" data-step="4">
+                        <div class="sub-lesson-nav" style="margin-bottom:16px;">
+                            <div class="sub-lesson-nav-left">
+                                <span class="lesson-counter" id="quizStepLabel">Quiz for Lesson 1</span>
+                                <span class="lesson-total" id="quizStepProgress">of 3</span>
+                            </div>
+                            <div class="sub-lesson-nav-buttons">
+                                <button onclick="navigateQuiz(-1)" id="prevQuizBtn" disabled>
+                                    <i class="fa-solid fa-chevron-left"></i>
+                                </button>
+                                <button onclick="navigateQuiz(1)" id="nextQuizBtn">
+                                    <i class="fa-solid fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div style="margin-bottom:10px;">
+                            <label style="font-size:12px; font-weight:700; color:#1e293b;">Add quiz questions for this lesson</label>
+                            <div id="quizContainer">
+                                <div class="quiz-entry">
+                                    <div class="form-group">
+                                        <label>Question <span class="required">*</span></label>
+                                        <input type="text" class="quiz-question" placeholder="e.g., What is 2+2?" style="font-size:12px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Option A <span class="required">*</span></label>
+                                        <input type="text" class="quiz-option-a" placeholder="Option A" style="font-size:12px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Option B <span class="required">*</span></label>
+                                        <input type="text" class="quiz-option-b" placeholder="Option B" style="font-size:12px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Option C</label>
+                                        <input type="text" class="quiz-option-c" placeholder="Option C (optional)" style="font-size:12px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Option D</label>
+                                        <input type="text" class="quiz-option-d" placeholder="Option D (optional)" style="font-size:12px;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Correct Answer <span class="required">*</span></label>
+                                        <select class="quiz-correct" style="font-size:12px; padding:8px 12px;">
+                                            <option value="A">A</option>
+                                            <option value="B">B</option>
+                                            <option value="C">C</option>
+                                            <option value="D">D</option>
+                                        </select>
+                                    </div>
+                                    <button type="button" class="remove-item-btn" onclick="removeQuiz(this)" style="display:none;">
+                                        <i class="fa-solid fa-trash"></i> Remove
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" class="add-item-btn" onclick="addQuiz()">
+                                <i class="fa-solid fa-plus"></i> Add Question
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 5: Review & Submit -->
+                    <div class="step-content" data-step="5">
+                        <div style="background:#f8fafc; border-radius:12px; padding:16px; margin-bottom:16px;">
+                            <h4 style="color:#051650; margin-bottom:8px; font-size:14px;">📋 Lesson Summary</h4>
+                            <div id="reviewSummary" style="font-size:13px; line-height:1.8; color:#334155;"></div>
+                        </div>
+                        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 16px; font-size:12px; color:#166534;">
+                            <i class="fa-solid fa-info-circle"></i> This lesson will be submitted for admin approval. You'll see it as <strong>Pending (blue)</strong> until approved.
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <div class="form-actions-left">
+                            <button type="button" class="btn-cancel" onclick="closeAddLessonModal()">Cancel</button>
+                            <button type="button" class="btn-back" id="prevStepBtn" onclick="prevStep()" style="display:none;">
+                                <i class="fa-solid fa-chevron-left"></i> Back
+                            </button>
+                        </div>
+                        <div class="form-actions-right">
+                            <button type="button" class="btn-next" id="nextStepBtn" onclick="nextStep()">
+                                Next <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button type="button" class="btn-submit" id="submitLessonBtn" onclick="submitLesson()" style="display:none;">
+                                <i class="fa-solid fa-paper-plane"></i> Submit for Approval
+                            </button>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- LESSON SELECTOR MODAL -->
+    <div class="modal" id="lessonSelectorModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2>Select Lesson</h2>
+                <button class="modal-close" onclick="closeLessonSelector()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="lesson-info-banner">
+                    <h3 id="selectorTitle">SOC 101</h3>
+                    <p id="selectorDescription">Understand the basic concepts of sociology, social interaction, culture, society, and human behavior.</p>
+                </div>
+                <div class="sub-lesson-list" id="subLessonGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- READING MODAL -->
+    <div class="modal" id="readingModal">
+        <div class="modal-box reading-modal-box">
+            <!-- HEADER -->
+            <div class="reading-header">
+                <div class="reading-header-top">
+                    <div>
+                        <div class="reading-category">
+                            <i class="fa-solid fa-book-open"></i>
+                            <span id="readingCategory">STEM A</span>
+                        </div>
+                        <h2 id="readingTitle">Lesson 1</h2>
+                        <div class="reading-progress-text" id="readingProgressText">Lesson 1 of 10</div>
+                    </div>
+                    <button class="reading-close" onclick="closeReadingModal()">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div class="reading-progress-bar-track">
+                    <div class="reading-progress-bar" id="readingProgressBar"></div>
+                </div>
+            </div>
+
+            <!-- BODY -->
+            <div class="reading-body" id="readingBody">
+                <div class="reading-content" id="lessonContentDisplay"></div>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="reading-footer">
+                <button class="back-btn" onclick="backToLessonSelector()">
+                    <i class="fa-solid fa-arrow-left"></i> Back to Lessons
+                </button>
+                <div class="reading-navigation">
+                    <button class="nav-btn" id="prevLessonBtn" onclick="previousLesson()">
+                        <i class="fa-solid fa-chevron-left"></i> Previous
+                    </button>
+                    <button class="nav-btn" id="nextLessonBtn" onclick="nextLesson()">
+                        Next <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* =====================================================
+           STRAND DATA - DYNAMIC LOADING
+        ===================================================== */
+
+        // Key para sa strands storage (same sa admin)
+        const STRANDS_STORAGE_KEY = "memoryLinkStrands";
+
+        // Default strands kung wala pa'y na-save
+        const DEFAULT_STRANDS = [
+            "STEM A",
+            "STEM B", 
+            "ABM",
+            "HUMSS",
+            "GAS",
+            "TVL",
+            "Arts and Design"
+        ];
+
+        // Function para makuha ang strands gikan sa memoryStore
+        function getStrands() {
+            try {
+                const data = memoryStore.getItem(STRANDS_STORAGE_KEY);
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        return parsed.map(function(item) {
+                            return typeof item === 'string' ? item : item.name;
+                        });
+                    }
+                }
+                saveStrands(DEFAULT_STRANDS);
+                return DEFAULT_STRANDS;
+            } catch (error) {
+                console.error("Error loading strands:", error);
+                return DEFAULT_STRANDS;
+            }
+        }
+
+        function saveStrands(strands) {
+            try {
+                memoryStore.setItem(STRANDS_STORAGE_KEY, JSON.stringify(strands));
+            } catch (error) {
+                console.error("Error saving strands:", error);
+            }
+        }
+
+        function populateStrandDropdown() {
+            const select = document.getElementById('lessonCategoryInput');
+            if (!select) return;
+            while (select.options.length > 1) {
+                select.remove(1);
+            }
+            const strands = getStrands();
+            strands.forEach(function(strand) {
+                const option = document.createElement('option');
+                option.value = strand;
+                option.textContent = strand;
+                select.appendChild(option);
+            });
+        }
+
+        function getStrandDescriptions() {
+            const strands = getStrands();
+            const data = {};
+            strands.forEach(function(strand) {
+                data[strand] = {
+                    description: "Learning materials for " + strand + " strand.",
+                    icon: "fa-book"
+                };
+            });
+            return data;
+        }
+
+        let strandData = getStrandDescriptions();
+
+        function refreshStrandData() {
+            strandData = getStrandDescriptions();
+        }
+
+        /* =====================================================
+           AUTH / USER
+        ===================================================== */
+        const savedUser = memoryStore.getItem("memoryLinkUser");
+
+        if (!savedUser) {
+            window.location.replace("/login");
+        }
+
+        let user = null;
+
+        try {
+            user = JSON.parse(savedUser);
+        } catch (error) {
+            memoryStore.removeItem("memoryLinkUser");
+            window.location.replace("/login");
+        }
+
+        const isAdmin = user && user.role === "admin";
+        const currentUsername = user ? user.username : "student";
+
+        if (user) {
+            const username = user.username || "Student";
+            const displayName = username.startsWith("@") ? username : "@" + username;
+            document.getElementById("userName").textContent = displayName;
+            document.getElementById("userRole").textContent = "Student";
+            document.getElementById("userAvatar").textContent = username.replace("@", "").charAt(0).toUpperCase();
+        }
+
+        /* =====================================================
+           GET URL PARAMETER
+        ===================================================== */
+        function getURLParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        let currentFilter = getURLParameter("strand");
+
+        if (!currentFilter) {
+            currentFilter = memoryStore.getItem("selectedStrand") || null;
+        }
+
+        if (currentFilter) {
+            memoryStore.setItem("selectedStrand", currentFilter);
+        }
+
+        function updateHeader() {
+            const strandNameEl = document.getElementById("strandName");
+            const strandDescEl = document.getElementById("strandDescription");
+            const strandLabelEl = document.getElementById("strandLabelText");
+            const badgeContainer = document.getElementById("filterBadgeContainer");
+
+            refreshStrandData();
+
+            if (currentFilter) {
+                const data = strandData[currentFilter] || { description: "Learning materials for this strand." };
+                strandNameEl.textContent = currentFilter + " Lessons";
+                strandDescEl.textContent = data.description || "Learning materials for this strand.";
+                strandLabelEl.textContent = "Selected Learning Strand";
+                badgeContainer.innerHTML = `
+                    <div class="filter-badge">
+                        <i class="fa-solid fa-filter"></i>
+                        ${currentFilter}
+                        <button class="clear-filter" onclick="clearFilter()" title="Show all lessons">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                `;
+            } else {
+                strandNameEl.textContent = "All Lessons";
+                strandDescEl.textContent = "Browse all available lessons across all strands.";
+                strandLabelEl.textContent = "Learning Strand";
+                badgeContainer.innerHTML = "";
+            }
+        }
+
+        function clearFilter() {
+            currentFilter = null;
+            memoryStore.removeItem("selectedStrand");
+            const url = new URL(window.location);
+            url.searchParams.delete("strand");
+            window.history.replaceState({}, document.title, url.pathname);
+            updateHeader();
+            loadLessons();
+        }
+
+        /* =====================================================
+           SIDEBAR TOGGLE
+        ===================================================== */
+        const sidebar = document.getElementById("sidebar");
+        const main = document.getElementById("main");
+        const sidebarToggle = document.getElementById("sidebarToggle");
+        const mobileHamburger = document.getElementById("mobileHamburger");
+        const sidebarOverlay = document.getElementById("sidebarOverlay");
+
+        function toggleSidebar() {
+            if (window.innerWidth <= 750) {
+                sidebar.classList.toggle("show");
+                sidebarOverlay.classList.toggle("show");
+            } else {
+                sidebar.classList.toggle("collapsed");
+                main.classList.toggle("expanded");
+            }
+        }
+
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener("click", toggleSidebar);
+        }
+
+        if (mobileHamburger) {
+            mobileHamburger.addEventListener("click", toggleSidebar);
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener("click", function() {
+                sidebar.classList.remove("show");
+                sidebarOverlay.classList.remove("show");
+            });
+        }
+
+        /* =====================================================
+           ACTIVE MENU
+        ===================================================== */
+        let currentPage = window.location.pathname.split("/").pop().toLowerCase();
+        if (!currentPage) currentPage = "student_dashboard";
+
+        document.querySelectorAll(".menu a").forEach(function(link) {
+            const href = link.getAttribute("href");
+            if (!href) return;
+            const linkPage = href.split("/").pop().toLowerCase();
+            if (linkPage === currentPage || (currentPage === "lessons" && href === "/lessons")) {
+                link.classList.add("active");
+            }
+            link.addEventListener("click", function() {
+                if (window.innerWidth <= 750) {
+                    sidebar.classList.remove("show");
+                    sidebarOverlay.classList.remove("show");
+                }
+            });
+        });
+
+        /* =====================================================
+           LOGOUT
+        ===================================================== */
+        document.getElementById("logoutButton").addEventListener("click", function(event) {
+            event.preventDefault();
+            memoryStore.removeItem("memoryLinkUser");
+            memoryStore.removeItem("selectedStrand");
+            memoryStore.removeItem("selectedLesson");
+            window.location.href = "/login";
+        });
+
+        /* =====================================================
+           STORAGE KEYS - SAME AS ADMIN
+        ===================================================== */
+        const STORAGE_KEY = "memoryLinkLessons";
+        const PENDING_KEY = "memoryLinkPendingLessons";
+        const REJECTED_KEY = "memoryLinkRejectedLessons";
+        const QUIZ_STORAGE_KEY = "memoryLinkQuizzes";
+        const FLASHCARD_STORAGE_KEY = "memoryLinkFlashcards";
+
+        /* =====================================================
+           PENDING LESSONS STORAGE
+        ===================================================== */
+        function getPendingLessons() {
+            try {
+                const data = memoryStore.getItem(PENDING_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch {
+                return [];
+            }
+        }
+
+        function savePendingLessons(pending) {
+            memoryStore.setItem(PENDING_KEY, JSON.stringify(pending));
+        }
+
+        function getRejectedLessons() {
+            try {
+                const data = memoryStore.getItem(REJECTED_KEY);
+                return data ? JSON.parse(data) : [];
+            } catch {
+                return [];
+            }
+        }
+
+        function saveRejectedLessons(rejected) {
+            memoryStore.setItem(REJECTED_KEY, JSON.stringify(rejected));
+        }
+
+        /* =====================================================
+           CREATE SUB LESSONS - SAME AS ADMIN
+        ===================================================== */
+        function createSubLessons(lesson) {
+            const result = [];
+            const count = lesson.numberOfLessons || 0;
+            for (let i = 1; i <= count; i++) {
+                let content = "This is the learning content for Lesson " + i + " of " + lesson.title + ".";
+                if (lesson.subLessons && lesson.subLessons[i - 1] && lesson.subLessons[i - 1].content) {
+                    content = normalizeLessonHTML(lesson.subLessons[i - 1].content);
+                }
+                result.push({
+                    title: "Lesson " + i,
+                    content: content
+                });
+            }
+            return result;
+        }
+
+        /* =====================================================
+           GET ALL LESSONS - SAME AS ADMIN BUT WITH STUDENT VISIBILITY
+        ===================================================== */
+        function getLessons() {
+            const saved = memoryStore.getItem(STORAGE_KEY);
+            let approved = [];
+            try {
+                approved = saved ? JSON.parse(saved) : [];
+            } catch {
+                approved = [];
+            }
+
+            const pending = getPendingLessons();
+            const rejected = getRejectedLessons();
+
+            const allLessons = [];
+
+            // APPROVED lessons - visible to ALL users
+            approved.forEach(function(lesson) {
+                allLessons.push({
+                    ...lesson,
+                    status: 'approved',
+                    subLessons: createSubLessons(lesson)
+                });
+            });
+
+            // PENDING lessons - visible ONLY to owner and admin
+            pending.forEach(function(lesson) {
+                const submittedBy = lesson.submittedBy || '';
+                const isOwner = submittedBy === currentUsername;
+                const shouldShow = isAdmin || isOwner;
+                
+                if (shouldShow) {
+                    allLessons.push({
+                        ...lesson,
+                        status: 'pending',
+                        subLessons: createSubLessons(lesson)
+                    });
+                }
+            });
+
+            // REJECTED lessons - visible ONLY to owner and admin
+            rejected.forEach(function(lesson) {
+                const submittedBy = lesson.submittedBy || '';
+                const isOwner = submittedBy === currentUsername;
+                const shouldShow = isAdmin || isOwner;
+                
+                if (shouldShow) {
+                    allLessons.push({
+                        ...lesson,
+                        status: 'rejected',
+                        subLessons: createSubLessons(lesson)
+                    });
+                }
+            });
+
+            return allLessons;
+        }
+
+        /* =====================================================
+           ADD LESSON MODAL - STEPPER LOGIC
+        ===================================================== */
+        let currentStep = 1;
+        let totalSteps = 5;
+        let subLessonContents = [];
+        let addSubLessonIndex = 0;
+        let flashcardData = {};
+        let quizData = {};
+        let isEditMode = false;
+        let editLessonId = null;
+        let wysiwygEditor = null;
+
+        function openAddLessonModal(lessonData = null) {
+            if (lessonData) {
+                isEditMode = true;
+                editLessonId = lessonData.id;
+                document.getElementById('addLessonModalTitle').textContent = 'Edit Lesson';
+                document.getElementById('lessonTitleInput').value = lessonData.title || '';
+                document.getElementById('lessonCategoryInput').value = lessonData.category || '';
+                document.getElementById('lessonDescriptionInput').value = lessonData.description || '';
+                document.getElementById('lessonCountInput').value = lessonData.numberOfLessons || 3;
+                document.getElementById('lessonDurationInput').value = lessonData.duration || 20;
+                
+                subLessonContents = [];
+                if (lessonData.subLessons) {
+                    lessonData.subLessons.forEach(function(sub) {
+                        subLessonContents.push(normalizeLessonHTML(sub.content || ''));
+                    });
+                }
+                const count = lessonData.numberOfLessons || 3;
+                while (subLessonContents.length < count) {
+                    subLessonContents.push('');
+                }
+                
+                if (lessonData.flashcards) {
+                    flashcardData = {};
+                    lessonData.flashcards.forEach(function(card, idx) {
+                        const lessonIdx = Math.floor(idx / 5);
+                        if (!flashcardData[lessonIdx]) flashcardData[lessonIdx] = [];
+                        flashcardData[lessonIdx].push({ term: card.term, definition: card.definition });
+                    });
+                } else {
+                    flashcardData = {};
+                }
+                
+                if (lessonData.quizzes) {
+                    quizData = {};
+                    lessonData.quizzes.forEach(function(q, idx) {
+                        const lessonIdx = Math.floor(idx / 3);
+                        if (!quizData[lessonIdx]) quizData[lessonIdx] = [];
+                        quizData[lessonIdx].push({ 
+                            question: q.question, 
+                            options: q.options || { A: '', B: '' }, 
+                            correct: q.correct || 'A' 
+                        });
+                    });
+                } else {
+                    quizData = {};
+                }
+            } else {
+                isEditMode = false;
+                editLessonId = null;
+                document.getElementById('addLessonModalTitle').textContent = 'Add New Lesson';
+                document.getElementById('addLessonForm').reset();
+                subLessonContents = [];
+                flashcardData = {};
+                quizData = {};
+            }
+
+            populateStrandDropdown();
+
+            currentStep = 1;
+            addSubLessonIndex = 0;
+            
+            const editor = document.getElementById('wysiwygEditor');
+            if (editor) {
+                editor.innerHTML = '';
+                editor.style.display = 'block';
+            }
+            
+            resetFlashcardContainer();
+            resetQuizContainer();
+            updateStepUI();
+            document.getElementById('addLessonModal').classList.add('show');
+            updateSubLessonCount();
+            updateWYSIWYGContent();
+        }
+
+        function closeAddLessonModal() {
+            document.getElementById('addLessonModal').classList.remove('show');
+            document.getElementById('addLessonForm').reset();
+            isEditMode = false;
+            editLessonId = null;
+        }
+
+        /* =====================================================
+           NORMALIZE LESSON HTML
+        ===================================================== */
+        function normalizeLessonHTML(content) {
+            if (content === null || content === undefined || content === '') return '';
+            
+            let html = String(content);
+            
+            html = html
+                .replace(/<b\s*\/\s*>/gi, '</b>')
+                .replace(/<i\s*\/\s*>/gi, '</i>')
+                .replace(/<u\s*\/\s*>/gi, '</u>')
+                .replace(/<h3\s*\/\s*>/gi, '</h3>')
+                .replace(/<p\s*\/\s*>/gi, '</p>')
+                .replace(/<strong\s*\/\s*>/gi, '</strong>')
+                .replace(/<em\s*\/\s*>/gi, '</em>')
+                .replace(/<(\w+)\s*\/\s*>/gi, function(match, tag) {
+                    const closingTags = ['b', 'i', 'u', 'strong', 'em', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li', 'ul', 'ol'];
+                    if (closingTags.indexOf(tag) !== -1) {
+                        return '</' + tag + '>';
+                    }
+                    return match;
+                })
+                .replace(/<b>([^<]*?)(?=<[^b>]|$)/gi, '<b>$1</b>')
+                .replace(/<i>([^<]*?)(?=<[^i>]|$)/gi, '<i>$1</i>')
+                .replace(/<u>([^<]*?)(?=<[^u>]|$)/gi, '<u>$1</u>')
+                .replace(/<li>\s*<li>/gi, '<li>')
+                .replace(/<\/li>\s*<li>\s*<\/li>/gi, '');
+            
+            html = html
+                .replace(/&lt;/g, '<')
+                .replace(/&gt;/g, '>')
+                .replace(/&amp;/g, '&');
+            
+            return html;
+        }
+
+        /* =====================================================
+           WYSIWYG EDITOR FUNCTIONS
+        ===================================================== */
+        function formatText(command) {
+            if (!wysiwygEditor) {
+                wysiwygEditor = document.getElementById('wysiwygEditor');
+            }
+            if (!wysiwygEditor) return;
+            
+            wysiwygEditor.focus();
+            
+            switch(command) {
+                case 'bold':
+                    document.execCommand('bold', false, null);
+                    break;
+                case 'italic':
+                    document.execCommand('italic', false, null);
+                    break;
+                case 'underline':
+                    document.execCommand('underline', false, null);
+                    break;
+                case 'h3':
+                    document.execCommand('formatBlock', false, 'h3');
+                    break;
+                case 'paragraph':
+                    document.execCommand('formatBlock', false, 'p');
+                    break;
+                case 'insertUnorderedList':
+                    document.execCommand('insertUnorderedList', false, null);
+                    break;
+                case 'insertOrderedList':
+                    document.execCommand('insertOrderedList', false, null);
+                    break;
+                case 'removeFormat':
+                    document.execCommand('removeFormat', false, null);
+                    break;
+                case 'code':
+                    const selection = window.getSelection();
+                    if (selection && !selection.isCollapsed) {
+                        const range = selection.getRangeAt(0);
+                        const span = document.createElement('code');
+                        span.style.background = '#f1f5f9';
+                        span.style.padding = '2px 6px';
+                        span.style.borderRadius = '4px';
+                        span.style.fontFamily = 'monospace';
+                        span.style.fontSize = '13px';
+                        span.textContent = range.extractContents().textContent;
+                        range.insertNode(span);
+                        selection.removeAllRanges();
+                    }
+                    break;
+                default:
+                    break;
+            }
+            
+            updateSubLessonFromWYSIWYG();
+        }
+
+        function updateWYSIWYGContent() {
+            const editor = document.getElementById('wysiwygEditor');
+            if (!editor) return;
+            
+            const content = subLessonContents[addSubLessonIndex] || '';
+            editor.innerHTML = content;
+            updateToolbarButtons();
+        }
+
+        function updateSubLessonFromWYSIWYG() {
+            const editor = document.getElementById('wysiwygEditor');
+            if (!editor) return;
+            
+            let content = editor.innerHTML;
+            content = content.replace(/<p><br><\/p>/g, '');
+            content = content.replace(/<p>\s*<\/p>/g, '');
+            
+            subLessonContents[addSubLessonIndex] = content;
+        }
+
+        function updateToolbarButtons() {
+            const editor = document.getElementById('wysiwygEditor');
+            if (!editor) return;
+            
+            const toolbarButtons = document.querySelectorAll('.wysiwyg-toolbar button');
+            toolbarButtons.forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+        }
+
+        function navigateSubLesson(direction) {
+            const count = parseInt(document.getElementById('lessonCountInput').value) || 3;
+            updateSubLessonFromWYSIWYG();
+            addSubLessonIndex += direction;
+            if (addSubLessonIndex < 0) addSubLessonIndex = 0;
+            if (addSubLessonIndex >= count) addSubLessonIndex = count - 1;
+            updateSubLessonStepUI();
+        }
+
+        function navigateFlashcard(direction) {
+            const count = parseInt(document.getElementById('lessonCountInput').value) || 3;
+            saveFlashcardsForLesson(addSubLessonIndex);
+            addSubLessonIndex += direction;
+            if (addSubLessonIndex < 0) addSubLessonIndex = 0;
+            if (addSubLessonIndex >= count) addSubLessonIndex = count - 1;
+            updateFlashcardStepUI();
+        }
+
+        function navigateQuiz(direction) {
+            const count = parseInt(document.getElementById('lessonCountInput').value) || 3;
+            saveQuizzesForLesson(addSubLessonIndex);
+            addSubLessonIndex += direction;
+            if (addSubLessonIndex < 0) addSubLessonIndex = 0;
+            if (addSubLessonIndex >= count) addSubLessonIndex = count - 1;
+            updateQuizStepUI();
+        }
+
+        /* =====================================================
+           FLASHCARD & QUIZ FUNCTIONS
+        ===================================================== */
+        function resetFlashcardContainer() {
+            const container = document.getElementById('flashcardContainer');
+            container.innerHTML = '';
+            const entry = createFlashcardEntry();
+            container.appendChild(entry);
+            updateRemoveButtons();
+        }
+
+        function resetQuizContainer() {
+            const container = document.getElementById('quizContainer');
+            container.innerHTML = '';
+            const entry = createQuizEntry();
+            container.appendChild(entry);
+            updateQuizRemoveButtons();
+        }
+
+        function createFlashcardEntry(term = '', definition = '') {
+            const div = document.createElement('div');
+            div.className = 'flashcard-entry';
+            div.innerHTML = `
+                <div class="form-group">
+                    <label>Term <span class="required">*</span></label>
+                    <input type="text" class="flashcard-term" placeholder="e.g., What is a noun?" style="font-size:12px;" value="${escapeHTML(term)}">
+                </div>
+                <div class="form-group">
+                    <label>Definition <span class="required">*</span></label>
+                    <input type="text" class="flashcard-definition" placeholder="e.g., A person, place, or thing" style="font-size:12px;" value="${escapeHTML(definition)}">
+                </div>
+                <button type="button" class="remove-item-btn" onclick="removeFlashcard(this)" style="display:none;">
+                    <i class="fa-solid fa-trash"></i> Remove
+                </button>
+            `;
+            return div;
+        }
+
+        function createQuizEntry(question = '', optA = '', optB = '', optC = '', optD = '', correct = 'A') {
+            const div = document.createElement('div');
+            div.className = 'quiz-entry';
+            div.innerHTML = `
+                <div class="form-group">
+                    <label>Question <span class="required">*</span></label>
+                    <input type="text" class="quiz-question" placeholder="e.g., What is 2+2?" style="font-size:12px;" value="${escapeHTML(question)}">
+                </div>
+                <div class="form-group">
+                    <label>Option A <span class="required">*</span></label>
+                    <input type="text" class="quiz-option-a" placeholder="Option A" style="font-size:12px;" value="${escapeHTML(optA)}">
+                </div>
+                <div class="form-group">
+                    <label>Option B <span class="required">*</span></label>
+                    <input type="text" class="quiz-option-b" placeholder="Option B" style="font-size:12px;" value="${escapeHTML(optB)}">
+                </div>
+                <div class="form-group">
+                    <label>Option C</label>
+                    <input type="text" class="quiz-option-c" placeholder="Option C (optional)" style="font-size:12px;" value="${escapeHTML(optC)}">
+                </div>
+                <div class="form-group">
+                    <label>Option D</label>
+                    <input type="text" class="quiz-option-d" placeholder="Option D (optional)" style="font-size:12px;" value="${escapeHTML(optD)}">
+                </div>
+                <div class="form-group">
+                    <label>Correct Answer <span class="required">*</span></label>
+                    <select class="quiz-correct" style="font-size:12px; padding:8px 12px;">
+                        <option value="A" ${correct === 'A' ? 'selected' : ''}>A</option>
+                        <option value="B" ${correct === 'B' ? 'selected' : ''}>B</option>
+                        <option value="C" ${correct === 'C' ? 'selected' : ''}>C</option>
+                        <option value="D" ${correct === 'D' ? 'selected' : ''}>D</option>
+                    </select>
+                </div>
+                <button type="button" class="remove-item-btn" onclick="removeQuiz(this)" style="display:none;">
+                    <i class="fa-solid fa-trash"></i> Remove
+                </button>
+            `;
+            return div;
+        }
+
+        function addFlashcard() {
+            const container = document.getElementById('flashcardContainer');
+            const entry = createFlashcardEntry();
+            container.appendChild(entry);
+            updateRemoveButtons();
+        }
+
+        function removeFlashcard(btn) {
+            const container = document.getElementById('flashcardContainer');
+            if (container.children.length <= 1) return;
+            btn.closest('.flashcard-entry').remove();
+            updateRemoveButtons();
+        }
+
+        function addQuiz() {
+            const container = document.getElementById('quizContainer');
+            const entry = createQuizEntry();
+            container.appendChild(entry);
+            updateQuizRemoveButtons();
+        }
+
+        function removeQuiz(btn) {
+            const container = document.getElementById('quizContainer');
+            if (container.children.length <= 1) return;
+            btn.closest('.quiz-entry').remove();
+            updateQuizRemoveButtons();
+        }
+
+        function updateRemoveButtons() {
+            const container = document.getElementById('flashcardContainer');
+            const entries = container.querySelectorAll('.flashcard-entry');
+            entries.forEach(function(entry, index) {
+                const btn = entry.querySelector('.remove-item-btn');
+                if (entries.length > 1) {
+                    btn.style.display = 'inline-flex';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+        }
+
+        function updateQuizRemoveButtons() {
+            const container = document.getElementById('quizContainer');
+            const entries = container.querySelectorAll('.quiz-entry');
+            entries.forEach(function(entry, index) {
+                const btn = entry.querySelector('.remove-item-btn');
+                if (entries.length > 1) {
+                    btn.style.display = 'inline-flex';
+                } else {
+                    btn.style.display = 'none';
+                }
+            });
+        }
+
+        function getFlashcardsForLesson() {
+            const container = document.getElementById('flashcardContainer');
+            const entries = container.querySelectorAll('.flashcard-entry');
+            const flashcards = [];
+            entries.forEach(function(entry) {
+                const term = entry.querySelector('.flashcard-term').value.trim();
+                const definition = entry.querySelector('.flashcard-definition').value.trim();
+                if (term && definition) {
+                    flashcards.push({ term, definition });
+                }
+            });
+            return flashcards;
+        }
+
+        function getQuizzesForLesson() {
+            const container = document.getElementById('quizContainer');
+            const entries = container.querySelectorAll('.quiz-entry');
+            const quizzes = [];
+            entries.forEach(function(entry) {
+                const question = entry.querySelector('.quiz-question').value.trim();
+                const optA = entry.querySelector('.quiz-option-a').value.trim();
+                const optB = entry.querySelector('.quiz-option-b').value.trim();
+                const optC = entry.querySelector('.quiz-option-c').value.trim();
+                const optD = entry.querySelector('.quiz-option-d').value.trim();
+                const correct = entry.querySelector('.quiz-correct').value;
+                if (question && optA && optB) {
+                    const options = {};
+                    if (optA) options.A = optA;
+                    if (optB) options.B = optB;
+                    if (optC) options.C = optC;
+                    if (optD) options.D = optD;
+                    quizzes.push({ question, options, correct });
+                }
+            });
+            return quizzes;
+        }
+
+        function saveFlashcardsForLesson(lessonIndex) {
+            flashcardData[lessonIndex] = getFlashcardsForLesson();
+        }
+
+        function saveQuizzesForLesson(lessonIndex) {
+            quizData[lessonIndex] = getQuizzesForLesson();
+        }
+
+        function loadFlashcardsForLesson(lessonIndex) {
+            const container = document.getElementById('flashcardContainer');
+            const data = flashcardData[lessonIndex] || [];
+            container.innerHTML = '';
+            if (data.length === 0) {
+                container.appendChild(createFlashcardEntry());
+            } else {
+                data.forEach(function(card) {
+                    container.appendChild(createFlashcardEntry(card.term, card.definition));
+                });
+            }
+            updateRemoveButtons();
+        }
+
+        function loadQuizzesForLesson(lessonIndex) {
+            const container = document.getElementById('quizContainer');
+            const data = quizData[lessonIndex] || [];
+            container.innerHTML = '';
+            if (data.length === 0) {
+                container.appendChild(createQuizEntry());
+            } else {
+                data.forEach(function(q) {
+                    container.appendChild(createQuizEntry(
+                        q.question,
+                        q.options.A || '',
+                        q.options.B || '',
+                        q.options.C || '',
+                        q.options.D || '',
+                        q.correct || 'A'
+                    ));
+                });
+            }
+            updateQuizRemoveButtons();
+        }
+
+        function updateSubLessonCount() {
+            const count = parseInt(document.getElementById('lessonCountInput').value) || 3;
+            if (!isEditMode) {
+                subLessonContents = new Array(count).fill('');
+            }
+            addSubLessonIndex = 0;
+            if (currentStep === 2) {
+                updateSubLessonStepUI();
+            }
+        }
+
+        function updateSubLessonStepUI() {
+            const count = parseInt(document.getElementById('lessonCountInput').value) || 3;
+            const current = addSubLessonIndex + 1;
+            
+            document.getElementById('subLessonCounter').textContent = 'Lesson ' + current;
+            document.getElementById('subLessonTotal').textContent = 'of ' + count;
+            document.getElementById('subLessonContentLabel').textContent = 'Lesson ' + current;
+            
+            document.getElementById('prevSubLessonBtn').disabled = addSubLessonIndex === 0;
+            document.getElementById('nextSubLessonBtn').disabled = addSubLessonIndex === count - 1;
+            
+            updateWYSIWYGContent();
+        }
+
+        function saveCurrentSubLesson() {
+            updateSubLessonFromWYSIWYG();
+        }
+
+        function updateFlashcardStepUI() {
+            const count = parseInt(document.getElementById('lessonCountInput').value) || 3;
+            const current = addSubLessonIndex + 1;
+            document.getElementById('flashcardStepLabel').textContent = 'Flashcards for Lesson ' + current;
+            document.getElementById('flashcardStepProgress').textContent = 'of ' + count;
+            document.getElementById('prevFlashcardBtn').disabled = addSubLessonIndex === 0;
+            document.getElementById('nextFlashcardBtn').disabled = addSubLessonIndex === count - 1;
+            loadFlashcardsForLesson(addSubLessonIndex);
+        }
+
+        function updateQuizStepUI() {
+            const count = parseInt(document.getElementById('lessonCountInput').value) || 3;
+            const current = addSubLessonIndex + 1;
+            document.getElementById('quizStepLabel').textContent = 'Quiz for Lesson ' + current;
+            document.getElementById('quizStepProgress').textContent = 'of ' + count;
+            document.getElementById('prevQuizBtn').disabled = addSubLessonIndex === 0;
+            document.getElementById('nextQuizBtn').disabled = addSubLessonIndex === count - 1;
+            loadQuizzesForLesson(addSubLessonIndex);
+        }
+
+        function updateStepUI() {
+            document.querySelectorAll('.step-dot').forEach(function(dot) {
+                const step = parseInt(dot.dataset.step);
+                dot.classList.remove('active', 'done');
+                if (step === currentStep) {
+                    dot.classList.add('active');
+                } else if (step < currentStep) {
+                    dot.classList.add('done');
+                }
+            });
+
+            document.querySelectorAll('.step-line').forEach(function(line) {
+                const index = parseInt(line.id.replace('stepLine', ''));
+                if (index < currentStep) {
+                    line.classList.add('done');
+                } else {
+                    line.classList.remove('done');
+                }
+            });
+
+            document.querySelectorAll('.step-content').forEach(function(content) {
+                content.classList.remove('active');
+                if (parseInt(content.dataset.step) === currentStep) {
+                    content.classList.add('active');
+                }
+            });
+
+            const prevBtn = document.getElementById('prevStepBtn');
+            const nextBtn = document.getElementById('nextStepBtn');
+            const submitBtn = document.getElementById('submitLessonBtn');
+
+            if (currentStep === 1) {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'inline-flex';
+                submitBtn.style.display = 'none';
+                nextBtn.innerHTML = 'Next <i class="fa-solid fa-chevron-right"></i>';
+            } else if (currentStep === 2) {
+                prevBtn.style.display = 'inline-flex';
+                nextBtn.style.display = 'inline-flex';
+                submitBtn.style.display = 'none';
+                nextBtn.innerHTML = 'Next: Flashcards <i class="fa-solid fa-chevron-right"></i>';
+            } else if (currentStep === 3) {
+                prevBtn.style.display = 'inline-flex';
+                nextBtn.style.display = 'inline-flex';
+                submitBtn.style.display = 'none';
+                nextBtn.innerHTML = 'Next: Quizzes <i class="fa-solid fa-chevron-right"></i>';
+            } else if (currentStep === 4) {
+                prevBtn.style.display = 'inline-flex';
+                nextBtn.style.display = 'inline-flex';
+                submitBtn.style.display = 'none';
+                nextBtn.innerHTML = 'Review <i class="fa-solid fa-chevron-right"></i>';
+            } else if (currentStep === 5) {
+                prevBtn.style.display = 'inline-flex';
+                nextBtn.style.display = 'none';
+                submitBtn.style.display = 'inline-flex';
+                submitBtn.textContent = isEditMode ? 'Update Lesson' : 'Submit for Approval';
+                generateReviewSummary();
+            }
+        }
+
+        function nextStep() {
+            if (currentStep === 1) {
+                const title = document.getElementById('lessonTitleInput').value.trim();
+                const category = document.getElementById('lessonCategoryInput').value;
+                const description = document.getElementById('lessonDescriptionInput').value.trim();
+                if (!title || !category || !description) {
+                    alert('Please fill in all required fields.');
+                    return;
+                }
+                const count = parseInt(document.getElementById('lessonCountInput').value) || 3;
+                if (!isEditMode) {
+                    subLessonContents = new Array(count).fill('');
+                }
+                addSubLessonIndex = 0;
+                updateSubLessonStepUI();
+                currentStep = 2;
+                updateStepUI();
+            } else if (currentStep === 2) {
+                saveCurrentSubLesson();
+                currentStep = 3;
+                addSubLessonIndex = 0;
+                updateFlashcardStepUI();
+                updateStepUI();
+            } else if (currentStep === 3) {
+                saveFlashcardsForLesson(addSubLessonIndex);
+                currentStep = 4;
+                addSubLessonIndex = 0;
+                updateQuizStepUI();
+                updateStepUI();
+            } else if (currentStep === 4) {
+                saveQuizzesForLesson(addSubLessonIndex);
+                currentStep = 5;
+                updateStepUI();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep === 2) {
+                currentStep = 1;
+                updateStepUI();
+            } else if (currentStep === 3) {
+                saveFlashcardsForLesson(addSubLessonIndex);
+                currentStep = 2;
+                addSubLessonIndex = 0;
+                updateSubLessonStepUI();
+                updateStepUI();
+            } else if (currentStep === 4) {
+                saveQuizzesForLesson(addSubLessonIndex);
+                currentStep = 3;
+                addSubLessonIndex = 0;
+                updateFlashcardStepUI();
+                updateStepUI();
+            } else if (currentStep === 5) {
+                currentStep = 4;
+                addSubLessonIndex = 0;
+                updateQuizStepUI();
+                updateStepUI();
+            }
+        }
+
+        function generateReviewSummary() {
+            const title = document.getElementById('lessonTitleInput').value.trim();
+            const category = document.getElementById('lessonCategoryInput').value;
+            const description = document.getElementById('lessonDescriptionInput').value.trim();
+            const duration = document.getElementById('lessonDurationInput').value || '20';
+            const count = parseInt(document.getElementById('lessonCountInput').value) || 3;
+
+            saveCurrentSubLesson();
+            saveFlashcardsForLesson(addSubLessonIndex);
+            saveQuizzesForLesson(addSubLessonIndex);
+
+            let subContentHtml = '';
+            let flashcardHtml = '';
+            let quizHtml = '';
+
+            for (let i = 0; i < count; i++) {
+                const content = subLessonContents[i] || '(empty)';
+                const preview = content.length > 60 ? content.substring(0, 60) + '...' : content;
+                subContentHtml += `<div style="padding:2px 0; font-size:12px; color:#64748b;">
+                    <strong>Lesson ${i+1}:</strong> ${escapeHTML(preview)}
+                </div>`;
+
+                const cards = flashcardData[i] || [];
+                if (cards.length > 0) {
+                    flashcardHtml += `<div style="padding:2px 0; font-size:12px; color:#64748b;">
+                        <strong>Lesson ${i+1}:</strong> ${cards.length} flashcard(s)
+                    </div>`;
+                }
+
+                const quizzes = quizData[i] || [];
+                if (quizzes.length > 0) {
+                    quizHtml += `<div style="padding:2px 0; font-size:12px; color:#64748b;">
+                        <strong>Lesson ${i+1}:</strong> ${quizzes.length} question(s)
+                    </div>`;
+                }
+            }
+
+            document.getElementById('reviewSummary').innerHTML = `
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px 16px;">
+                    <span><strong>Title:</strong> ${escapeHTML(title)}</span>
+                    <span><strong>Strand:</strong> ${escapeHTML(category)}</span>
+                    <span><strong>Duration:</strong> ${duration} mins</span>
+                    <span><strong>Sub-Lessons:</strong> ${count}</span>
+                </div>
+                <div style="margin-top:8px; padding-top:8px; border-top:1px solid #e2e8f0;">
+                    <strong>Description:</strong>
+                    <p style="margin:2px 0 0 0; color:#64748b; font-size:12px;">${escapeHTML(description)}</p>
+                </div>
+                <div style="margin-top:8px; padding-top:8px; border-top:1px solid #e2e8f0;">
+                    <strong>Sub-Lesson Contents:</strong>
+                    <div style="margin-top:2px;">${subContentHtml}</div>
+                </div>
+                <div style="margin-top:8px; padding-top:8px; border-top:1px solid #e2e8f0;">
+                    <strong>Flashcards:</strong>
+                    <div style="margin-top:2px;">${flashcardHtml || '<span style="color:#94a3b8; font-size:12px;">No flashcards added</span>'}</div>
+                </div>
+                <div style="margin-top:8px; padding-top:8px; border-top:1px solid #e2e8f0;">
+                    <strong>Quizzes:</strong>
+                    <div style="margin-top:2px;">${quizHtml || '<span style="color:#94a3b8; font-size:12px;">No quizzes added</span>'}</div>
+                </div>
+            `;
+        }
+
+        function submitLesson() {
+            const title = document.getElementById('lessonTitleInput').value.trim();
+            const category = document.getElementById('lessonCategoryInput').value;
+            const description = document.getElementById('lessonDescriptionInput').value.trim();
+            const numberOfLessons = parseInt(document.getElementById('lessonCountInput').value) || 3;
+            const duration = parseInt(document.getElementById('lessonDurationInput').value) || 20;
+
+            saveCurrentSubLesson();
+            saveFlashcardsForLesson(addSubLessonIndex);
+            saveQuizzesForLesson(addSubLessonIndex);
+
+            const subLessons = [];
+            for (let i = 0; i < numberOfLessons; i++) {
+                const content = normalizeLessonHTML(subLessonContents[i] || 'Content for Lesson ' + (i + 1) + ' of ' + title + '.');
+                subLessons.push({
+                    title: "Lesson " + (i + 1),
+                    content: content
+                });
+            }
+
+            const allFlashcards = [];
+            const allQuizzes = [];
+            for (let i = 0; i < numberOfLessons; i++) {
+                const cards = flashcardData[i] || [];
+                cards.forEach(function(card) {
+                    allFlashcards.push({
+                        lesson: title,
+                        lessonNumber: "Lesson " + (i + 1),
+                        category: category,
+                        term: card.term,
+                        definition: card.definition
+                    });
+                });
+
+                const quizzes = quizData[i] || [];
+                quizzes.forEach(function(q) {
+                    allQuizzes.push({
+                        lesson: title,
+                        lessonNumber: "Lesson " + (i + 1),
+                        category: category,
+                        question: q.question,
+                        options: q.options,
+                        correct: q.correct
+                    });
+                });
+            }
+
+            if (isEditMode && editLessonId) {
+                let pending = getPendingLessons();
+                const index = pending.findIndex(function(l) { return l.id === editLessonId; });
+                if (index !== -1) {
+                    pending[index] = {
+                        ...pending[index],
+                        title: title,
+                        category: category,
+                        description: description,
+                        duration: duration,
+                        numberOfLessons: numberOfLessons,
+                        subLessons: subLessons,
+                        flashcards: allFlashcards,
+                        quizzes: allQuizzes,
+                        updatedAt: new Date().toISOString()
+                    };
+                    savePendingLessons(pending);
+                    alert('✅ Lesson "' + title + '" has been updated!');
+                }
+            } else {
+                const newLesson = {
+                    id: Date.now(),
+                    title: title,
+                    category: category,
+                    description: description,
+                    duration: duration,
+                    numberOfLessons: numberOfLessons,
+                    subLessons: subLessons,
+                    submittedBy: user ? user.username : 'student',
+                    submittedAt: new Date().toISOString(),
+                    status: 'pending',
+                    flashcards: allFlashcards,
+                    quizzes: allQuizzes
+                };
+
+                const pending = getPendingLessons();
+                pending.push(newLesson);
+                savePendingLessons(pending);
+
+                if (allFlashcards.length > 0) {
+                    const existingFlashcards = JSON.parse(memoryStore.getItem(FLASHCARD_STORAGE_KEY) || '[]');
+                    existingFlashcards.push(...allFlashcards);
+                    memoryStore.setItem(FLASHCARD_STORAGE_KEY, JSON.stringify(existingFlashcards));
+                }
+
+                if (allQuizzes.length > 0) {
+                    const existingQuizzes = JSON.parse(memoryStore.getItem(QUIZ_STORAGE_KEY) || '[]');
+                    existingQuizzes.push(...allQuizzes);
+                    memoryStore.setItem(QUIZ_STORAGE_KEY, JSON.stringify(existingQuizzes));
+                }
+
+                alert('✅ Lesson "' + title + '" has been submitted for admin approval!\n' +
+                    '📚 ' + numberOfLessons + ' sub-lessons\n' +
+                    '🃏 ' + allFlashcards.length + ' flashcards\n' +
+                    '📝 ' + allQuizzes.length + ' quiz questions\n\n' +
+                    'It will appear as PENDING (blue highlight) until approved.');
+            }
+
+            closeAddLessonModal();
+            loadLessons();
+        }
+
+        document.getElementById('lessonCountInput').addEventListener('change', function() {
+            const count = parseInt(this.value) || 3;
+            if (!isEditMode) {
+                subLessonContents = new Array(count).fill('');
+            }
+            addSubLessonIndex = 0;
+            if (currentStep === 2) {
+                updateSubLessonStepUI();
+            }
+        });
+
+        function getQuizzesForLesson(lessonTitle, category, lessonNumber) {
+            try {
+                const saved = memoryStore.getItem(QUIZ_STORAGE_KEY);
+                if (!saved) return [];
+                const quizzes = JSON.parse(saved);
+                if (!Array.isArray(quizzes)) return [];
+                return quizzes.filter(function(quiz) {
+                    if (!quiz) return false;
+                    const quizLesson = (quiz.lesson || quiz.lessonTitle || "").toString().trim().toLowerCase();
+                    const targetLesson = lessonTitle.toString().trim().toLowerCase();
+                    const quizCategory = (quiz.category || quiz.strand || "").toString().trim().toLowerCase();
+                    const targetCategory = category ? category.toString().trim().toLowerCase() : "";
+                    const quizLessonNumber = (quiz.lessonNumber || quiz.subLesson || "").toString().trim().toLowerCase();
+                    const targetLessonNumber = lessonNumber ? lessonNumber.toString().trim().toLowerCase() : "";
+                    
+                    let matches = quizLesson === targetLesson;
+                    if (targetCategory) {
+                        matches = matches && quizCategory === targetCategory;
+                    }
+                    if (targetLessonNumber) {
+                        matches = matches && quizLessonNumber === targetLessonNumber;
+                    }
+                    return matches;
+                });
+            } catch (error) {
+                console.error("Error getting quizzes:", error);
+                return [];
+            }
+        }
+
+        function getFlashcardsForLesson(lessonTitle, category, lessonNumber) {
+            try {
+                const saved = memoryStore.getItem(FLASHCARD_STORAGE_KEY);
+                if (!saved) return [];
+                const flashcards = JSON.parse(saved);
+                if (!Array.isArray(flashcards)) return [];
+                return flashcards.filter(function(card) {
+                    if (!card) return false;
+                    const cardLesson = (card.lesson || card.lessonTitle || "").toString().trim().toLowerCase();
+                    const targetLesson = lessonTitle.toString().trim().toLowerCase();
+                    const cardCategory = (card.category || card.strand || "").toString().trim().toLowerCase();
+                    const targetCategory = category ? category.toString().trim().toLowerCase() : "";
+                    const cardLessonNumber = (card.lessonNumber || card.subLesson || "").toString().trim().toLowerCase();
+                    const targetLessonNumber = lessonNumber ? lessonNumber.toString().trim().toLowerCase() : "";
+                    
+                    let matches = cardLesson === targetLesson;
+                    if (targetCategory) {
+                        matches = matches && cardCategory === targetCategory;
+                    }
+                    if (targetLessonNumber) {
+                        matches = matches && cardLessonNumber === targetLessonNumber;
+                    }
+                    return matches;
+                });
+            } catch (error) {
+                console.error("Error getting flashcards:", error);
+                return [];
+            }
+        }
+
+        function goToQuizzes(lessonTitle, subLessonTitle, category, lessonNumber) {
+            memoryStore.setItem("selectedLessonForQuiz", JSON.stringify({
+                lessonTitle: lessonTitle,
+                subLessonTitle: subLessonTitle,
+                category: category,
+                lessonNumber: lessonNumber
+            }));
+            window.location.href = "/quizzes?lesson=" + encodeURIComponent(lessonTitle) + 
+                "&sub=" + encodeURIComponent(subLessonTitle) + 
+                "&category=" + encodeURIComponent(category || "") +
+                "&lessonNumber=" + encodeURIComponent(lessonNumber || "");
+        }
+
+        function goToFlashcards(lessonTitle, subLessonTitle, category, lessonNumber) {
+            memoryStore.setItem("selectedLessonForFlashcard", JSON.stringify({
+                lessonTitle: lessonTitle,
+                subLessonTitle: subLessonTitle,
+                category: category,
+                lessonNumber: lessonNumber
+            }));
+            window.location.href = "/flashcards?lesson=" + encodeURIComponent(lessonTitle) + 
+                "&sub=" + encodeURIComponent(subLessonTitle) + 
+                "&category=" + encodeURIComponent(category || "") +
+                "&lessonNumber=" + encodeURIComponent(lessonNumber || "");
+        }
+
+        /* =====================================================
+           RENDER LESSONS - FIXED TO USE SAME DATA SOURCE
+        ===================================================== */
+        function renderLessons(lessonsArray) {
+            const grid = document.getElementById("lessonGrid");
+            const count = document.getElementById("lessonCount");
+            const emptyState = document.getElementById("emptyState");
+            const emptyMsg = document.getElementById("emptyStateMessage");
+
+            grid.innerHTML = "";
+
+            if (!lessonsArray || lessonsArray.length === 0) {
+                if (count) count.textContent = "0 Lessons";
+                if (emptyState) {
+                    emptyState.style.display = "block";
+                    emptyMsg.textContent = currentFilter ? 
+                        'There are currently no lessons available for "' + currentFilter + '".' :
+                        "There are currently no lessons available. Click 'Add Lesson' to create one!";
+                }
+                return;
+            }
+
+            if (emptyState) emptyState.style.display = "none";
+
+            lessonsArray.forEach(function(lesson) {
+                const card = document.createElement("div");
+                card.className = "lesson-card";
+
+                if (lesson.status === 'pending') {
+                    card.classList.add('status-pending');
+                } else if (lesson.status === 'rejected') {
+                    card.classList.add('status-rejected');
+                } else {
+                    card.classList.add('status-approved');
+                }
+
+                card.addEventListener("click", function() {
+                    if (lesson.status === 'approved') {
+                        openLessonSelector(lesson.id, lesson.status);
+                    } else if (lesson.status === 'pending') {
+                        alert('⏳ This lesson is pending approval. Please wait for admin approval.');
+                    } else if (lesson.status === 'rejected') {
+                        alert('❌ This lesson was rejected. Please revise and resubmit.');
+                    }
+                });
+
+                const number = document.createElement("div");
+                number.className = "lesson-number";
+                const totalSubLessons = lesson.numberOfLessons || 0;
+                number.textContent = String(totalSubLessons).padStart(2, "0");
+
+                const title = document.createElement("h3");
+                title.textContent = lesson.title || "Untitled Lesson";
+
+                const statusBadge = document.createElement("span");
+                statusBadge.className = "status-badge " + (lesson.status || 'approved');
+                const statusText = lesson.status ? lesson.status.charAt(0).toUpperCase() + lesson.status.slice(1) : 'Approved';
+                statusBadge.textContent = statusText;
+
+                const titleWrapper = document.createElement("div");
+                titleWrapper.className = "title-wrapper";
+                titleWrapper.appendChild(title);
+                titleWrapper.appendChild(statusBadge);
+
+                const desc = document.createElement("p");
+                desc.textContent = lesson.description || "No description available.";
+
+                const meta = document.createElement("div");
+                meta.className = "lesson-meta";
+
+                const category = document.createElement("span");
+                category.innerHTML = `<i class="fa-solid fa-book"></i> ${lesson.category || "General"}`;
+
+                const duration = document.createElement("span");
+                duration.innerHTML = `<i class="fa-regular fa-clock"></i> ${lesson.duration || "20"} mins`;
+
+                const subCount = document.createElement("span");
+                const numSubLessons = lesson.numberOfLessons || 0;
+                subCount.innerHTML = `<i class="fa-solid fa-layer-group"></i> ${numSubLessons} ${numSubLessons === 1 ? "Lesson" : "Lessons"}`;
+
+                if (lesson.status === 'pending' || lesson.status === 'rejected') {
+                    const submittedBy = document.createElement("span");
+                    const ownerName = lesson.submittedBy || 'student';
+                    const displayOwner = ownerName.startsWith('@') ? ownerName : '@' + ownerName;
+                    submittedBy.innerHTML = `<i class="fa-solid fa-user"></i> by ${displayOwner}`;
+                    meta.appendChild(submittedBy);
+                    
+                    const isOwner = (lesson.submittedBy || '') === currentUsername;
+                    if (isOwner && lesson.status === 'pending') {
+                        const editBtn = document.createElement("button");
+                        editBtn.className = "edit-lesson-btn";
+                        editBtn.innerHTML = `<i class="fa-solid fa-pen"></i> Edit Lesson`;
+                        editBtn.addEventListener("click", function(event) {
+                            event.stopPropagation();
+                            openAddLessonModal(lesson);
+                        });
+                        card.appendChild(editBtn);
+                    }
+                }
+
+                meta.appendChild(category);
+                meta.appendChild(duration);
+                meta.appendChild(subCount);
+
+                const button = document.createElement("button");
+                button.className = "lesson-button";
+                button.type = "button";
+
+                if (lesson.status === 'pending') {
+                    button.innerHTML = `⏳ Pending Approval <i class="fa-solid fa-clock"></i>`;
+                    button.style.opacity = '0.7';
+                    button.style.cursor = 'default';
+                    button.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                        alert('This lesson is pending admin approval. You will be able to view it once approved.');
+                    });
+                } else if (lesson.status === 'rejected') {
+                    button.innerHTML = `❌ Rejected <i class="fa-solid fa-circle-xmark"></i>`;
+                    button.style.opacity = '0.7';
+                    button.style.cursor = 'default';
+                    button.addEventListener('click', function(event) {
+                        event.stopPropagation();
+                        alert('This lesson was rejected by the admin. Please revise and resubmit.');
+                    });
+                } else {
+                    button.innerHTML = `View Lessons <i class="fa-solid fa-arrow-right"></i>`;
+                    button.addEventListener("click", function(event) {
+                        event.stopPropagation();
+                        openLessonSelector(lesson.id, lesson.status);
+                    });
+                }
+
+                card.appendChild(number);
+                card.appendChild(titleWrapper);
+                card.appendChild(desc);
+                card.appendChild(meta);
+                const isOwnerWithPending = lesson.status === 'pending' && (lesson.submittedBy || '') === currentUsername;
+                if (!isOwnerWithPending) {
+                    card.appendChild(button);
+                }
+
+                grid.appendChild(card);
+            });
+
+            if (count) {
+                const total = lessonsArray.length;
+                const pendingCount = lessonsArray.filter(function(l) { return l.status === 'pending'; }).length;
+                const rejectedCount = lessonsArray.filter(function(l) { return l.status === 'rejected'; }).length;
+                let label = total + (total === 1 ? " Lesson" : " Lessons");
+                if (pendingCount > 0) label += ' (' + pendingCount + ' pending)';
+                if (rejectedCount > 0) label += ' (' + rejectedCount + ' rejected)';
+                count.textContent = label;
+            }
+        }
+
+        function loadAndFilterLessons(searchTerm) {
+            let lessons = getLessons();
+
+            let filtered = lessons;
+            if (currentFilter) {
+                filtered = lessons.filter(function(lesson) {
+                    return (lesson.category || "").toLowerCase() === currentFilter.toLowerCase();
+                });
+            }
+
+            if (searchTerm && searchTerm.trim() !== "") {
+                const term = searchTerm.trim().toLowerCase();
+                filtered = filtered.filter(function(lesson) {
+                    const title = (lesson.title || "").toLowerCase();
+                    const desc = (lesson.description || "").toLowerCase();
+                    const category = (lesson.category || "").toLowerCase();
+                    return title.includes(term) || desc.includes(term) || category.includes(term);
+                });
+            }
+
+            renderLessons(filtered);
+        }
+
+        function loadLessons() {
+            const searchInput = document.getElementById("searchInput");
+            const term = searchInput ? searchInput.value : "";
+            loadAndFilterLessons(term);
+        }
+
+        document.getElementById("searchInput").addEventListener("input", function() {
+            loadAndFilterLessons(this.value);
+        });
+
+        /* =====================================================
+           LESSON SELECTOR MODAL
+        ===================================================== */
+        let selectedLessonId = null;
+        let readingSubLessonIndex = 0;
+        let currentLessonCategory = "";
+        let currentLessonTitle = "";
+        let currentLessonStatus = 'approved';
+
+        function openLessonSelector(id, status) {
+            const lessons = getLessons();
+            const lesson = lessons.find(function(item) { return item.id === id; });
+            if (!lesson) return;
+
+            if (lesson.status === 'pending') {
+                alert('⏳ This lesson is pending approval. Please wait for admin approval.');
+                return;
+            }
+            if (lesson.status === 'rejected') {
+                alert('❌ This lesson was rejected. Please revise and resubmit.');
+                return;
+            }
+
+            selectedLessonId = id;
+            currentLessonCategory = lesson.category || "";
+            currentLessonTitle = lesson.title || "";
+            currentLessonStatus = lesson.status || 'approved';
+            lesson.subLessons = createSubLessons(lesson);
+
+            document.getElementById("selectorTitle").textContent = lesson.title;
+            document.getElementById("selectorDescription").textContent = lesson.description;
+
+            const grid = document.getElementById("subLessonGrid");
+            grid.innerHTML = "";
+
+            lesson.subLessons.forEach(function(subLesson, index) {
+                const item = document.createElement("div");
+                item.className = "sub-lesson-item";
+
+                const hasContent = subLesson.content && subLesson.content.length > 50 && 
+                    !subLesson.content.includes("The administrator can later add");
+                const statusClass = hasContent ? "has-content" : "empty";
+                const statusText = hasContent ? "✓ Has Content" : "✗ Empty";
+
+                const lessonNumber = "Lesson " + (index + 1);
+                const quizzes = getQuizzesForLesson(lesson.title, lesson.category, lessonNumber);
+                const flashcards = getFlashcardsForLesson(lesson.title, lesson.category, lessonNumber);
+                const quizCount = quizzes.length;
+                const flashcardCount = flashcards.length;
+
+                item.innerHTML = `
+                    <div class="sub-lesson-top">
+                        <div class="sub-lesson-number">${index + 1}</div>
+                        <div class="sub-lesson-info">
+                            <strong>${escapeHTML(subLesson.title)}</strong>
+                            <span>${escapeHTML(subLesson.title)}</span>
+                            <span class="sub-lesson-status ${statusClass}">${statusText}</span>
+                        </div>
+                    </div>
+                    <div class="sub-lesson-actions">
+                        <button class="quiz-action-btn" onclick="event.stopPropagation(); goToQuizzes('${escapeHTML(lesson.title)}', '${escapeHTML(subLesson.title)}', '${escapeHTML(lesson.category || "")}', '${escapeHTML(lessonNumber)}')">
+                            <i class="fa-solid fa-clipboard-question"></i> Quiz (${quizCount})
+                        </button>
+                        <button class="flashcard-action-btn" onclick="event.stopPropagation(); goToFlashcards('${escapeHTML(lesson.title)}', '${escapeHTML(subLesson.title)}', '${escapeHTML(lesson.category || "")}', '${escapeHTML(lessonNumber)}')">
+                            <i class="fa-solid fa-layer-group"></i> Flashcards (${flashcardCount})
+                        </button>
+                    </div>
+                `;
+                
+                item.addEventListener("click", function(e) {
+                    if (e.target.closest('button')) return;
+                    openReadingModal(id, index);
+                });
+                
+                grid.appendChild(item);
+            });
+
+            document.getElementById("lessonSelectorModal").classList.add("show");
+        }
+
+        function closeLessonSelector() {
+            document.getElementById("lessonSelectorModal").classList.remove("show");
+        }
+
+        /* =====================================================
+           READING MODAL
+        ===================================================== */
+        function openReadingModal(lessonId, subLessonIndex) {
+            const lessons = getLessons();
+            const lesson = lessons.find(function(item) { return item.id === lessonId; });
+            if (!lesson) return;
+
+            if (lesson.status !== 'approved') {
+                alert('This lesson is not yet approved for viewing.');
+                return;
+            }
+
+            lesson.subLessons = createSubLessons(lesson);
+            selectedLessonId = lessonId;
+            readingSubLessonIndex = subLessonIndex;
+
+            document.getElementById("lessonSelectorModal").classList.remove("show");
+            renderReadingLesson();
+        }
+
+        function renderReadingLesson() {
+            const lessons = getLessons();
+            const lesson = lessons.find(function(item) { return item.id === selectedLessonId; });
+            if (!lesson) return;
+
+            lesson.subLessons = createSubLessons(lesson);
+            const current = lesson.subLessons[readingSubLessonIndex];
+            if (!current) return;
+
+            document.getElementById("readingCategory").textContent = lesson.category || "General";
+            document.getElementById("readingTitle").textContent = current.title;
+            document.getElementById("readingProgressText").textContent = "Lesson " + (readingSubLessonIndex + 1) + " of " + lesson.subLessons.length;
+
+            const progress = ((readingSubLessonIndex + 1) / lesson.subLessons.length) * 100;
+            document.getElementById("readingProgressBar").style.width = progress + "%";
+
+            document.getElementById("lessonContentDisplay").innerHTML = normalizeLessonHTML(current.content || "No content available for this lesson.");
+
+            document.getElementById("prevLessonBtn").disabled = readingSubLessonIndex === 0;
+            document.getElementById("nextLessonBtn").disabled = readingSubLessonIndex === lesson.subLessons.length - 1;
+
+            document.getElementById("readingModal").classList.add("show");
+            document.getElementById("readingBody").scrollTop = 0;
+        }
+
+        function previousLesson() {
+            if (readingSubLessonIndex <= 0) return;
+            readingSubLessonIndex--;
+            renderReadingLesson();
+        }
+
+        function nextLesson() {
+            const lessons = getLessons();
+            const lesson = lessons.find(function(item) { return item.id === selectedLessonId; });
+            if (!lesson) return;
+            lesson.subLessons = createSubLessons(lesson);
+            if (readingSubLessonIndex >= lesson.subLessons.length - 1) return;
+            readingSubLessonIndex++;
+            renderReadingLesson();
+        }
+
+        function backToLessonSelector() {
+            document.getElementById("readingModal").classList.remove("show");
+            if (selectedLessonId) {
+                openLessonSelector(selectedLessonId, currentLessonStatus);
+            }
+        }
+
+        function closeReadingModal() {
+            document.getElementById("readingModal").classList.remove("show");
+        }
+
+        /* =====================================================
+           UTILITY
+        ===================================================== */
+        function escapeHTML(value) {
+            return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        /* =====================================================
+           MODAL CLOSE ON OVERLAY
+        ===================================================== */
+        document.getElementById("lessonSelectorModal").addEventListener("click", function(event) {
+            if (event.target === this) closeLessonSelector();
+        });
+
+        document.getElementById("readingModal").addEventListener("click", function(event) {
+            if (event.target === this) closeReadingModal();
+        });
+
+        document.getElementById("addLessonModal").addEventListener("click", function(event) {
+            if (event.target === this) closeAddLessonModal();
+        });
+
+        document.addEventListener("keydown", function(event) {
+            if (event.key === "Escape") {
+                if (document.getElementById("readingModal").classList.contains("show")) {
+                    closeReadingModal();
+                } else if (document.getElementById("lessonSelectorModal").classList.contains("show")) {
+                    closeLessonSelector();
+                } else if (document.getElementById("addLessonModal").classList.contains("show")) {
+                    closeAddLessonModal();
+                }
+            }
+        });
+
+        /* =====================================================
+           DOM CONTENT LOADED
+        ===================================================== */
+        document.addEventListener('DOMContentLoaded', function() {
+            wysiwygEditor = document.getElementById('wysiwygEditor');
+            if (wysiwygEditor) {
+                wysiwygEditor.addEventListener('input', function() {
+                    updateSubLessonFromWYSIWYG();
+                });
+            }
+            populateStrandDropdown();
+        });
+
+        function checkForFlashcardRedirect() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const lessonParam = urlParams.get("lesson");
+            const subParam = urlParams.get("sub");
+            const categoryParam = urlParams.get("category");
+            const lessonNumberParam = urlParams.get("lessonNumber");
+            
+            if (lessonParam && subParam) {
+                setTimeout(function() {
+                    memoryStore.setItem("selectedLessonForFlashcard", JSON.stringify({
+                        lessonTitle: lessonParam,
+                        subLessonTitle: subParam,
+                        category: categoryParam || "",
+                        lessonNumber: lessonNumberParam || ""
+                    }));
+                    let redirectUrl = "/flashcards?lesson=" + encodeURIComponent(lessonParam) + 
+                        "&sub=" + encodeURIComponent(subParam);
+                    if (categoryParam) {
+                        redirectUrl += "&category=" + encodeURIComponent(categoryParam);
+                    }
+                    if (lessonNumberParam) {
+                        redirectUrl += "&lessonNumber=" + encodeURIComponent(lessonNumberParam);
+                    }
+                    window.location.href = redirectUrl;
+                }, 500);
+            }
+        }
+
+        /* =====================================================
+           SEED DEMO DATA - FIXED: Only runs when NO data exists
+        ===================================================== */
+        (function seedDemoData() {
+            getStrands();
+            
+            // Check if there are any lessons in storage (approved or pending)
+            const hasApproved = memoryStore.getItem(STORAGE_KEY);
+            const hasPending = memoryStore.getItem(PENDING_KEY);
+            
+            let hasLessons = false;
+            
+            // Check approved lessons
+            if (hasApproved) {
+                try {
+                    const approved = JSON.parse(hasApproved);
+                    if (approved && approved.length > 0) {
+                        hasLessons = true;
+                        console.log("Found existing approved lessons:", approved.length);
+                    }
+                } catch(e) {
+                    console.error("Error parsing approved lessons:", e);
+                }
+            }
+            
+            // Check pending lessons if no approved lessons found
+            if (!hasLessons && hasPending) {
+                try {
+                    const pending = JSON.parse(hasPending);
+                    if (pending && pending.length > 0) {
+                        hasLessons = true;
+                        console.log("Found existing pending lessons:", pending.length);
+                    }
+                } catch(e) {
+                    console.error("Error parsing pending lessons:", e);
+                }
+            }
+            
+            // If there are already lessons in storage, just load them
+            if (hasLessons) {
+                console.log("Loading existing lessons from memoryStore");
+                loadLessons();
+                return;
+            }
+            
+            // NO lessons found - create seed data
+            console.log("No lessons found, creating seed data...");
+            const strands = getStrands();
+            const demoLessons = [
+                {
+                    id: 1,
+                    title: "ENGLISH 201",
+                    category: strands[0] || "STEM A",
+                    description: "Explore the fundamentals of English language and literature.",
+                    duration: "25",
+                    numberOfLessons: 5,
+                    subLessons: [
+                        { title: "Introduction to English 201", content: "<b>Welcome to English 201!</b> This lesson covers the basics of English language and literature." },
+                        { title: "Grammar Fundamentals", content: "Learn the <i>essential grammar rules</i> and how to apply them in writing." },
+                        { title: "Reading Comprehension", content: "<u>Develop your reading comprehension skills</u> with various texts and passages." },
+                        { title: "Writing Skills", content: "Master the art of writing essays, reports, and other academic papers." },
+                        { title: "Literary Analysis", content: "<h3>Analyze literary works</h3><p>Understand their themes, characters, and structures.</p><ul><li>Theme analysis</li><li>Character study</li><li>Structure review</li></ul>" }
+                    ]
+                },
+                {
+                    id: 2,
+                    title: "ABM Fundamentals",
+                    category: strands.length > 1 ? strands[1] : "ABM",
+                    description: "Learn the basics of Accountancy, Business, and Management.",
+                    duration: "20",
+                    numberOfLessons: 4,
+                    subLessons: [
+                        { title: "Introduction to ABM", content: "<b>Welcome to ABM!</b> This lesson covers the fundamentals of business and management." },
+                        { title: "Business Ethics", content: "Learn about <i>ethical practices</i> in business and their importance." },
+                        { title: "Financial Literacy", content: "Understand basic <u>financial concepts</u>, budgeting, and money management." },
+                        { title: "Entrepreneurship", content: "<h3>Principles of Entrepreneurship</h3><p>Discover how to start a business.</p><ol><li>Idea generation</li><li>Business planning</li><li>Execution</li></ol>" }
+                    ]
+                },
+                {
+                    id: 3,
+                    title: "HUMSS Basics",
+                    category: strands.length > 2 ? strands[2] : "HUMSS",
+                    description: "Explore the humanities and social sciences.",
+                    duration: "20",
+                    numberOfLessons: 3,
+                    subLessons: [
+                        { title: "Introduction to Humanities", content: "<b>Welcome to Humanities!</b> This lesson explores the study of human culture." },
+                        { title: "Social Sciences", content: "Learn about <i>society, social relationships</i>, and human behavior." },
+                        { title: "Communication Skills", content: "Develop <u>effective communication skills</u> for academic and professional settings." }
+                    ]
+                }
+            ];
+            
+            memoryStore.setItem(STORAGE_KEY, JSON.stringify(demoLessons));
+            
+            const samplePending = {
+                id: Date.now() + 100,
+                title: "Sample Pending Lesson",
+                category: strands[0] || "STEM A",
+                description: "This is a lesson waiting for admin approval.",
+                duration: "15",
+                numberOfLessons: 2,
+                subLessons: [
+                    { title: "Lesson 1", content: "<b>Content</b> for pending lesson - Lesson 1" },
+                    { title: "Lesson 2", content: "<i>Content</i> for pending lesson - Lesson 2" }
+                ],
+                submittedBy: "student",
+                submittedAt: new Date().toISOString()
+            };
+            savePendingLessons([samplePending]);
+            
+            console.log("Seed data created successfully!");
+            loadLessons();
+        })();
+
+        /* =====================================================
+           INIT
+        ===================================================== */
+        updateHeader();
+        window.addEventListener("load", function() {
+            // The seed function already calls loadLessons()
+            checkForFlashcardRedirect();
+            populateStrandDropdown();
+        });
+        setInterval(loadLessons, 30000);
+
+        window.addEventListener("resize", function() {
+            if (window.innerWidth > 750) {
+                sidebar.classList.remove("show");
+                sidebarOverlay.classList.remove("show");
+            }
+        });
+
+        window.addEventListener("storage", function(event) {
+            if (event.key === STORAGE_KEY || event.key === PENDING_KEY || event.key === REJECTED_KEY || 
+                event.key === QUIZ_STORAGE_KEY || event.key === FLASHCARD_STORAGE_KEY) {
+                console.log("Data updated, reloading...");
+                loadLessons();
+            }
+            if (event.key === STRANDS_STORAGE_KEY) {
+                populateStrandDropdown();
+                refreshStrandData();
+                updateHeader();
+            }
+        });
+
+        document.getElementById("lessonsNavLink").addEventListener("click", function(e) {
+            if (currentFilter) {
+                clearFilter();
+            } else {
+                loadLessons();
+            }
+        });
+
+    </script>
+
+</body>
+</html>

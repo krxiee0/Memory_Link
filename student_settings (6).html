@@ -1,0 +1,1867 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Settings | MemoryLink</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* --- Your existing CSS styles (unchanged) --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            /* DILI GYUD MAG-SCROLL ANG PAGE */
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        /* =========================================
+           CONTAINER - FIXED HEIGHT
+        ========================================== */
+
+        .dashboard-container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* =========================================
+           SIDEBAR
+        ========================================== */
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+
+            background: linear-gradient(
+                180deg,
+                #051650 0%,
+                #0a2368 55%,
+                #18347d 100%
+            );
+
+            color: white;
+
+            position: fixed;
+            left: 0;
+            top: 0;
+
+            padding: 18px 17px;
+
+            display: flex;
+            flex-direction: column;
+
+            z-index: 9999;
+            overflow: hidden;
+
+            transition:
+                width 0.3s ease,
+                padding 0.3s ease,
+                transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            width: 82px;
+            padding: 18px 12px;
+        }
+
+        /* =========================================
+           SIDEBAR TOP
+        ========================================== */
+
+        .sidebar-top {
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 0 3px 16px;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+
+            margin-bottom: 20px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-toggle {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+
+            border: none;
+            border-radius: 10px;
+
+            background: rgba(255, 255, 255, 0.10);
+            color: white;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 17px;
+
+            cursor: pointer;
+
+            transition: all 0.25s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-1px);
+        }
+
+        /* =========================================
+           USER PROFILE
+        ========================================== */
+
+        .user-profile {
+            flex: 1;
+            min-width: 0;
+
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+
+            border-radius: 50%;
+
+            background: white;
+            color: #051650;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .user-info {
+            min-width: 0;
+            overflow: hidden;
+
+            transition:
+                opacity 0.2s ease,
+                width 0.3s ease;
+        }
+
+        .user-info strong {
+            display: block;
+
+            color: white;
+
+            font-size: 13px;
+            font-weight: 800;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            margin-bottom: 3px;
+        }
+
+        .user-info span {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 10px;
+        }
+
+        /* =========================================
+           COLLAPSED SIDEBAR TOP
+        ========================================== */
+
+        .sidebar.collapsed .sidebar-top {
+            flex-direction: column;
+
+            gap: 14px;
+
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .sidebar.collapsed .sidebar-toggle {
+            order: 1;
+        }
+
+        .sidebar.collapsed .user-profile {
+            order: 2;
+
+            flex: none;
+
+            justify-content: center;
+
+            width: 100%;
+        }
+
+        .sidebar.collapsed .user-info {
+            width: 0;
+
+            opacity: 0;
+
+            pointer-events: none;
+        }
+
+        /* =========================================
+           MENU TITLE
+        ========================================== */
+
+        .menu-title {
+            color: rgba(255, 255, 255, 0.45);
+
+            font-size: 10px;
+            font-weight: 700;
+
+            letter-spacing: 1px;
+
+            padding: 0 12px;
+
+            margin-bottom: 10px;
+
+            white-space: nowrap;
+
+            transition: opacity 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .sidebar.collapsed .menu-title {
+            opacity: 0;
+
+            height: 0;
+
+            margin-bottom: 4px;
+        }
+
+        /* =========================================
+           MENU
+        ========================================== */
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+
+            gap: 6px;
+
+            width: 100%;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .menu::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .menu::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .menu::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .menu a,
+        .sidebar-bottom a {
+            width: 100%;
+
+            color: rgba(255, 255, 255, 0.72);
+
+            display: flex;
+            align-items: center;
+
+            gap: 13px;
+
+            padding: 13px 14px;
+
+            border-radius: 12px;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            transition:
+                background 0.25s ease,
+                color 0.25s ease,
+                transform 0.15s ease;
+
+            cursor: pointer;
+
+            white-space: nowrap;
+        }
+
+        .menu a i,
+        .sidebar-bottom a i {
+            width: 20px;
+            min-width: 20px;
+
+            text-align: center;
+
+            font-size: 15px;
+        }
+
+        .menu a:hover,
+        .sidebar-bottom a:hover {
+            background: rgba(255, 255, 255, 0.10);
+
+            color: white;
+
+            transform: translateX(2px);
+        }
+
+        .menu a.active {
+            background: rgba(255, 255, 255, 0.16);
+
+            color: white;
+
+            box-shadow: inset 3px 0 0 white;
+        }
+
+        /* =========================================
+           COLLAPSED MENU
+        ========================================== */
+
+        .sidebar.collapsed .menu a,
+        .sidebar.collapsed .sidebar-bottom a {
+            justify-content: center;
+
+            padding-left: 0;
+            padding-right: 0;
+
+            gap: 0;
+        }
+
+        .sidebar.collapsed .menu a:hover,
+        .sidebar.collapsed .sidebar-bottom a:hover {
+            transform: none;
+        }
+
+        .sidebar.collapsed .menu a span,
+        .sidebar.collapsed .sidebar-bottom a span {
+            display: none;
+        }
+
+        /* =========================================
+           SIDEBAR BOTTOM
+        ========================================== */
+
+        .sidebar-bottom {
+            margin-top: auto;
+
+            padding-top: 15px;
+
+            width: 100%;
+            flex-shrink: 0;
+        }
+
+        .sidebar-bottom a {
+            margin-top: 5px;
+        }
+
+        /* =========================================
+           MAIN
+        ========================================== */
+
+        .main {
+            margin-left: 250px;
+
+            width: calc(100% - 250px);
+
+            height: 100vh;
+
+            padding: 0 35px 20px;
+
+            overflow: hidden;
+
+            display: flex;
+            flex-direction: column;
+
+            transition:
+                margin-left 0.3s ease,
+                width 0.3s ease;
+        }
+
+        .main.expanded {
+            margin-left: 82px;
+
+            width: calc(100% - 82px);
+        }
+
+        /* =========================================
+           SCHOOL HEADER
+        ========================================== */
+
+        .site-header {
+            height: 49px;
+            min-height: 49px;
+
+            margin-left: -35px;
+            margin-right: -35px;
+
+            padding: 0 25px;
+
+            background: #051650;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .school-name {
+            font-size: 21px;
+            font-weight: 800;
+        }
+
+        .memory-link-title {
+            font-size: 21px;
+            font-weight: 800;
+
+            letter-spacing: 0.3px;
+        }
+
+        /* =========================================
+           MOBILE MENU BUTTON
+        ========================================== */
+
+        .mobile-menu-btn {
+            display: none;
+
+            width: 38px;
+            height: 38px;
+            min-width: 38px;
+
+            border: none;
+            border-radius: 10px;
+
+            background: rgba(255, 255, 255, 0.12);
+
+            color: white;
+
+            font-size: 17px;
+
+            cursor: pointer;
+
+            align-items: center;
+            justify-content: center;
+
+            transition: 0.25s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            background: rgba(255, 255, 255, 0.20);
+        }
+
+        /* =========================================
+           MAIN CONTENT - WALAY SCROLL
+        ========================================== */
+
+        .dashboard-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            /* I-CENTER ANG CONTENT VERTICALLY */
+            min-height: 0;
+            overflow: hidden;
+            /* WALAY SCROLL */
+            padding: 0 4px;
+        }
+
+        /* =========================================
+           WELCOME - MAS GAMAY PARA MAAFIT SA SCREEN
+        ========================================== */
+
+        .welcome-card {
+            flex: 0 0 130px;
+            /* GAMAY NGA HEIGHT */
+
+            border-radius: 22px;
+
+            padding: 22px 28px;
+
+            color: white;
+
+            background: linear-gradient(
+                135deg,
+                #051650,
+                #0a2368,
+                #18347d
+            );
+
+            position: relative;
+
+            overflow: hidden;
+
+            margin-top: 12px;
+            margin-bottom: 14px;
+
+            box-shadow:
+                0 15px 35px rgba(5, 22, 80, 0.18);
+            flex-shrink: 0;
+        }
+
+        .welcome-card::before {
+            content: "";
+
+            position: absolute;
+
+            width: 200px;
+            height: 200px;
+
+            border: 2px solid rgba(255, 255, 255, 0.08);
+
+            border-radius: 50%;
+
+            right: -60px;
+            top: -100px;
+        }
+
+        .welcome-card::after {
+            content: "";
+
+            position: absolute;
+
+            width: 150px;
+            height: 150px;
+
+            border: 2px solid rgba(255, 255, 255, 0.07);
+
+            border-radius: 50%;
+
+            right: 80px;
+            bottom: -100px;
+        }
+
+        .welcome-content {
+            position: relative;
+
+            z-index: 2;
+        }
+
+        .badge {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            padding: 5px 10px;
+
+            background: rgba(255, 255, 255, 0.12);
+
+            border-radius: 20px;
+
+            font-size: 9px;
+            font-weight: 700;
+
+            margin-bottom: 6px;
+        }
+
+        .welcome-content h2 {
+            font-size: 22px;
+
+            margin-bottom: 4px;
+        }
+
+        .welcome-content p {
+            color: rgba(255, 255, 255, 0.78);
+
+            font-size: 12px;
+
+            max-width: 600px;
+
+            line-height: 1.4;
+        }
+
+        /* =========================================
+           SETTINGS PANEL - GAMAY PARA MAAFIT
+        ========================================== */
+
+        .settings-panel {
+            background: white;
+
+            border-radius: 18px;
+
+            padding: 22px 28px;
+
+            border: 1px solid #edf1f7;
+
+            box-shadow:
+                0 5px 20px rgba(5, 22, 80, 0.05);
+
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+            flex-shrink: 0;
+        }
+
+        .settings-panel h3 {
+            color: #051650;
+            font-size: 16px;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .settings-panel .sub-desc {
+            color: #64748b;
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+
+        /* =========================================
+           PROFILE INFO
+        ========================================== */
+
+        .profile-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 14px 16px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #edf1f7;
+        }
+
+        .profile-info .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .profile-info .info-item .label {
+            font-size: 9px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .profile-info .info-item .value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-top: 2px;
+        }
+
+        /* =========================================
+           FORM - GAMAY ANG MARGIN
+        ========================================== */
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #334155;
+            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .form-group .input-wrapper {
+            position: relative;
+        }
+
+        .form-group .input-wrapper i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px 12px 10px 38px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            transition: 0.2s;
+            background: #f8fafc;
+            height: 42px;
+        }
+
+        .form-group input:focus {
+            border-color: #051650;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(5, 22, 80, 0.08);
+        }
+
+        .form-group input:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .form-group .toggle-password {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 5px;
+        }
+
+        .form-group .toggle-password:hover {
+            color: #475569;
+        }
+
+        /* =========================================
+           MESSAGE
+        ========================================== */
+
+        .message {
+            display: none;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 14px;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .message.show {
+            display: flex;
+        }
+
+        .message.success {
+            background: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        /* =========================================
+           BUTTON
+        ========================================== */
+
+        .btn-save {
+            padding: 10px 28px;
+            background: linear-gradient(135deg, #051650, #18347d);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 8px 18px rgba(5, 22, 80, 0.20);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(5, 22, 80, 0.25);
+        }
+
+        .btn-save:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-save i {
+            font-size: 14px;
+        }
+
+        /* =========================================
+           SIDEBAR OVERLAY
+        ========================================== */
+
+        .sidebar-overlay {
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(0, 0, 0, 0.35);
+
+            z-index: 9998;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        /* =========================================
+           RESPONSIVE
+        ========================================== */
+
+        @media (max-width: 900px) {
+            .settings-panel {
+                padding: 18px 20px;
+                max-width: 100%;
+            }
+
+            .welcome-card {
+                flex: 0 0 120px;
+                padding: 18px 22px;
+            }
+
+            .welcome-content h2 {
+                font-size: 19px;
+            }
+
+            .welcome-content p {
+                font-size: 11px;
+            }
+        }
+
+        @media (max-width: 750px) {
+
+            html,
+            body {
+                overflow: hidden;
+            }
+
+            .dashboard-container {
+                overflow: hidden;
+            }
+
+            .sidebar {
+                width: 250px;
+                transform: translateX(-100%);
+                padding: 18px 17px;
+            }
+
+            .sidebar.collapsed {
+                width: 250px;
+                padding: 18px 17px;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            .sidebar .sidebar-top,
+            .sidebar.collapsed .sidebar-top {
+                flex-direction: row;
+                gap: 10px;
+                padding: 0 3px 16px;
+            }
+
+            .sidebar .sidebar-toggle,
+            .sidebar.collapsed .sidebar-toggle {
+                order: 2;
+            }
+
+            .sidebar .user-profile,
+            .sidebar.collapsed .user-profile {
+                order: 1;
+                flex: 1;
+                justify-content: flex-start;
+                width: auto;
+            }
+
+            .sidebar .user-info,
+            .sidebar.collapsed .user-info {
+                width: auto;
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .sidebar .menu-title,
+            .sidebar.collapsed .menu-title {
+                opacity: 1;
+                height: auto;
+                margin-bottom: 10px;
+            }
+
+            .sidebar .menu a,
+            .sidebar .sidebar-bottom a,
+            .sidebar.collapsed .menu a,
+            .sidebar.collapsed .sidebar-bottom a {
+                justify-content: flex-start;
+                padding-left: 14px;
+                padding-right: 14px;
+                gap: 13px;
+            }
+
+            .sidebar .menu a span,
+            .sidebar .sidebar-bottom a span,
+            .sidebar.collapsed .menu a span,
+            .sidebar.collapsed .sidebar-bottom a span {
+                display: inline;
+            }
+
+            .main,
+            .main.expanded {
+                margin-left: 0;
+                width: 100%;
+                height: 100vh;
+                padding: 0 16px 16px;
+                overflow: hidden;
+            }
+
+            .dashboard-content {
+                overflow: hidden;
+                padding: 0;
+            }
+
+            .site-header {
+                margin-left: -16px;
+                margin-right: -16px;
+                padding: 0 14px;
+                height: 44px;
+                min-height: 44px;
+            }
+
+            .school-name {
+                font-size: 14px;
+            }
+
+            .memory-link-title {
+                font-size: 14px;
+            }
+
+            /* SHOW MOBILE HAMBURGER */
+            .mobile-menu-btn {
+                display: flex;
+                flex-shrink: 0;
+            }
+
+            .welcome-card {
+                flex: 0 0 110px;
+                padding: 16px 18px;
+                margin-top: 10px;
+                margin-bottom: 10px;
+                border-radius: 16px;
+            }
+
+            .welcome-content h2 {
+                font-size: 17px;
+            }
+
+            .welcome-content p {
+                font-size: 10px;
+            }
+
+            .settings-panel {
+                padding: 16px 18px;
+                max-width: 100%;
+                border-radius: 16px;
+            }
+
+            .settings-panel h3 {
+                font-size: 14px;
+            }
+
+            .profile-info {
+                grid-template-columns: 1fr;
+                gap: 8px;
+                padding: 12px 14px;
+            }
+
+            .form-group {
+                margin-bottom: 10px;
+            }
+
+            .form-group input {
+                height: 38px;
+                font-size: 12px;
+                padding: 8px 10px 8px 34px;
+            }
+
+            .btn-save {
+                width: 100%;
+                justify-content: center;
+                padding: 10px 20px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .school-name {
+                font-size: 12px;
+            }
+
+            .memory-link-title {
+                font-size: 12px;
+            }
+
+            .welcome-card {
+                flex: 0 0 100px;
+                padding: 14px 16px;
+            }
+
+            .welcome-content h2 {
+                font-size: 15px;
+            }
+
+            .welcome-content p {
+                font-size: 9px;
+                display: none;
+            }
+
+            .badge {
+                font-size: 8px;
+                padding: 4px 8px;
+                margin-bottom: 4px;
+            }
+
+            .settings-panel {
+                padding: 14px 14px;
+            }
+
+            .settings-panel h3 {
+                font-size: 13px;
+            }
+
+            .profile-info .info-item .value {
+                font-size: 12px;
+            }
+
+            .form-group input {
+                height: 36px;
+                font-size: 11px;
+                padding: 6px 8px 6px 32px;
+            }
+
+            .btn-save {
+                font-size: 11px;
+                padding: 8px 16px;
+            }
+        }
+    </style>
+<script src="/js/db-sync.js"></script>
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+
+        <!-- =========================================
+             SIDEBAR
+        ========================================== -->
+
+        <aside class="sidebar" id="sidebar">
+
+            <div class="sidebar-top">
+
+                <div class="user-profile">
+
+                    <div class="user-avatar" id="userAvatar">
+                        S
+                    </div>
+
+                    <div class="user-info">
+
+                        <strong id="userName">
+                            Student
+                        </strong>
+
+                        <span id="userRole">
+                            Student
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <button
+                    class="sidebar-toggle"
+                    type="button"
+                    id="sidebarToggle"
+                    aria-label="Toggle Sidebar">
+
+                    <i class="fa-solid fa-bars"></i>
+
+                </button>
+
+            </div>
+
+            <div class="menu-title">
+                MAIN MENU
+            </div>
+
+            <nav class="menu">
+
+                <a href="/student_dashboard"
+                   class="sidebar-link">
+
+                    <i class="fa-solid fa-house"></i>
+
+                    <span>
+                        Dashboard
+                    </span>
+
+                </a>
+
+                <a href="/strands"
+                   class="sidebar-link">
+
+                    <i class="fa-solid fa-book-open"></i>
+
+                    <span>
+                        Learning Strands
+                    </span>
+
+                </a>
+
+                <a href="/lessons"
+                   class="sidebar-link">
+
+                    <i class="fa-solid fa-graduation-cap"></i>
+
+                    <span>
+                        Lessons
+                    </span>
+
+                </a>
+
+                <a href="/flashcards"
+                   class="sidebar-link">
+
+                    <i class="fa-solid fa-layer-group"></i>
+
+                    <span>
+                        Flashcards
+                    </span>
+
+                </a>
+
+                <a href="/quizzes"
+                   class="sidebar-link">
+
+                    <i class="fa-solid fa-clipboard-question"></i>
+
+                    <span>
+                        Quizzes
+                    </span>
+
+                </a>
+
+            </nav>
+
+            <div class="sidebar-bottom">
+
+                <a href="student_settings.html"
+                   class="sidebar-link active">
+
+                    <i class="fa-solid fa-gear"></i>
+
+                    <span>
+                        Settings
+                    </span>
+
+                </a>
+
+                <a href="/login"
+                   id="logoutButton">
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+
+                    <span>
+                        Logout
+                    </span>
+
+                </a>
+
+            </div>
+
+        </aside>
+
+        <!-- MOBILE OVERLAY -->
+
+        <div class="sidebar-overlay"
+             id="sidebarOverlay">
+        </div>
+
+
+        <!-- =========================================
+             MAIN
+        ========================================== -->
+
+        <main class="main" id="main">
+
+            <!-- SCHOOL HEADER -->
+
+            <header class="site-header">
+
+                <!-- MOBILE HAMBURGER -->
+                <button
+                    class="mobile-menu-btn"
+                    id="mobileMenuBtn"
+                    type="button"
+                    aria-label="Open Menu">
+
+                    <i class="fa-solid fa-bars"></i>
+
+                </button>
+
+                <div class="school-name">Xavier University Senior High School</div>
+                <div class="memory-link-title">MemoryLink</div>
+
+            </header>
+
+
+            <!-- DASHBOARD CONTENT - WALAY SCROLL -->
+
+            <div class="dashboard-content">
+
+                <!-- WELCOME -->
+
+                <section class="welcome-card">
+
+                    <div class="welcome-content">
+
+                        <div class="badge">
+
+                            <i class="fa-solid fa-gear"></i>
+
+                            Student Settings
+
+                        </div>
+
+                        <h2>
+                            Account Settings
+                        </h2>
+
+                        <p>
+                            Manage your account information and update your password.
+                        </p>
+
+                    </div>
+
+                </section>
+
+
+                <!-- SETTINGS PANEL -->
+
+                <section class="settings-panel">
+
+                    <h3>
+                        <i class="fa-solid fa-user" style="color:#051650; margin-right:8px;"></i>
+                        Profile Information
+                    </h3>
+
+                    <div class="profile-info" id="profileInfo">
+                        <div class="info-item">
+                            <span class="label">Username</span>
+                            <span class="value" id="profileUsername">Loading...</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="label">Role</span>
+                            <span class="value" id="profileRole">Student</span>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-top: 16px; border-top: 1px solid #edf1f7; padding-top: 16px;">
+                        <i class="fa-solid fa-lock" style="color:#051650; margin-right:8px;"></i>
+                        Change Password
+                    </h3>
+
+                    <p class="sub-desc">
+                        Update your password to keep your account secure.
+                    </p>
+
+                    <!-- MESSAGE -->
+                    <div id="messageBox" class="message">
+                        <i id="messageIcon" class="fa-solid fa-circle-check"></i>
+                        <span id="messageText"></span>
+                    </div>
+
+                    <form id="changePasswordForm">
+
+                        <!-- CURRENT PASSWORD -->
+                        <div class="form-group">
+                            <label for="currentPassword">Current Password</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock"></i>
+                                <input
+                                    type="password"
+                                    id="currentPassword"
+                                    placeholder="Enter your current password"
+                                    required>
+                                <button
+                                    type="button"
+                                    class="toggle-password"
+                                    onclick="togglePassword('currentPassword', 'eyeIcon1')">
+                                    <i id="eyeIcon1" class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- NEW PASSWORD -->
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock"></i>
+                                <input
+                                    type="password"
+                                    id="newPassword"
+                                    placeholder="Enter your new password"
+                                    required
+                                    minlength="6">
+                                <button
+                                    type="button"
+                                    class="toggle-password"
+                                    onclick="togglePassword('newPassword', 'eyeIcon2')">
+                                    <i id="eyeIcon2" class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                            <div style="margin-top:4px; font-size:10px; color:#94a3b8;">
+                                <i class="fa-solid fa-circle-info"></i>
+                                Password must be at least 6 characters.
+                            </div>
+                        </div>
+
+                        <!-- CONFIRM NEW PASSWORD -->
+                        <div class="form-group">
+                            <label for="confirmNewPassword">Confirm New Password</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock"></i>
+                                <input
+                                    type="password"
+                                    id="confirmNewPassword"
+                                    placeholder="Confirm your new password"
+                                    required>
+                                <button
+                                    type="button"
+                                    class="toggle-password"
+                                    onclick="togglePassword('confirmNewPassword', 'eyeIcon3')">
+                                    <i id="eyeIcon3" class="fa-solid fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- SUBMIT -->
+                        <button type="submit" class="btn-save" id="saveBtn">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Update Password
+                        </button>
+
+                    </form>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- =========================================
+         JAVASCRIPT
+    ========================================== -->
+
+    <script>
+
+        /* =========================================
+           CHECK LOGIN
+        ========================================== */
+
+        const savedUser =
+            memoryStore.getItem("memoryLinkUser");
+
+        if (!savedUser) {
+
+            window.location.replace("/login");
+
+        }
+
+        let user = null;
+
+        try {
+
+            user = JSON.parse(savedUser);
+
+        } catch (error) {
+
+            memoryStore.removeItem("memoryLinkUser");
+
+            window.location.replace("/login");
+
+        }
+
+        /* =========================================
+           STUDENT ONLY
+        ========================================== */
+
+        // --- FIX: Check for role case-insensitively ---
+        if (user && user.role && user.role.toLowerCase() === "admin") {
+            window.location.replace("/dashboard");
+        }
+
+        /* =========================================
+           DISPLAY USER
+        ========================================== */
+
+        if (user) {
+
+            const username =
+                user.username || "Student";
+
+            document.getElementById("userName")
+                .textContent = username;
+
+            document.getElementById("userRole")
+                .textContent = "Student";
+
+            document.getElementById("userAvatar")
+                .textContent =
+                    username.charAt(0).toUpperCase();
+
+            // Profile info
+            document.getElementById("profileUsername")
+                .textContent = username;
+
+            document.getElementById("profileRole")
+                .textContent = "Student";
+
+        }
+
+
+        /* =========================================
+           TOGGLE PASSWORD
+        ========================================== */
+
+        function togglePassword(inputId, iconId) {
+
+            const input =
+                document.getElementById(inputId);
+
+            const icon =
+                document.getElementById(iconId);
+
+            if (input.type === "password") {
+
+                input.type = "text";
+
+                icon.classList.remove("fa-eye");
+
+                icon.classList.add("fa-eye-slash");
+
+            } else {
+
+                input.type = "password";
+
+                icon.classList.remove("fa-eye-slash");
+
+                icon.classList.add("fa-eye");
+
+            }
+        }
+
+
+        /* =========================================
+           SHOW MESSAGE
+        ========================================== */
+
+        function showMessage(type, text) {
+
+            const box =
+                document.getElementById("messageBox");
+
+            const icon =
+                document.getElementById("messageIcon");
+
+            const textEl =
+                document.getElementById("messageText");
+
+            box.className = "message show " + type;
+
+            textEl.textContent = text;
+
+            if (type === "success") {
+
+                icon.className =
+                    "fa-solid fa-circle-check";
+
+            } else {
+
+                icon.className =
+                    "fa-solid fa-circle-exclamation";
+            }
+        }
+
+
+        /* =========================================
+           HIDE MESSAGE
+        ========================================== */
+
+        function hideMessage() {
+
+            const box =
+                document.getElementById("messageBox");
+
+            box.className = "message";
+        }
+
+
+        /* =========================================
+           GET USERS FROM LOCALSTORAGE
+        ========================================== */
+
+        function getUsers() {
+
+            try {
+
+                const data =
+                    memoryStore.getItem(
+                        "memoryLinkUsers"
+                    );
+
+                return data ? JSON.parse(data) : [];
+
+            } catch (error) {
+
+                return [];
+            }
+        }
+
+
+        /* =========================================
+           SAVE USERS TO LOCALSTORAGE
+        ========================================== */
+
+        function saveUsers(users) {
+
+            memoryStore.setItem(
+                "memoryLinkUsers",
+                JSON.stringify(users)
+            );
+        }
+
+
+        /* =========================================
+           CHANGE PASSWORD
+        ========================================== */
+
+        document
+            .getElementById("changePasswordForm")
+            .addEventListener(
+                "submit",
+                function (event) {
+
+                    event.preventDefault();
+
+                    hideMessage();
+
+                    const currentPassword =
+                        document
+                            .getElementById(
+                                "currentPassword"
+                            )
+                            .value;
+
+                    const newPassword =
+                        document
+                            .getElementById(
+                                "newPassword"
+                            )
+                            .value;
+
+                    const confirmPassword =
+                        document
+                            .getElementById(
+                                "confirmNewPassword"
+                            )
+                            .value;
+
+                    const saveBtn =
+                        document
+                            .getElementById(
+                                "saveBtn"
+                            );
+
+                    // Validation
+                    if (!currentPassword) {
+
+                        showMessage(
+                            "error",
+                            "Please enter your current password."
+                        );
+
+                        return;
+                    }
+
+                    if (newPassword.length < 6) {
+
+                        showMessage(
+                            "error",
+                            "New password must be at least 6 characters."
+                        );
+
+                        return;
+                    }
+
+                    if (newPassword !== confirmPassword) {
+
+                        showMessage(
+                            "error",
+                            "New passwords do not match."
+                        );
+
+                        return;
+                    }
+
+                    // Get all users
+                    const users = getUsers();
+
+                    // --- FIX: Find user with case-insensitive role check ---
+                    const currentUser =
+                        users.find(function(u) {
+
+                            return (
+                                u.username === user.username &&
+                                u.role &&
+                                u.role.toLowerCase() === "student"
+                            );
+                        });
+
+                    if (!currentUser) {
+
+                        showMessage(
+                            "error",
+                            "User not found. Please contact support."
+                        );
+
+                        return;
+                    }
+
+                    // Check current password
+                    if (
+                        currentUser.password !==
+                        currentPassword
+                    ) {
+
+                        showMessage(
+                            "error",
+                            "Current password is incorrect."
+                        );
+
+                        return;
+                    }
+
+                    // Update password
+                    currentUser.password =
+                        newPassword;
+
+                    // Save to memoryStore
+                    saveUsers(users);
+
+                    // Also update session user
+                    user.password = newPassword;
+
+                    memoryStore.setItem(
+                        "memoryLinkUser",
+                        JSON.stringify(user)
+                    );
+
+                    // Success
+                    showMessage(
+                        "success",
+                        "Password updated successfully!"
+                    );
+
+                    // Clear form
+                    document
+                        .getElementById(
+                            "currentPassword"
+                        )
+                        .value = "";
+
+                    document
+                        .getElementById(
+                            "newPassword"
+                        )
+                        .value = "";
+
+                    document
+                        .getElementById(
+                            "confirmNewPassword"
+                        )
+                        .value = "";
+
+                    saveBtn.disabled = true;
+
+                    setTimeout(function() {
+
+                        saveBtn.disabled = false;
+
+                    }, 2000);
+                }
+            );
+
+
+        /* =========================================
+           SIDEBAR ELEMENTS
+        ========================================== */
+
+        const sidebar =
+            document.getElementById("sidebar");
+
+        const main =
+            document.getElementById("main");
+
+        const sidebarToggle =
+            document.getElementById("sidebarToggle");
+
+        const sidebarOverlay =
+            document.getElementById("sidebarOverlay");
+
+        const mobileMenuBtn =
+            document.getElementById("mobileMenuBtn");
+
+        /* =========================================
+           DESKTOP SIDEBAR TOGGLE
+        ========================================== */
+
+        sidebarToggle.addEventListener(
+            "click",
+            function () {
+
+                if (window.innerWidth <= 750) {
+
+                    sidebar.classList.toggle("show");
+
+                    sidebarOverlay.classList.toggle("show");
+
+                } else {
+
+                    sidebar.classList.toggle("collapsed");
+
+                    main.classList.toggle("expanded");
+
+                }
+
+            }
+        );
+
+        /* =========================================
+           MOBILE MENU BUTTON
+        ========================================== */
+
+        mobileMenuBtn.addEventListener(
+            "click",
+            function () {
+
+                if (window.innerWidth <= 750) {
+
+                    sidebar.classList.add("show");
+
+                    sidebarOverlay.classList.add("show");
+
+                }
+
+            }
+        );
+
+        /* =========================================
+           OVERLAY CLICK
+        ========================================== */
+
+        sidebarOverlay.addEventListener(
+            "click",
+            function () {
+
+                sidebar.classList.remove("show");
+
+                sidebarOverlay.classList.remove("show");
+
+            }
+        );
+
+        /* =========================================
+           SIDEBAR LINKS
+        ========================================== */
+
+        document
+            .querySelectorAll(".sidebar-link")
+            .forEach(function (link) {
+
+                link.addEventListener(
+                    "click",
+                    function () {
+
+                        if (window.innerWidth <= 750) {
+
+                            sidebar.classList.remove("show");
+
+                            sidebarOverlay.classList.remove("show");
+
+                        }
+
+                    }
+                );
+
+            });
+
+
+        /* =========================================
+           LOGOUT
+        ========================================== */
+
+        document
+            .getElementById("logoutButton")
+            .addEventListener(
+                "click",
+                function (event) {
+
+                    event.preventDefault();
+
+                    memoryStore.removeItem(
+                        "memoryLinkUser"
+                    );
+
+                    window.location.replace(
+                        "/login"
+                    );
+
+                }
+            );
+
+    </script>
+
+</body>
+
+</html>

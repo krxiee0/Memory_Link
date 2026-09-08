@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study - MemoryLink</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/js/db-sync.js"></script>
+</head>
+<body>
+<nav><a href="/" class="brand">MemoryLink</a><span>English 201</span></nav>
+<main class="container study-page">
+    <div class="lesson-header"><span>ENG 201</span><h1 id="lessonTitle">Lesson</h1></div>
+    <section class="lesson-content">
+        <h2 id="lessonHeading">Lesson Content</h2>
+        <p id="lessonDescription">Loading lesson...</p>
+    </section>
+    <h2 class="choose-title">Choose your study method</h2>
+    <div class="study-options">
+        <a href="/flashcards" class="option-btn"><span>📚</span><strong>Flashcards</strong><small>Review questions and answers</small></a>
+        <a href="/quiz" class="option-btn"><span>📝</span><strong>Quiz</strong><small>Test your knowledge</small></a>
+    </div>
+</main>
+<script>
+(async function () {
+    const saved = memoryStore.getItem("selectedLesson");
+
+    if (!saved) {
+        document.getElementById("lessonTitle").textContent = "No lesson selected";
+        document.getElementById("lessonHeading").textContent = "Please choose a lesson";
+        document.getElementById("lessonDescription").textContent = "Return to Lessons and select a lesson to study.";
+        return;
+    }
+
+    try {
+        const selected = JSON.parse(saved);
+
+        // Refresh from the database when an ID is available.
+        let lesson = selected;
+        if (selected.id) {
+            const response = await fetch("/api/lessons");
+            if (response.ok) {
+                const lessons = await response.json();
+                lesson = lessons.find(item => String(item.id) === String(selected.id)) || selected;
+            }
+        }
+
+        document.getElementById("lessonTitle").textContent = lesson.title || "Lesson";
+        document.getElementById("lessonHeading").textContent = lesson.title || "Lesson Content";
+        document.getElementById("lessonDescription").textContent =
+            lesson.description || "No lesson description available.";
+    } catch (e) {
+        console.error("Could not load selected lesson", e);
+        document.getElementById("lessonDescription").textContent =
+            "Unable to load this lesson.";
+    }
+})();
+</script>
+</body>
+</html>

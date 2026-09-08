@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Dashboard | MemoryLink</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <style>
+        /* --- RESET --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        /* =========================================
+           CONTAINER
+        ========================================== */
+
+        .dashboard-container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* =========================================
+           SIDEBAR
+        ========================================== */
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+
+            background: linear-gradient(
+                180deg,
+                #051650 0%,
+                #0a2368 55%,
+                #18347d 100%
+            );
+
+            color: white;
+
+            position: fixed;
+            left: 0;
+            top: 0;
+
+            padding: 18px 17px;
+
+            display: flex;
+            flex-direction: column;
+
+            z-index: 9999;
+            overflow: hidden;
+
+            transition:
+                width 0.3s ease,
+                padding 0.3s ease,
+                transform 0.3s ease;
+        }
+
+        /* COLLAPSED */
+
+        .sidebar.collapsed {
+            width: 82px;
+            padding: 18px 12px;
+        }
+
+        /* =========================================
+           SIDEBAR TOP
+        ========================================== */
+
+        .sidebar-top {
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+
+            padding: 0 3px 16px;
+
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+
+            margin-bottom: 20px;
+        }
+
+        /* TOGGLE - desktop only */
+
+        .sidebar-toggle {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+
+            border: none;
+            border-radius: 10px;
+
+            background: rgba(255, 255, 255, 0.10);
+            color: white;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 17px;
+
+            cursor: pointer;
+
+            transition: all 0.25s ease;
+        }
+
+        .sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.18);
+            transform: translateY(-1px);
+        }
+
+        /* =========================================
+           USER PROFILE
+        ========================================== */
+
+        .user-profile {
+            flex: 1;
+            min-width: 0;
+
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+
+            border-radius: 50%;
+
+            background: white;
+            color: #051650;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-size: 14px;
+            font-weight: 800;
+        }
+
+        .user-info {
+            min-width: 0;
+            overflow: hidden;
+
+            transition:
+                opacity 0.2s ease,
+                width 0.3s ease;
+        }
+
+        .user-info strong {
+            display: block;
+
+            color: white;
+
+            font-size: 13px;
+            font-weight: 800;
+
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+
+            margin-bottom: 3px;
+        }
+
+        .user-info span {
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 10px;
+        }
+
+        /* =========================================
+           COLLAPSED SIDEBAR TOP
+        ========================================== */
+
+        .sidebar.collapsed .sidebar-top {
+            flex-direction: column;
+
+            gap: 14px;
+
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .sidebar.collapsed .sidebar-toggle {
+            order: 1;
+        }
+
+        .sidebar.collapsed .user-profile {
+            order: 2;
+
+            flex: none;
+
+            justify-content: center;
+
+            width: 100%;
+        }
+
+        .sidebar.collapsed .user-info {
+            width: 0;
+
+            opacity: 0;
+
+            pointer-events: none;
+        }
+
+        /* =========================================
+           MENU TITLE
+        ========================================== */
+
+        .menu-title {
+            color: rgba(255, 255, 255, 0.45);
+
+            font-size: 10px;
+            font-weight: 700;
+
+            letter-spacing: 1px;
+
+            padding: 0 12px;
+
+            margin-bottom: 10px;
+
+            white-space: nowrap;
+
+            transition: opacity 0.2s ease;
+        }
+
+        .sidebar.collapsed .menu-title {
+            opacity: 0;
+
+            height: 0;
+
+            margin-bottom: 4px;
+        }
+
+        /* =========================================
+           MENU
+        ========================================== */
+
+        .menu {
+            display: flex;
+            flex-direction: column;
+
+            gap: 6px;
+
+            width: 100%;
+        }
+
+        .menu a,
+        .sidebar-bottom a {
+            width: 100%;
+
+            color: rgba(255, 255, 255, 0.72);
+
+            display: flex;
+            align-items: center;
+
+            gap: 13px;
+
+            padding: 13px 14px;
+
+            border-radius: 12px;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            transition:
+                background 0.25s ease,
+                color 0.25s ease,
+                transform 0.15s ease;
+
+            cursor: pointer;
+
+            white-space: nowrap;
+        }
+
+        .menu a i,
+        .sidebar-bottom a i {
+            width: 20px;
+            min-width: 20px;
+
+            text-align: center;
+
+            font-size: 15px;
+        }
+
+        .menu a:hover,
+        .sidebar-bottom a:hover {
+            background: rgba(255, 255, 255, 0.10);
+
+            color: white;
+
+            transform: translateX(2px);
+        }
+
+        .menu a.active {
+            background: rgba(255, 255, 255, 0.16);
+
+            color: white;
+
+            box-shadow: inset 3px 0 0 white;
+        }
+
+        /* =========================================
+           COLLAPSED MENU
+        ========================================== */
+
+        .sidebar.collapsed .menu a,
+        .sidebar.collapsed .sidebar-bottom a {
+            justify-content: center;
+
+            padding-left: 0;
+            padding-right: 0;
+
+            gap: 0;
+        }
+
+        .sidebar.collapsed .menu a:hover,
+        .sidebar.collapsed .sidebar-bottom a:hover {
+            transform: none;
+        }
+
+        .sidebar.collapsed .menu a span,
+        .sidebar.collapsed .sidebar-bottom a span {
+            display: none;
+        }
+
+        /* =========================================
+           SIDEBAR BOTTOM
+        ========================================== */
+
+        .sidebar-bottom {
+            margin-top: auto;
+
+            padding-top: 15px;
+
+            width: 100%;
+        }
+
+        .sidebar-bottom a {
+            margin-top: 5px;
+        }
+
+        /* =========================================
+           MAIN
+        ========================================== */
+
+        .main {
+            margin-left: 250px;
+
+            width: calc(100% - 250px);
+
+            height: 100vh;
+
+            padding: 0 35px 20px;
+
+            overflow: hidden;
+
+            display: flex;
+            flex-direction: column;
+
+            transition:
+                margin-left 0.3s ease,
+                width 0.3s ease;
+        }
+
+        .main.expanded {
+            margin-left: 82px;
+
+            width: calc(100% - 82px);
+        }
+
+        /* =========================================
+           SCHOOL HEADER
+        ========================================== */
+
+        .site-header {
+            height: 49px;
+            min-height: 49px;
+
+            margin-left: -35px;
+            margin-right: -35px;
+
+            padding: 0 25px;
+
+            background: #051650;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            color: white;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* ===== MOBILE BURGER BUTTON - VISIBLE ON MOBILE ONLY ===== */
+        .mobile-burger-btn {
+            display: none;
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+        }
+
+        .mobile-burger-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .mobile-burger-btn i {
+            font-size: 22px;
+            color: white;
+        }
+
+        .school-name {
+            font-size: 21px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .memory-link-title {
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        /* =========================================
+           MAIN CONTENT AREA
+        ========================================== */
+
+        .dashboard-content {
+            flex: 1;
+
+            display: flex;
+            flex-direction: column;
+
+            min-height: 0;
+        }
+
+        /* =========================================
+           WELCOME
+        ========================================== */
+
+        .welcome-card {
+            flex: 0 0 170px;
+
+            border-radius: 22px;
+
+            padding: 27px 30px;
+
+            color: white;
+
+            background: linear-gradient(
+                135deg,
+                #051650,
+                #0a2368,
+                #18347d
+            );
+
+            position: relative;
+
+            overflow: hidden;
+
+            margin-top: 18px;
+            margin-bottom: 16px;
+
+            box-shadow:
+                0 15px 35px rgba(5, 22, 80, 0.18);
+        }
+
+        .welcome-card::before {
+            content: "";
+
+            position: absolute;
+
+            width: 280px;
+            height: 280px;
+
+            border: 2px solid rgba(255, 255, 255, 0.08);
+
+            border-radius: 50%;
+
+            right: -80px;
+            top: -130px;
+        }
+
+        .welcome-card::after {
+            content: "";
+
+            position: absolute;
+
+            width: 190px;
+            height: 190px;
+
+            border: 2px solid rgba(255, 255, 255, 0.07);
+
+            border-radius: 50%;
+
+            right: 110px;
+            bottom: -135px;
+        }
+
+        .welcome-content {
+            position: relative;
+
+            z-index: 2;
+        }
+
+        .badge {
+            display: inline-flex;
+
+            align-items: center;
+
+            gap: 7px;
+
+            padding: 6px 11px;
+
+            background: rgba(255, 255, 255, 0.12);
+
+            border-radius: 20px;
+
+            font-size: 10px;
+            font-weight: 700;
+
+            margin-bottom: 9px;
+        }
+
+        .welcome-content h2 {
+            font-size: 25px;
+
+            margin-bottom: 6px;
+        }
+
+        .welcome-content p {
+            color: rgba(255, 255, 255, 0.78);
+
+            font-size: 13px;
+
+            max-width: 700px;
+
+            line-height: 1.5;
+        }
+
+        /* =========================================
+           STATISTICS
+        ========================================== */
+
+        .stats {
+            flex: 0 0 auto;
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 16px;
+
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: white;
+
+            border-radius: 17px;
+
+            padding: 17px 18px;
+
+            min-height: 125px;
+
+            box-shadow:
+                0 5px 20px rgba(5, 22, 80, 0.06);
+
+            border: 1px solid #edf1f7;
+        }
+
+        .stat-top {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 10px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+
+            border-radius: 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #eef2ff;
+
+            color: #051650;
+        }
+
+        .stat-change {
+            font-size: 10px;
+
+            color: #16a34a;
+
+            font-weight: 700;
+        }
+
+        .stat-card h3 {
+            color: #64748b;
+
+            font-size: 12px;
+
+            font-weight: 600;
+
+            margin-bottom: 2px;
+        }
+
+        .stat-number {
+            color: #051650;
+
+            font-size: 25px;
+
+            font-weight: 800;
+        }
+
+        /* =========================================
+           LOWER CONTENT
+        ========================================== */
+
+        .content-grid {
+            flex: 1;
+
+            min-height: 0;
+
+            display: grid;
+
+            grid-template-columns:
+                1.5fr 1fr;
+
+            gap: 18px;
+
+            padding-bottom: 0;
+        }
+
+        .panel {
+            background: white;
+
+            border-radius: 18px;
+
+            padding: 20px;
+
+            border: 1px solid #edf1f7;
+
+            box-shadow:
+                0 5px 20px rgba(5, 22, 80, 0.05);
+
+            min-height: 0;
+
+            overflow: hidden;
+        }
+
+        .panel-header {
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 15px;
+        }
+
+        .panel-header h3 {
+            color: #051650;
+
+            font-size: 16px;
+
+            font-weight: 800;
+        }
+
+        .panel-header a {
+            color: #051650;
+
+            font-size: 11px;
+
+            font-weight: 700;
+        }
+
+        /* =========================================
+           ACTIVITY
+        ========================================== */
+
+        .activity {
+            display: flex;
+
+            flex-direction: column;
+
+            gap: 12px;
+        }
+
+        .activity-item {
+            display: flex;
+
+            align-items: center;
+
+            gap: 13px;
+
+            padding: 13px 0;
+
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+
+            padding-bottom: 0;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+
+            border-radius: 11px;
+
+            background: #eef2ff;
+
+            color: #051650;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            flex-shrink: 0;
+        }
+
+        .activity-text {
+            flex: 1;
+        }
+
+        .activity-text strong {
+            display: block;
+
+            font-size: 12px;
+
+            color: #334155;
+
+            margin-bottom: 3px;
+        }
+
+        .activity-text span {
+            color: #94a3b8;
+
+            font-size: 10px;
+        }
+
+        .activity-time {
+            color: #94a3b8;
+
+            font-size: 10px;
+
+            white-space: nowrap;
+        }
+
+        /* =========================================
+           QUICK ACTIONS
+        ========================================== */
+
+        .quick-actions {
+            display: grid;
+
+            grid-template-columns:
+                1fr 1fr;
+
+            gap: 12px;
+
+            height: calc(100% - 45px);
+        }
+
+        .quick-action {
+            min-height: 110px;
+
+            padding: 20px 12px;
+
+            border-radius: 14px;
+
+            background: #f8fafc;
+
+            border: 1px solid #edf1f7;
+
+            color: #334155;
+
+            text-align: center;
+
+            display: flex;
+
+            flex-direction: column;
+
+            align-items: center;
+
+            justify-content: center;
+
+            transition: 0.25s;
+
+            cursor: pointer;
+        }
+
+        .quick-action:hover {
+            background: #eef2ff;
+
+            border-color: #dbe3ff;
+
+            transform: translateY(-2px);
+        }
+
+        .quick-action i {
+            display: block;
+
+            color: #051650;
+
+            font-size: 22px;
+
+            margin-bottom: 9px;
+        }
+
+        .quick-action span {
+            font-size: 11px;
+
+            font-weight: 700;
+
+            line-height: 1.3;
+        }
+
+        /* =========================================
+           MOBILE OVERLAY
+        ========================================== */
+
+        .sidebar-overlay {
+            display: none;
+
+            position: fixed;
+
+            inset: 0;
+
+            background: rgba(0, 0, 0, 0.35);
+
+            z-index: 9998;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        /* =========================================
+           TABLET
+        ========================================== */
+
+        @media (max-width: 1050px) {
+            html,
+            body {
+                overflow: auto;
+            }
+
+            .dashboard-container {
+                overflow: visible;
+            }
+
+            .main {
+                height: auto;
+
+                min-height: 100vh;
+
+                overflow: visible;
+            }
+
+            .dashboard-content {
+                display: block;
+            }
+
+            .welcome-card {
+                height: auto;
+
+                min-height: 170px;
+            }
+
+            .stats {
+                grid-template-columns:
+                    repeat(4, 1fr);
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr;
+
+                min-height: auto;
+            }
+
+            .panel {
+                min-height: 300px;
+            }
+        }
+
+        /* =========================================
+           MOBILE - BURGER IN HEADER
+        ========================================== */
+
+        @media (max-width: 750px) {
+            html,
+            body {
+                overflow: auto;
+            }
+
+            /* SHOW BURGER BUTTON ON MOBILE */
+            .mobile-burger-btn {
+                display: flex !important;
+            }
+
+            .sidebar {
+                width: 280px;
+
+                transform: translateX(-100%);
+
+                padding: 18px 17px;
+                
+                transition: transform 0.3s ease;
+            }
+
+            .sidebar.collapsed {
+                width: 280px;
+
+                padding: 18px 17px;
+
+                transform: translateX(-100%);
+            }
+
+            .sidebar.show {
+                transform: translateX(0);
+            }
+
+            /* Hide desktop toggle on mobile */
+            .sidebar .sidebar-toggle {
+                display: none !important;
+            }
+
+            .sidebar .user-profile,
+            .sidebar.collapsed .user-profile {
+                flex: 1 !important;
+                justify-content: flex-start !important;
+                width: auto !important;
+            }
+
+            .sidebar .user-info,
+            .sidebar.collapsed .user-info {
+                width: auto !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+
+            .sidebar .menu-title,
+            .sidebar.collapsed .menu-title {
+                opacity: 1 !important;
+                height: auto !important;
+                margin-bottom: 10px !important;
+            }
+
+            .sidebar .menu a,
+            .sidebar .sidebar-bottom a,
+            .sidebar.collapsed .menu a,
+            .sidebar.collapsed .sidebar-bottom a {
+                justify-content: flex-start !important;
+                padding-left: 14px !important;
+                padding-right: 14px !important;
+                gap: 13px !important;
+            }
+
+            .sidebar .menu a span,
+            .sidebar .sidebar-bottom a span,
+            .sidebar.collapsed .menu a span,
+            .sidebar.collapsed .sidebar-bottom a span {
+                display: inline !important;
+            }
+
+            .main,
+            .main.expanded {
+                margin-left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                padding: 0 20px 30px !important;
+                overflow: visible !important;
+            }
+
+            .dashboard-content {
+                display: block !important;
+            }
+
+            .site-header {
+                margin-left: -20px !important;
+                margin-right: -20px !important;
+                padding: 0 14px !important;
+                gap: 8px !important;
+            }
+
+            .header-left {
+                gap: 8px !important;
+                flex: 1 !important;
+                min-width: 0 !important;
+            }
+
+            .school-name {
+                font-size: 14px !important;
+                white-space: nowrap !important;
+                overflow: hidden !important;
+                text-overflow: ellipsis !important;
+                flex: 1 !important;
+            }
+
+            .memory-link-title {
+                font-size: 14px !important;
+                white-space: nowrap !important;
+                flex-shrink: 0 !important;
+            }
+
+            .welcome-card {
+                margin-top: 18px !important;
+                padding: 25px !important;
+                min-height: 175px !important;
+                height: auto !important;
+            }
+
+            .welcome-content h2 {
+                font-size: 21px !important;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 12px !important;
+            }
+
+            .stat-card {
+                padding: 17px !important;
+                min-height: 110px !important;
+            }
+
+            .stat-number {
+                font-size: 23px !important;
+            }
+
+            .content-grid {
+                grid-template-columns: 1fr !important;
+                gap: 15px !important;
+            }
+
+            .panel {
+                min-height: 280px !important;
+            }
+
+            .quick-actions {
+                height: auto !important;
+                grid-template-columns: 1fr 1fr !important;
+            }
+        }
+
+        /* =========================================
+           SMALL MOBILE
+        ========================================== */
+
+        @media (max-width: 480px) {
+            .stats {
+                grid-template-columns: 1fr !important;
+            }
+
+            .quick-actions {
+                grid-template-columns: 1fr 1fr !important;
+            }
+
+            .school-name {
+                font-size: 11px !important;
+            }
+
+            .memory-link-title {
+                font-size: 11px !important;
+            }
+
+            .mobile-burger-btn {
+                width: 36px !important;
+                height: 36px !important;
+                min-width: 36px !important;
+            }
+
+            .mobile-burger-btn i {
+                font-size: 18px !important;
+            }
+        }
+    </style>
+    <script src="/js/db-sync.js"></script>
+</head>
+
+<body>
+
+    <div class="dashboard-container">
+
+        <!-- =========================================
+             SIDEBAR
+        ========================================== -->
+
+        <aside class="sidebar" id="sidebar">
+
+            <div class="sidebar-top">
+
+                <!-- ADMIN PROFILE -->
+
+                <div class="user-profile">
+
+                    <div class="user-avatar" id="userAvatar">
+                        A
+                    </div>
+
+                    <div class="user-info">
+
+                        <strong id="userName">
+                            Admin
+                        </strong>
+
+                        <span id="userRole">
+                            Administrator
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <!-- TOGGLE BUTTON (desktop only, hidden on mobile) -->
+
+                <button
+                    class="sidebar-toggle"
+                    type="button"
+                    id="sidebarToggle"
+                    aria-label="Toggle Sidebar">
+
+                    <i class="fa-solid fa-bars"></i>
+
+                </button>
+
+            </div>
+
+            <!-- MAIN MENU -->
+
+            <div class="menu-title">
+                MAIN MENU
+            </div>
+
+            <nav class="menu">
+
+                <a href="/dashboard"
+                   class="sidebar-link active">
+
+                    <i class="fa-solid fa-house"></i>
+
+                    <span>
+                        Dashboard
+                    </span>
+
+                </a>
+
+                <a href="/admin_strands"
+                   class="sidebar-link">
+
+                    <i class="fa-solid fa-book-open"></i>
+
+                    <span>
+                        Learning Strands
+                    </span>
+
+                </a>
+
+                <a href="/admin_lessons"
+                   class="sidebar-link">
+
+                    <i class="fa-solid fa-graduation-cap"></i>
+
+                    <span>
+                        Lessons
+                    </span>
+
+                </a>
+
+                <a href="/admin_flashcards"
+                   class="sidebar-link">
+
+                    <i class="fa-solid fa-layer-group"></i>
+
+                    <span>
+                        Flashcards
+                    </span>
+
+                </a>
+
+                <a href="/admin_quizzes"
+                   class="sidebar-link">
+
+                    <i class="fa-solid fa-clipboard-question"></i>
+
+                    <span>
+                        Quizzes
+                    </span>
+
+                </a>
+
+            </nav>
+
+            <!-- BOTTOM MENU -->
+
+            <div class="sidebar-bottom">
+
+                <a href="admin_settings.html"
+                   class="sidebar-link">
+
+                    <i class="fa-solid fa-gear"></i>
+
+                    <span>
+                        Settings
+                    </span>
+
+                </a>
+
+                <a href="/login"
+                   id="logoutButton">
+
+                    <i class="fa-solid fa-right-from-bracket"></i>
+
+                    <span>
+                        Logout
+                    </span>
+
+                </a>
+
+            </div>
+
+        </aside>
+
+        <!-- MOBILE OVERLAY -->
+
+        <div class="sidebar-overlay"
+             id="sidebarOverlay">
+        </div>
+
+
+        <!-- =========================================
+             MAIN
+        ========================================== -->
+
+        <main class="main" id="main">
+
+            <!-- SCHOOL HEADER WITH BURGER -->
+
+            <header class="site-header">
+                <div class="header-left">
+                    <!-- BURGER BUTTON - VISIBLE ON MOBILE ONLY -->
+                    <button class="mobile-burger-btn" id="mobileBurgerBtn" type="button" aria-label="Open Menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <div class="school-name">Xavier University Senior High School</div>
+                </div>
+                <div class="memory-link-title">MemoryLink</div>
+            </header>
+
+
+            <!-- DASHBOARD CONTENT -->
+
+            <div class="dashboard-content">
+
+                <!-- =====================================
+                     WELCOME
+                ====================================== -->
+
+                <section class="welcome-card">
+
+                    <div class="welcome-content">
+
+                        <div class="badge">
+
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+
+                            Admin Control Panel
+
+                        </div>
+
+                        <h2 id="welcomeMessage">
+                            Welcome back, Admin! 👋
+                        </h2>
+
+                        <p>
+                            Manage your learning content,
+                            monitor student progress,
+                            and keep MemoryLink running smoothly.
+                        </p>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =====================================
+                     STATISTICS
+                ====================================== -->
+
+                <section class="stats">
+
+                    <!-- STUDENTS -->
+
+                    <div class="stat-card">
+
+                        <div class="stat-top">
+
+                            <div class="stat-icon">
+
+                                <i class="fa-solid fa-users"></i>
+
+                            </div>
+
+                            <span class="stat-change">
+                                Registered
+                            </span>
+
+                        </div>
+
+                        <h3>
+                            Total Students
+                        </h3>
+
+                        <div class="stat-number"
+                             id="studentCount">
+                            0
+                        </div>
+
+                    </div>
+
+
+                    <!-- LESSONS -->
+
+                    <div class="stat-card">
+
+                        <div class="stat-top">
+
+                            <div class="stat-icon">
+
+                                <i class="fa-solid fa-book-open"></i>
+
+                            </div>
+
+                            <span class="stat-change">
+                                Available
+                            </span>
+
+                        </div>
+
+                        <h3>
+                            Lessons
+                        </h3>
+
+                        <div class="stat-number"
+                             id="lessonCount">
+                            0
+                        </div>
+
+                    </div>
+
+
+                    <!-- FLASHCARDS -->
+
+                    <div class="stat-card">
+
+                        <div class="stat-top">
+
+                            <div class="stat-icon">
+
+                                <i class="fa-solid fa-layer-group"></i>
+
+                            </div>
+
+                            <span class="stat-change">
+                                Available
+                            </span>
+
+                        </div>
+
+                        <h3>
+                            Flashcards
+                        </h3>
+
+                        <div class="stat-number"
+                             id="flashcardCount">
+                            0
+                        </div>
+
+                    </div>
+
+
+                    <!-- QUIZZES -->
+
+                    <div class="stat-card">
+
+                        <div class="stat-top">
+
+                            <div class="stat-icon">
+
+                                <i class="fa-solid fa-clipboard-question"></i>
+
+                            </div>
+
+                            <span class="stat-change">
+                                Available
+                            </span>
+
+                        </div>
+
+                        <h3>
+                            Quizzes
+                        </h3>
+
+                        <div class="stat-number"
+                             id="quizCount">
+                            0
+                        </div>
+
+                    </div>
+
+                </section>
+
+
+                <!-- =====================================
+                     LOWER CONTENT
+                ====================================== -->
+
+                <section class="content-grid">
+
+                    <!-- RECENT ACTIVITY -->
+
+                    <div class="panel">
+
+                        <div class="panel-header">
+
+                            <h3>
+                                Recent Activity
+                            </h3>
+
+                            <a href="/admin_quizzes">
+                                View All
+                            </a>
+
+                        </div>
+
+
+                        <div class="activity">
+
+                            <div class="activity-item">
+
+                                <div class="activity-icon">
+
+                                    <i class="fa-solid fa-user-plus"></i>
+
+                                </div>
+
+                                <div class="activity-text">
+
+                                    <strong>
+                                        Student registered
+                                    </strong>
+
+                                    <span>
+                                        Welcome to MemoryLink
+                                    </span>
+
+                                </div>
+
+                                <span class="activity-time">
+                                    Today
+                                </span>
+
+                            </div>
+
+
+                            <div class="activity-item">
+
+                                <div class="activity-icon">
+
+                                    <i class="fa-solid fa-book"></i>
+
+                                </div>
+
+                                <div class="activity-text">
+
+                                    <strong>
+                                        Lessons available
+                                    </strong>
+
+                                    <span>
+                                        Students can start learning
+                                    </span>
+
+                                </div>
+
+                                <span class="activity-time">
+                                    Ready
+                                </span>
+
+                            </div>
+
+
+                            <div class="activity-item">
+
+                                <div class="activity-icon">
+
+                                    <i class="fa-solid fa-layer-group"></i>
+
+                                </div>
+
+                                <div class="activity-text">
+
+                                    <strong>
+                                        Flashcards ready
+                                    </strong>
+
+                                    <span>
+                                        Study materials available
+                                    </span>
+
+                                </div>
+
+                                <span class="activity-time">
+                                    Ready
+                                </span>
+
+                            </div>
+
+
+                            <div class="activity-item">
+
+                                <div class="activity-icon">
+
+                                    <i class="fa-solid fa-clipboard-question"></i>
+
+                                </div>
+
+                                <div class="activity-text">
+
+                                    <strong>
+                                        Quizzes available
+                                    </strong>
+
+                                    <span>
+                                        Test your knowledge
+                                    </span>
+
+                                </div>
+
+                                <span class="activity-time">
+                                    Ready
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- QUICK ACTIONS -->
+
+                    <div class="panel">
+
+                        <div class="panel-header">
+
+                            <h3>
+                                Quick Actions
+                            </h3>
+
+                        </div>
+
+
+                        <div class="quick-actions">
+
+                            <a href="/admin_lessons"
+                               class="quick-action">
+
+                                <i class="fa-solid fa-plus"></i>
+
+                                <span>
+                                    Add Lesson
+                                </span>
+
+                            </a>
+
+
+                            <a href="/admin_flashcards"
+                               class="quick-action">
+
+                                <i class="fa-solid fa-layer-group"></i>
+
+                                <span>
+                                    Flashcards
+                                </span>
+
+                            </a>
+
+
+                            <a href="/admin_quizzes"
+                               class="quick-action">
+
+                                <i class="fa-solid fa-clipboard-question"></i>
+
+                                <span>
+                                    Create Quiz
+                                </span>
+
+                            </a>
+
+
+                            <a href="/admin_strands"
+                               class="quick-action">
+
+                                <i class="fa-solid fa-book-open"></i>
+
+                                <span>
+                                    Manage Strands
+                                </span>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <script>
+
+        /* =========================================
+           CHECK LOGIN
+        ========================================== */
+
+        const savedUser =
+            memoryStore.getItem("memoryLinkUser");
+
+        if (!savedUser) {
+
+            window.location.replace("/login");
+
+        }
+
+
+        let user = null;
+
+
+        /* =========================================
+           READ USER
+        ========================================== */
+
+        try {
+
+            user = JSON.parse(savedUser);
+
+        } catch (error) {
+
+            memoryStore.removeItem("memoryLinkUser");
+
+            window.location.replace("/login");
+
+        }
+
+
+        /* =========================================
+           ADMIN ONLY
+        ========================================== */
+
+        if (user && user.role && user.role.toLowerCase() === "admin") {
+            // Admin is allowed - continue
+        } else {
+            window.location.replace("/strands");
+        }
+
+
+        /* =========================================
+           DISPLAY USER
+        ========================================== */
+
+        if (user) {
+
+            const username =
+                user.username || "Admin";
+
+
+            document.getElementById("userName")
+                .textContent = username;
+
+
+            document.getElementById("userRole")
+                .textContent = "Administrator";
+
+
+            document.getElementById("userAvatar")
+                .textContent =
+                    username.charAt(0).toUpperCase();
+
+
+            document.getElementById("welcomeMessage")
+                .textContent =
+                    "Welcome back, " +
+                    username +
+                    "! 👋";
+
+        }
+
+
+        /* =========================================
+           SEED DEFAULT USERS
+        ========================================== */
+
+        function seedDefaultUsers() {
+            const existing = memoryStore.getItem("memoryLinkUsers");
+            
+            if (existing) {
+                try {
+                    const parsed = JSON.parse(existing);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        console.log("✅ Users already exist, skipping seed.");
+                        return;
+                    }
+                } catch (e) {}
+            }
+
+            const defaultUsers = [
+                { 
+                    username: "louise", 
+                    password: "password123", 
+                    role: "student", 
+                    createdAt: new Date().toISOString() 
+                },
+                { 
+                    username: "admin", 
+                    password: "admin123", 
+                    role: "admin", 
+                    createdAt: new Date().toISOString() 
+                }
+            ];
+
+            memoryStore.setItem("memoryLinkUsers", JSON.stringify(defaultUsers));
+            console.log("✅ Default users seeded:", defaultUsers.length);
+        }
+
+        seedDefaultUsers();
+
+
+        /* =========================================
+           LOAD CONTENT FROM LOCALSTORAGE
+        ========================================== */
+
+        function loadAdminContent() {
+            let lessons = [];
+            let flashcards = [];
+            let quizzes = [];
+            let studentCount = 0;
+
+            try {
+                const lessonsData = memoryStore.getItem("memoryLinkLessons");
+                if (lessonsData) {
+                    lessons = JSON.parse(lessonsData);
+                }
+            } catch (e) {}
+
+            try {
+                const flashcardsData = memoryStore.getItem("memoryLinkFlashcards");
+                if (flashcardsData) {
+                    flashcards = JSON.parse(flashcardsData);
+                }
+            } catch (e) {}
+
+            try {
+                const quizzesData = memoryStore.getItem("memoryLinkQuizzes");
+                if (quizzesData) {
+                    quizzes = JSON.parse(quizzesData);
+                }
+            } catch (e) {}
+
+            try {
+                const usersData = memoryStore.getItem("memoryLinkUsers");
+                if (usersData) {
+                    const allUsers = JSON.parse(usersData);
+                    const students = allUsers.filter(function(user) {
+                        return user.role && user.role.toLowerCase() === "student";
+                    });
+                    studentCount = students.length;
+                }
+            } catch (e) {}
+
+            if (studentCount === 0) {
+                try {
+                    const userData = memoryStore.getItem("memoryLinkUser");
+                    if (userData) {
+                        const currentUser = JSON.parse(userData);
+                        if (currentUser && currentUser.role && currentUser.role.toLowerCase() === "student") {
+                            studentCount = 1;
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            document.getElementById("lessonCount").textContent = Array.isArray(lessons) ? lessons.length : 0;
+            document.getElementById("flashcardCount").textContent = Array.isArray(flashcards) ? flashcards.length : 0;
+            document.getElementById("quizCount").textContent = Array.isArray(quizzes) ? quizzes.length : 0;
+            document.getElementById("studentCount").textContent = studentCount || 0;
+        }
+
+        loadAdminContent();
+
+
+        /* =========================================
+           SIDEBAR ELEMENTS
+        ========================================== */
+
+        const sidebar =
+            document.getElementById("sidebar");
+
+        const main =
+            document.getElementById("main");
+
+        const sidebarToggle =
+            document.getElementById("sidebarToggle");
+
+        const sidebarOverlay =
+            document.getElementById("sidebarOverlay");
+
+        const mobileBurgerBtn =
+            document.getElementById("mobileBurgerBtn");
+
+
+        /* =========================================
+           SIDEBAR TOGGLE (desktop only)
+        ========================================== */
+
+        sidebarToggle.addEventListener(
+            "click",
+            function () {
+                // Desktop only - collapse/expand
+                sidebar.classList.toggle("collapsed");
+                main.classList.toggle("expanded");
+            }
+        );
+
+
+        /* =========================================
+           MOBILE BURGER MENU - OPEN SIDEBAR
+        ========================================== */
+
+        mobileBurgerBtn.addEventListener(
+            "click",
+            function () {
+                sidebar.classList.add("show");
+                sidebarOverlay.classList.add("show");
+            }
+        );
+
+
+        /* =========================================
+           OVERLAY CLICK - CLOSE SIDEBAR
+        ========================================== */
+
+        sidebarOverlay.addEventListener(
+            "click",
+            function () {
+                sidebar.classList.remove("show");
+                sidebarOverlay.classList.remove("show");
+            }
+        );
+
+
+        /* =========================================
+           SIDEBAR LINKS - CLOSE ON MOBILE
+        ========================================== */
+
+        document
+            .querySelectorAll(".sidebar-link")
+            .forEach(function (link) {
+
+                link.addEventListener(
+                    "click",
+                    function () {
+
+                        if (window.innerWidth <= 750) {
+                            sidebar.classList.remove("show");
+                            sidebarOverlay.classList.remove("show");
+                        }
+
+                    }
+                );
+
+            });
+
+
+        /* =========================================
+           AUTOMATIC ACTIVE MENU
+        ========================================== */
+
+        let currentPage =
+            window.location.pathname
+                .split("/")
+                .pop();
+
+
+        if (!currentPage) {
+
+            currentPage =
+                "dashboard";
+
+        }
+
+
+        document
+            .querySelectorAll(".menu a")
+            .forEach(function (link) {
+
+                const linkPage =
+                    link.getAttribute("href")
+                        .split("/")
+                        .pop();
+
+
+                if (linkPage === currentPage) {
+
+                    link.classList.add("active");
+
+                }
+
+            });
+
+
+        /* =========================================
+           LOGOUT
+        ========================================== */
+
+        document
+            .getElementById("logoutButton")
+            .addEventListener(
+                "click",
+                function (event) {
+
+                    event.preventDefault();
+
+                    memoryStore.removeItem(
+                        "memoryLinkUser"
+                    );
+
+                    window.location.replace(
+                        "/login"
+                    );
+
+                }
+            );
+
+
+        /* =========================================
+           AUTO-REFRESH STATS
+        ========================================== */
+
+        window.addEventListener("storage", function(e) {
+            if (e.key === "memoryLinkLessons" || 
+                e.key === "memoryLinkFlashcards" || 
+                e.key === "memoryLinkQuizzes" ||
+                e.key === "memoryLinkUsers") {
+                loadAdminContent();
+            }
+        });
+
+    </script>
+
+</body>
+
+</html>
