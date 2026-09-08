@@ -1,82 +1,28 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<build>
 
-    <modelVersion>4.0.0</modelVersion>
+    <sourceDirectory>${project.basedir}</sourceDirectory>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.4.3</version>
-        <relativePath/>
-    </parent>
+    <resources>
+        <resource>
+            <directory>${project.basedir}</directory>
+            <includes>
+                <include>application.properties</include>
+            </includes>
+        </resource>
+    </resources>
 
-    <groupId>com.memorylink</groupId>
-    <artifactId>memorylink</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <plugins>
 
-    <name>MemoryLink</name>
-    <description>MemoryLink Learning Website</description>
-
-    <properties>
-        <java.version>17</java.version>
-    </properties>
-
-    <dependencies>
-
-        <dependency>
+        <plugin>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
+            <artifactId>spring-boot-maven-plugin</artifactId>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-thymeleaf</artifactId>
-        </dependency>
+            <configuration>
+                <mainClass>com.memorylink.MemoryLinkApplication</mainClass>
+            </configuration>
 
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
+        </plugin>
 
-        <dependency>
-            <groupId>com.mysql</groupId>
-            <artifactId>mysql-connector-j</artifactId>
-            <scope>runtime</scope>
-        </dependency>
+    </plugins>
 
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-crypto</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-devtools</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-    </dependencies>
-
-    <build>
-
-        <sourceDirectory>${project.basedir}</sourceDirectory>
-
-        <plugins>
-
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-
-                <configuration>
-                    <mainClass>com.memorylink.MemoryLinkApplication</mainClass>
-                </configuration>
-
-            </plugin>
-
-        </plugins>
-
-    </build>
-
-</project>
+</build>
