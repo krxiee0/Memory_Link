@@ -1,41 +1,34 @@
-# =========================================================
-# BUILD STAGE
-# =========================================================
+<resources>
 
-FROM maven:3.9.9-eclipse-temurin-17 AS build
+    <resource>
+        <directory>${project.basedir}</directory>
+        <includes>
+            <include>application.properties</include>
+        </includes>
+    </resource>
 
-WORKDIR /app
+    <resource>
+        <directory>${project.basedir}</directory>
+        <includes>
+            <include>*.html</include>
+        </includes>
+        <targetPath>templates</targetPath>
+    </resource>
 
-# Copy Maven configuration
-COPY pom.xml .
+    <resource>
+        <directory>${project.basedir}</directory>
+        <includes>
+            <include>*.css</include>
+        </includes>
+        <targetPath>static</targetPath>
+    </resource>
 
-# Copy Java source files
-COPY *.java .
+    <resource>
+        <directory>${project.basedir}</directory>
+        <includes>
+            <include>*.js</include>
+        </includes>
+        <targetPath>static</targetPath>
+    </resource>
 
-# IMPORTANT:
-# Copy application configuration
-COPY application.properties .
-
-# Copy frontend files
-COPY *.html .
-COPY *.css .
-COPY *.js .
-
-# Build Spring Boot application
-RUN mvn clean package -DskipTests
-
-
-# =========================================================
-# RUN STAGE
-# =========================================================
-
-FROM eclipse-temurin:17-jre
-
-WORKDIR /app
-
-# Copy generated Spring Boot JAR
-COPY --from=build /app/target/memorylink-0.0.1-SNAPSHOT.jar app.jar
-
-EXPOSE 10000
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+</resources>
