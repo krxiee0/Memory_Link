@@ -6,9 +6,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- ==========================================
-         SPRING BOOT
-         ========================================== -->
+    <!-- SPRING BOOT -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -16,10 +14,7 @@
         <relativePath/>
     </parent>
 
-
-    <!-- ==========================================
-         PROJECT INFORMATION
-         ========================================== -->
+    <!-- PROJECT -->
     <groupId>com.memorylink</groupId>
     <artifactId>memorylink</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -27,57 +22,46 @@
     <name>MemoryLink</name>
     <description>MemoryLink Learning Website</description>
 
-
-    <!-- ==========================================
-         JAVA
-         ========================================== -->
+    <!-- JAVA -->
     <properties>
         <java.version>17</java.version>
     </properties>
 
-
-    <!-- ==========================================
-         DEPENDENCIES
-         ========================================== -->
+    <!-- DEPENDENCIES -->
     <dependencies>
 
-        <!-- Spring Boot Web / REST API -->
+        <!-- WEB / REST API -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-
-        <!-- Thymeleaf -->
+        <!-- THYMELEAF -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
-
-        <!-- Spring Data JPA / Hibernate -->
+        <!-- DATABASE -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-
-        <!-- MySQL Driver -->
+        <!-- MYSQL -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-
-        <!-- Spring Security Crypto -->
+        <!-- PASSWORD / SECURITY CRYPTO -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
-
-        <!-- Spring Boot DevTools -->
+        <!-- DEVTOOLS -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -86,36 +70,42 @@
 
     </dependencies>
 
-
-    <!-- ==========================================
-         BUILD
-         ========================================== -->
+    <!-- BUILD -->
     <build>
 
-        <!-- IMPORTANT:
-             MemoryLink uses the project root
-             as the Java source directory.
-        -->
+        <!-- Java files are in project root -->
         <sourceDirectory>${project.basedir}</sourceDirectory>
 
-
-        <!-- IMPORTANT:
-             application.properties is also located
-             in the project root.
-        -->
+        <!-- Include web files and application.properties -->
         <resources>
+
+            <!-- Root resources -->
             <resource>
                 <directory>${project.basedir}</directory>
                 <includes>
                     <include>application.properties</include>
+                    <include>*.html</include>
+                    <include>*.css</include>
+                    <include>*.js</include>
+                    <include>*.png</include>
+                    <include>*.jpg</include>
+                    <include>*.jpeg</include>
+                    <include>*.svg</include>
                 </includes>
             </resource>
+
+            <!-- Standard Spring Boot templates -->
+            <resource>
+                <directory>${project.basedir}/src/main/resources</directory>
+                <includes>
+                    <include>templates/**</include>
+                    <include>static/**</include>
+                </includes>
+            </resource>
+
         </resources>
 
-
-        <!-- ==========================================
-             PLUGINS
-             ========================================== -->
+        <!-- SPRING BOOT -->
         <plugins>
 
             <plugin>
@@ -123,7 +113,9 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
 
                 <configuration>
-                    <mainClass>com.memorylink.MemoryLinkApplication</mainClass>
+                    <mainClass>
+                        com.memorylink.MemoryLinkApplication
+                    </mainClass>
                 </configuration>
 
             </plugin>
