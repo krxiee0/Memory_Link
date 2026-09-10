@@ -16,6 +16,7 @@
     <groupId>com.memorylink</groupId>
     <artifactId>memorylink</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+
     <name>memorylink</name>
     <description>MemoryLink Learning System</description>
 
@@ -56,7 +57,7 @@
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
-        <!-- Development tools -->
+        <!-- Development Tools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -75,28 +76,98 @@
 
     <build>
 
-        <!-- IMPORTANT:
-             Your Java files are in the ROOT directory,
-             not src/main/java -->
+        <!--
+            IMPORTANT:
+            Java files are located in the ROOT directory.
+        -->
         <sourceDirectory>${project.basedir}</sourceDirectory>
 
-        <!-- IMPORTANT:
-             Your application.properties and frontend files
-             are also in the ROOT directory -->
         <resources>
+
+            <!-- application.properties -->
             <resource>
                 <directory>${project.basedir}</directory>
                 <includes>
                     <include>application.properties</include>
-                    <include>*.html</include>
-                    <include>*.css</include>
-                    <include>*.js</include>
-                    <include>*.sql</include>
-                    <include>images/**</include>
-                    <include>css/**</include>
-                    <include>js/**</include>
                 </includes>
             </resource>
+
+            <!--
+                IMPORTANT:
+                Root HTML files are moved into
+                classpath:/templates/
+                so Thymeleaf can find them.
+            -->
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>*.html</include>
+                </includes>
+                <targetPath>templates</targetPath>
+            </resource>
+
+            <!-- Root CSS files -->
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>*.css</include>
+                </includes>
+                <targetPath>static</targetPath>
+            </resource>
+
+            <!-- Root JavaScript files -->
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>*.js</include>
+                </includes>
+                <targetPath>static</targetPath>
+            </resource>
+
+            <!-- SQL files -->
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>*.sql</include>
+                </includes>
+            </resource>
+
+            <!-- Images -->
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>images/**</include>
+                </includes>
+                <targetPath>static/images</targetPath>
+            </resource>
+
+            <!-- CSS folder, if present -->
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>css/**</include>
+                </includes>
+                <targetPath>static/css</targetPath>
+            </resource>
+
+            <!-- JS folder, if present -->
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>js/**</include>
+                </includes>
+                <targetPath>static/js</targetPath>
+            </resource>
+
+            <!-- Assets folder, if present -->
+            <resource>
+                <directory>${project.basedir}</directory>
+                <includes>
+                    <include>assets/**</include>
+                </includes>
+                <targetPath>static/assets</targetPath>
+            </resource>
+
         </resources>
 
         <plugins>
@@ -115,13 +186,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-
                 <configuration>
-                    <!-- THIS FIXES:
-                         Unable to find main class -->
                     <mainClass>com.memorylink.MemoryLinkApplication</mainClass>
                 </configuration>
-
             </plugin>
 
         </plugins>
