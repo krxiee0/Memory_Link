@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
 
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- ==========================================
+         SPRING BOOT
+         ========================================== -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -12,6 +16,9 @@
         <relativePath/>
     </parent>
 
+    <!-- ==========================================
+         PROJECT
+         ========================================== -->
     <groupId>com.memorylink</groupId>
     <artifactId>memorylink</artifactId>
     <version>0.0.1-SNAPSHOT</version>
@@ -19,38 +26,50 @@
     <name>MemoryLink</name>
     <description>MemoryLink Learning Website</description>
 
+    <!-- ==========================================
+         JAVA
+         ========================================== -->
     <properties>
         <java.version>17</java.version>
     </properties>
 
+    <!-- ==========================================
+         DEPENDENCIES
+         ========================================== -->
     <dependencies>
 
+        <!-- Spring Boot Web / REST API -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!-- Thymeleaf -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
+        <!-- Spring Data JPA / Hibernate -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
+        <!-- MySQL Database Driver -->
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Password Encryption / Security Crypto -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
         </dependency>
 
+        <!-- Development Tools -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
@@ -59,21 +78,14 @@
 
     </dependencies>
 
+    <!-- ==========================================
+         BUILD
+         ========================================== -->
     <build>
-
-        <sourceDirectory>${project.basedir}</sourceDirectory>
-
-        <resources>
-            <resource>
-                <directory>${project.basedir}</directory>
-                <includes>
-                    <include>application.properties</include>
-                </includes>
-            </resource>
-        </resources>
 
         <plugins>
 
+            <!-- Spring Boot Maven Plugin -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
