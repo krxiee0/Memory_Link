@@ -2,10 +2,10 @@ FROM maven:3.9.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
 
-# Copy the complete Maven project
-COPY ml/ .
+COPY pom.xml .
 
-# Build Spring Boot application
+COPY src ./src
+
 RUN mvn clean package -DskipTests
 
 
@@ -13,7 +13,6 @@ FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 
-# Copy generated JAR
 COPY --from=build /app/target/memorylink-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
