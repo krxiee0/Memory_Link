@@ -1,34 +1,31 @@
-<resources>
+# =========================================================
+# BUILD STAGE
+# =========================================================
 
-    <resource>
-        <directory>${project.basedir}</directory>
-        <includes>
-            <include>application.properties</include>
-        </includes>
-    </resource>
+FROM maven:3.9.9-eclipse-temurin-17 AS build
 
-    <resource>
-        <directory>${project.basedir}</directory>
-        <includes>
-            <include>*.html</include>
-        </includes>
-        <targetPath>templates</targetPath>
-    </resource>
+WORKDIR /app
 
-    <resource>
-        <directory>${project.basedir}</directory>
-        <includes>
-            <include>*.css</include>
-        </includes>
-        <targetPath>static</targetPath>
-    </resource>
+COPY pom.xml .
+COPY *.java .
+COPY application.properties .
+COPY *.html .
+COPY *.css .
+COPY *.js .
 
-    <resource>
-        <directory>${project.basedir}</directory>
-        <includes>
-            <include>*.js</include>
-        </includes>
-        <targetPath>static</targetPath>
-    </resource>
+RUN mvn clean package -DskipTests
 
-</resources>
+
+# =========================================================
+# RUN STAGE
+# =========================================================
+
+FROM eclipse-temurin:17-jre
+
+WORKDIR /app
+
+COPY --from=build /app/target/memorylink-0.0.1-SNAPSHOT.jar app.jar
+
+EXPOSE 10000
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
