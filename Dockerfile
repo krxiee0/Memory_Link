@@ -6,6 +6,8 @@ COPY pom.xml .
 
 COPY *.java .
 
+COPY application.properties .
+
 RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:17-jre
