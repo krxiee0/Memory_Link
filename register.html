@@ -881,7 +881,6 @@
             }
         }
     </style>
-<script src="/js/db-sync.js"></script>
 </head>
 
 <body class="register-page">
@@ -1774,86 +1773,6 @@
 
 
         /* =====================================================
-           GET STUDENTS - FIXED: Use memoryLinkUsers
-        ===================================================== */
-
-        function getStudents() {
-            try {
-                const data = memoryStore.getItem("memoryLinkUsers");
-                return data ? JSON.parse(data) : [];
-            } catch (error) {
-                return [];
-            }
-        }
-
-
-        /* =====================================================
-           SAVE ACCOUNT - FIXED: Use memoryLinkUsers
-        ===================================================== */
-
-        function saveStudent(student) {
-            // Use the same key as Admin Dashboard
-            let students = getStudents();
-
-            // CHECK USERNAME
-            const usernameExists = students.some(
-                user =>
-                    user.username &&
-                    user.username.toLowerCase() ===
-                    student.username.toLowerCase()
-            );
-
-            if (usernameExists) {
-                throw new Error(
-                    "This username is already registered."
-                );
-            }
-
-            // CHECK EMAIL
-            const emailExists = students.some(
-                user =>
-                    user.email &&
-                    user.email.toLowerCase() ===
-                    student.email.toLowerCase()
-            );
-
-            if (emailExists) {
-                throw new Error(
-                    "This email address is already registered."
-                );
-            }
-
-            // CHECK STUDENT ID
-            const studentIdExists = students.some(
-                user =>
-                    user.studentId ===
-                    student.studentId
-            );
-
-            if (studentIdExists) {
-                throw new Error(
-                    "This student ID is already registered."
-                );
-            }
-
-            // CREATE ID
-            student.id = Date.now();
-            student.createdAt = new Date().toISOString();
-
-            // SAVE to memoryLinkUsers (same as Admin Dashboard)
-            students.push(student);
-
-            memoryStore.setItem(
-                "memoryLinkUsers",
-                JSON.stringify(students)
-            );
-
-            console.log("✅ Student saved to memoryLinkUsers:", student);
-            console.log("👥 All users:", getStudents());
-        }
-
-
-        /* =====================================================
            SET BUTTON LOADING
         ===================================================== */
 
@@ -1883,7 +1802,7 @@
 
 
         /* =====================================================
-           REGISTER
+           REGISTER - SAVE DIRECTLY TO DATABASE API
         ===================================================== */
 
         form.addEventListener(
@@ -1995,8 +1914,22 @@
                         })
                     });
 
-                    const data = await response.json();
-                    if (!response.ok) throw new Error(data.message || "Registration failed.");
+                    const contentType = response.headers.get("content-type") || "";
+                    let data = {};
+
+                    if (contentType.includes("application/json")) {
+                        data = await response.json();
+                    } else {
+                        const text = await response.text();
+                        data = { message: text };
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(
+                            data.message ||
+                            `Registration failed (HTTP ${response.status}).`
+                        );
+                    }
 
                     showMessage("success", "Account created successfully! Redirecting to login...");
                     form.reset();
