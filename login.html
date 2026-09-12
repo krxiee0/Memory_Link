@@ -503,9 +503,22 @@
             border-radius: 8px;
 
             transition: 0.2s;
+
+            /* Make sure the eye is clickable */
+            z-index: 10;
+
+            padding: 0;
         }
 
         .toggle-password:hover {
+            background: #eef2ff;
+
+            color: #051650;
+        }
+
+        .toggle-password:focus {
+            outline: none;
+
             background: #eef2ff;
 
             color: #051650;
@@ -816,7 +829,9 @@
 
     </style>
 
-<script src="/db-sync.js"></script>
+    <!-- Correct path -->
+    <script src="/db-sync.js"></script>
+
 </head>
 
 
@@ -1009,8 +1024,10 @@
                         <button
                             type="button"
                             class="toggle-password"
+                            id="togglePasswordButton"
                             onclick="togglePassword()"
                             aria-label="Show password"
+                            title="Show password"
                         >
 
                             <i
@@ -1091,32 +1108,113 @@
 
 
     <!-- =========================================
-         JAVASCRIPT - FIXED & NO DEMO DISPLAY
+         JAVASCRIPT
     ========================================== -->
 
     <script>
 
         /* =========================================
-           INITIALIZE DEFAULT USERS (no display)
+           PASSWORD SHOW / HIDE
+        ========================================== */
+
+        function togglePassword() {
+
+            const passwordInput =
+                document.getElementById("password");
+
+            const eyeIcon =
+                document.getElementById("eyeIcon");
+
+            const toggleButton =
+                document.getElementById("togglePasswordButton");
+
+
+            if (passwordInput.type === "password") {
+
+                // Show password
+                passwordInput.type = "text";
+
+                eyeIcon.classList.remove("fa-eye");
+                eyeIcon.classList.add("fa-eye-slash");
+
+                toggleButton.setAttribute(
+                    "aria-label",
+                    "Hide password"
+                );
+
+                toggleButton.setAttribute(
+                    "title",
+                    "Hide password"
+                );
+
+            } else {
+
+                // Hide password
+                passwordInput.type = "password";
+
+                eyeIcon.classList.remove("fa-eye-slash");
+                eyeIcon.classList.add("fa-eye");
+
+                toggleButton.setAttribute(
+                    "aria-label",
+                    "Show password"
+                );
+
+                toggleButton.setAttribute(
+                    "title",
+                    "Show password"
+                );
+            }
+        }
+
+
+        /* =========================================
+           FORGOT PASSWORD
+        ========================================== */
+
+        function forgotPassword(event) {
+
+            event.preventDefault();
+
+            alert(
+                "Please contact the administrator to reset your password."
+            );
+        }
+
+
+        /* =========================================
+           INITIALIZE DEFAULT USERS
+           Kept for compatibility with memoryStore
         ========================================== */
 
         function initializeDefaultUsers() {
+
             let users = [];
 
             try {
-                const existing = memoryStore.getItem("memoryLinkUsers");
+
+                const existing =
+                    memoryStore.getItem("memoryLinkUsers");
+
                 if (existing) {
+
                     users = JSON.parse(existing);
+
                     if (!Array.isArray(users)) {
                         users = [];
                     }
                 }
+
             } catch (e) {
+
                 users = [];
             }
 
+
             if (users.length === 0) {
+
                 users = [
+
                     {
                         username: "admin",
                         password: "admin123",
@@ -1124,6 +1222,7 @@
                         fullName: "Administrator",
                         createdAt: new Date().toISOString()
                     },
+
                     {
                         username: "louise",
                         password: "password123",
@@ -1131,132 +1230,286 @@
                         fullName: "Louise Student",
                         createdAt: new Date().toISOString()
                     }
+
                 ];
 
-                memoryStore.setItem("memoryLinkUsers", JSON.stringify(users));
-                console.log("✅ Default users created");
+                memoryStore.setItem(
+                    "memoryLinkUsers",
+                    JSON.stringify(users)
+                );
+
+                console.log("Default users created");
+
             } else {
-                // Check if admin exists
+
+                /* Check admin */
+
                 let adminExists = false;
+
                 for (let i = 0; i < users.length; i++) {
-                    if (users[i].username && users[i].username.toLowerCase() === "admin") {
+
+                    if (
+                        users[i].username &&
+                        users[i].username.toLowerCase() === "admin"
+                    ) {
+
                         adminExists = true;
-                        if (users[i].role && users[i].role.toLowerCase() !== "admin") {
+
+                        if (
+                            users[i].role &&
+                            users[i].role.toLowerCase() !== "admin"
+                        ) {
+
                             users[i].role = "admin";
                         }
+
                         break;
                     }
                 }
 
+
                 if (!adminExists) {
+
                     users.push({
+
                         username: "admin",
                         password: "admin123",
                         role: "admin",
                         fullName: "Administrator",
                         createdAt: new Date().toISOString()
+
                     });
-                    memoryStore.setItem("memoryLinkUsers", JSON.stringify(users));
-                    console.log("✅ Admin user added");
+
+                    memoryStore.setItem(
+                        "memoryLinkUsers",
+                        JSON.stringify(users)
+                    );
+
                 }
 
-                // Check if louise exists
+
+                /* Check Louise */
+
                 let louiseExists = false;
+
                 for (let i = 0; i < users.length; i++) {
-                    if (users[i].username && users[i].username.toLowerCase() === "louise") {
+
+                    if (
+                        users[i].username &&
+                        users[i].username.toLowerCase() === "louise"
+                    ) {
+
                         louiseExists = true;
+
                         break;
                     }
                 }
 
+
                 if (!louiseExists) {
+
                     users.push({
+
                         username: "louise",
                         password: "password123",
                         role: "student",
                         fullName: "Louise Student",
                         createdAt: new Date().toISOString()
+
                     });
-                    memoryStore.setItem("memoryLinkUsers", JSON.stringify(users));
-                    console.log("✅ Louise student added");
+
+                    memoryStore.setItem(
+                        "memoryLinkUsers",
+                        JSON.stringify(users)
+                    );
                 }
             }
 
             return users;
         }
 
-        // Run initialization
+
+        /* =========================================
+           RUN DEFAULT USER INITIALIZATION
+        ========================================== */
+
         initializeDefaultUsers();
 
 
         /* =========================================
-           GET USERS FROM LOCAL STORAGE
+           GET USERS
         ========================================== */
 
         function getUsers() {
+
             try {
-                const data = memoryStore.getItem("memoryLinkUsers");
+
+                const data =
+                    memoryStore.getItem("memoryLinkUsers");
+
                 if (data) {
+
                     const parsed = JSON.parse(data);
+
                     if (Array.isArray(parsed)) {
                         return parsed;
                     }
                 }
+
             } catch (error) {
-                console.error("Error getting users:", error);
+
+                console.error(
+                    "Error getting users:",
+                    error
+                );
             }
+
             return [];
         }
 
 
         /* =========================================
-           LOGIN FORM - FIXED
-        ========================================= */
+           LOGIN FORM
+        ========================================== */
 
-        document.getElementById("loginForm").addEventListener("submit", async function(event) {
-            event.preventDefault();
+        document
+            .getElementById("loginForm")
+            .addEventListener(
+                "submit",
+                async function(event) {
 
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value;
-            const loginError = document.getElementById("loginError");
-            const errorMessage = document.getElementById("errorMessage");
-            loginError.classList.remove("show");
+                    event.preventDefault();
 
-            if (!username || !password) {
-                errorMessage.textContent = "Please enter both username and password.";
-                loginError.classList.add("show");
-                return;
-            }
 
-            try {
-                const response = await fetch("/api/auth/login", {
-                    method: "POST",
-                    headers: {"Content-Type": "application/json"},
-                    body: JSON.stringify({username, password})
-                });
-                const data = await response.json();
+                    const username =
+                        document
+                            .getElementById("username")
+                            .value
+                            .trim();
 
-                if (!response.ok) {
-                    errorMessage.textContent = data.message || "Invalid username or password.";
-                    loginError.classList.add("show");
-                    return;
+
+                    const password =
+                        document
+                            .getElementById("password")
+                            .value;
+
+
+                    const loginError =
+                        document
+                            .getElementById("loginError");
+
+
+                    const errorMessage =
+                        document
+                            .getElementById("errorMessage");
+
+
+                    loginError.classList.remove("show");
+
+
+                    /* Validate */
+
+                    if (!username || !password) {
+
+                        errorMessage.textContent =
+                            "Please enter both username and password.";
+
+                        loginError.classList.add("show");
+
+                        return;
+                    }
+
+
+                    /* Login */
+
+                    try {
+
+                        const response =
+                            await fetch(
+                                "/api/auth/login",
+                                {
+                                    method: "POST",
+
+                                    headers: {
+                                        "Content-Type":
+                                            "application/json"
+                                    },
+
+                                    body: JSON.stringify({
+                                        username,
+                                        password
+                                    })
+                                }
+                            );
+
+
+                        const data =
+                            await response.json();
+
+
+                        /* Login failed */
+
+                        if (!response.ok) {
+
+                            errorMessage.textContent =
+                                data.message ||
+                                "Invalid username or password.";
+
+                            loginError.classList.add("show");
+
+                            return;
+                        }
+
+
+                        /* Save logged-in user */
+
+                        memoryStore.setItem(
+                            "memoryLinkUser",
+                            JSON.stringify({
+
+                                username:
+                                    data.username,
+
+                                role:
+                                    data.role ||
+                                    "student",
+
+                                fullName:
+                                    data.fullName ||
+                                    data.username,
+
+                                loginTime:
+                                    new Date().toISOString()
+
+                            })
+                        );
+
+
+                        /* Redirect */
+
+                        window.location.href =
+                            data.role &&
+                            data.role.toLowerCase() === "admin"
+                                ? "/dashboard"
+                                : "/student_dashboard";
+
+
+                    } catch (error) {
+
+                        console.error(
+                            "Login error:",
+                            error
+                        );
+
+
+                        errorMessage.textContent =
+                            "Unable to connect to the server/database.";
+
+                        loginError.classList.add("show");
+                    }
+
                 }
-
-                memoryStore.setItem("memoryLinkUser", JSON.stringify({
-                    username: data.username,
-                    role: data.role || "student",
-                    fullName: data.fullName || data.username,
-                    loginTime: new Date().toISOString()
-                }));
-
-                window.location.href = data.role && data.role.toLowerCase() === "admin"
-                    ? "/dashboard" : "/student_dashboard";
-            } catch (error) {
-                console.error("Login error:", error);
-                errorMessage.textContent = "Unable to connect to the server/database.";
-                loginError.classList.add("show");
-            }
-        });
+            );
 
     </script>
 
