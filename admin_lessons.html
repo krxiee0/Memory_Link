@@ -3706,54 +3706,143 @@ const newLesson = {
     }
 
     // ─── LESSON SELECTOR ──────────────────────────────────────────
-    let selectedLessonId = null;
-    let currentSubLessonIndex = 0;
-    let isEditMode = false;
+let selectedLessonId = null;
+let currentSubLessonIndex = 0;
+let isEditMode = false;
 
-    function openLessonSelector(id) {
-        const lessons = getLessons();
-        const lesson = lessons.find(function(item) { return item.id === id; });
-        if (!lesson || lesson.status !== 'approved') {
-            if (lesson) {
-                openReadingModal(id, 0);
-            }
-            return;
+function openLessonSelector(id) {
+    const lessons = getLessons();
+
+    // Use loose comparison so DB ID and JS ID
+    // still match even if one is String and the other is Number.
+    const lesson = lessons.find(function(item) {
+        return String(item.id) === String(id);
+    });
+
+    if (!lesson) {
+        console.error("Lesson not found:", id);
+        return;
+    }
+
+    // For pending/rejected lessons, open directly.
+    if (lesson.status !== 'approved') {
+        openReadingModal(lesson.id, 0);
+        return;
+    }
+
+    selectedLessonId = lesson.id;
+
+    /*
+     * IMPORTANT:
+     * Do NOT call createSubLessons(lesson) here.
+     *
+     * createSubLessons() can recreate the subLessons array and
+     * cause existing lesson content to be replaced/treated as empty.
+     */
+    if (!Array.isArray(lesson.subLessons)) {
+        lesson.subLessons = [];
+    }
+
+    // If subLessons is empty, create the required number of
+    // empty sub-lessons WITHOUT destroying existing data.
+    const numberOfLessons = Math.max(
+        1,
+        Number(lesson.numberOfLessons) || 1
+    );
+
+    while (lesson.subLessons.length < numberOfLessons) {
+        const index = lesson.subLessons.length;
+
+        lesson.subLessons.push({
+            title: `Lesson ${index + 1}`,
+            content: ""
+        });
+    }
+
+    // Never remove existing subLessons/content.
+    // This only makes sure the selector has enough lesson slots.
+
+    document.getElementById("selectorTitle").textContent =
+        lesson.title || "Lesson";
+
+    document.getElementById("selectorDescription").textContent =
+        lesson.description || "";
+
+    const grid = document.getElementById("lessonNumberGrid");
+    grid.innerHTML = "";
+
+    lesson.subLessons.forEach(function(subLesson, index) {
+
+        // Safety check
+        if (!subLesson || typeof subLesson !== "object") {
+            subLesson = {
+                title: `Lesson ${index + 1}`,
+                content: ""
+            };
+
+            lesson.subLessons[index] = subLesson;
         }
 
-        selectedLessonId = id;
-        lesson.subLessons = createSubLessons(lesson);
+        const item = document.createElement("div");
+        item.className = "lesson-number-item";
 
-        document.getElementById("selectorTitle").textContent = lesson.title;
-        document.getElementById("selectorDescription").textContent = lesson.description;
+        const content =
+            typeof subLesson.content === "string"
+                ? subLesson.content
+                : "";
 
-        const grid = document.getElementById("lessonNumberGrid");
-        grid.innerHTML = "";
+        const hasContent =
+            content.trim().length > 0 &&
+            !content.includes("The administrator can later add");
 
-        lesson.subLessons.forEach(function(subLesson, index) {
-            const item = document.createElement("div");
-            item.className = "lesson-number-item";
-            const hasContent = subLesson.content && subLesson.content.length > 50 && !subLesson.content.includes("The administrator can later add");
-            const statusClass = hasContent ? "has-content" : "empty";
-            const statusText = hasContent ? "✓ Has Content" : "✗ Empty";
-            item.innerHTML = `
-                <div class="lesson-number-icon">${index + 1}</div>
-                <div class="lesson-number-text">
-                    <strong>Lesson ${index + 1}</strong>
-                    <span>${escapeHTML(subLesson.title)} <span class="sublesson-status ${statusClass}">${statusText}</span></span>
-                </div>
-            `;
-            item.addEventListener("click", function() {
-                openReadingModal(id, index);
-            });
-            grid.appendChild(item);
+        const statusClass = hasContent
+            ? "has-content"
+            : "empty";
+
+        const statusText = hasContent
+            ? "✓ Has Content"
+            : "✗ Empty";
+
+        const title =
+            subLesson.title ||
+            `Lesson ${index + 1}`;
+
+        item.innerHTML = `
+            <div class="lesson-number-icon">
+                ${index + 1}
+            </div>
+
+            <div class="lesson-number-text">
+                <strong>Lesson ${index + 1}</strong>
+
+                <span>
+                    ${escapeHTML(title)}
+
+                    <span class="sublesson-status ${statusClass}">
+                        ${statusText}
+                    </span>
+                </span>
+            </div>
+        `;
+
+        item.addEventListener("click", function() {
+            openReadingModal(lesson.id, index);
         });
 
-        document.getElementById("lessonSelectorModal").classList.add("show");
-    }
+        grid.appendChild(item);
+    });
 
-    function closeLessonSelector() {
-        document.getElementById("lessonSelectorModal").classList.remove("show");
-    }
+    document
+        .getElementById("lessonSelectorModal")
+        .classList.add("show");
+}
+
+
+function closeLessonSelector() {
+    document
+        .getElementById("lessonSelectorModal")
+        .classList.remove("show");
+}
 
     // ─── RICH TEXT EDITOR FUNCTIONS ──────────────────────────────
     function formatText(command, value) {
