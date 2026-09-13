@@ -3119,43 +3119,62 @@ function getFlashcards() {
         );
 
 
-    /* =========================================
-       DELETE FLASHCARD
-    ========================================== */
+/* =========================================
+   DELETE FLASHCARD DIRECTLY FROM DATABASE
+========================================= */
 
-    function deleteFlashcard(id) {
+async function deleteFlashcard(id) {
 
-        const flashcards =
-            getFlashcards();
+    const card =
+        flashcardsCache.find(function(item) {
 
+            return String(item.id)
+                === String(id);
 
-        const card =
-            flashcards.find(function(item) {
-
-                return String(item.id)
-                    === String(id);
-
-            });
+        });
 
 
-        if (!card) {
-            return;
-        }
+    if (!card) {
+        return;
+    }
 
 
-        const confirmDelete =
-            confirm(
-                "Delete this flashcard?"
+    const confirmDelete =
+        confirm(
+            "Delete this flashcard?"
+        );
+
+
+    if (!confirmDelete) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/flashcards/" +
+                encodeURIComponent(id),
+                {
+                    method: "DELETE"
+                }
             );
 
 
-        if (!confirmDelete) {
-            return;
+        if (!response.ok) {
+
+            throw new Error(
+                "Database delete failed"
+            );
+
         }
 
 
-        const updated =
-            flashcards.filter(
+        /* REMOVE FROM CACHE */
+
+        flashcardsCache =
+            flashcardsCache.filter(
                 function(item) {
 
                     return String(item.id)
@@ -3163,11 +3182,6 @@ function getFlashcards() {
 
                 }
             );
-
-
-        saveFlashcards(
-            updated
-        );
 
 
         renderFlashcards();
@@ -3178,7 +3192,23 @@ function getFlashcards() {
             "success"
         );
 
+
+    } catch (error) {
+
+        console.error(
+            "Flashcard delete failed:",
+            error
+        );
+
+
+        showToast(
+            "Failed to delete flashcard from database.",
+            "error"
+        );
+
     }
+
+}
 
 
     /* =========================================
