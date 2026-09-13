@@ -1812,145 +1812,79 @@ function renderReadingLesson() {
     }
 
 function saveLessonContent(content) {
-
-    if (!content || !content.trim()) {
-        alert("Please enter the lesson content.");
-        return;
-    }
-
     let lessons = JSON.parse(
-        memoryStore.getItem(STORAGE_KEY) || "[]"
+        memoryStore.getItem(STORAGE_KEY) || '[]'
     );
 
     let lessonIndex = lessons.findIndex(function(item) {
-        return Number(item.id) === Number(selectedLessonId);
+        return item.id === selectedLessonId;
     });
 
     if (lessonIndex !== -1) {
+        lessons[lessonIndex].subLessons =
+            createSubLessons(lessons[lessonIndex]);
 
-        const lesson = lessons[lessonIndex];
-
-        // IMPORTANT:
-        // Do NOT recreate subLessons before saving.
-        if (!Array.isArray(lesson.subLessons)) {
-            lesson.subLessons = [];
-        }
-
-        while (
-            lesson.subLessons.length <
-            Number(lesson.numberOfLessons)
+        if (
+            currentSubLessonIndex !== null &&
+            lessons[lessonIndex].subLessons[currentSubLessonIndex]
         ) {
-            lesson.subLessons.push({
-                title:
-                    "Lesson " +
-                    (lesson.subLessons.length + 1),
-                content: ""
-            });
+            lessons[lessonIndex]
+                .subLessons[currentSubLessonIndex]
+                .content = content;
         }
 
-        if (lesson.subLessons[currentSubLessonIndex]) {
-
-            lesson.subLessons[currentSubLessonIndex].content =
-                content;
-
-            lesson.subLessons[currentSubLessonIndex].title =
-                "Lesson " +
-                (currentSubLessonIndex + 1);
-        }
-
-        // Save without destroying the existing subLessons
-        sessionStorage.setItem(
+        memoryStore.setItem(
             STORAGE_KEY,
             JSON.stringify(lessons)
         );
 
-        console.log(
-            "✅ Lesson content saved:",
-            lesson.subLessons[currentSubLessonIndex]
-        );
-
     } else {
-
-        // Check pending lessons
         let pending = getPendingLessons();
 
         let pendingIndex = pending.findIndex(function(item) {
-            return Number(item.id) === Number(selectedLessonId);
+            return item.id === selectedLessonId;
         });
 
         if (pendingIndex !== -1) {
+            pending[pendingIndex].subLessons =
+                createSubLessons(pending[pendingIndex]);
 
-            const lesson = pending[pendingIndex];
-
-            if (!Array.isArray(lesson.subLessons)) {
-                lesson.subLessons = [];
-            }
-
-            while (
-                lesson.subLessons.length <
-                Number(lesson.numberOfLessons)
+            if (
+                currentSubLessonIndex !== null &&
+                pending[pendingIndex].subLessons[currentSubLessonIndex]
             ) {
-                lesson.subLessons.push({
-                    title:
-                        "Lesson " +
-                        (lesson.subLessons.length + 1),
-                    content: ""
-                });
+                pending[pendingIndex]
+                    .subLessons[currentSubLessonIndex]
+                    .content = content;
             }
 
-            lesson.subLessons[currentSubLessonIndex].content =
-                content;
-
-            sessionStorage.setItem(
-                PENDING_KEY,
-                JSON.stringify(pending)
-            );
-
-            console.log("✅ Pending lesson content saved.");
+            savePendingLessons(pending);
 
         } else {
-
-            // Check rejected lessons
             let rejected = getRejectedLessons();
 
             let rejectedIndex = rejected.findIndex(function(item) {
-                return Number(item.id) === Number(selectedLessonId);
+                return item.id === selectedLessonId;
             });
 
             if (rejectedIndex !== -1) {
+                rejected[rejectedIndex].subLessons =
+                    createSubLessons(rejected[rejectedIndex]);
 
-                const lesson = rejected[rejectedIndex];
-
-                if (!Array.isArray(lesson.subLessons)) {
-                    lesson.subLessons = [];
-                }
-
-                while (
-                    lesson.subLessons.length <
-                    Number(lesson.numberOfLessons)
+                if (
+                    currentSubLessonIndex !== null &&
+                    rejected[rejectedIndex].subLessons[currentSubLessonIndex]
                 ) {
-                    lesson.subLessons.push({
-                        title:
-                            "Lesson " +
-                            (lesson.subLessons.length + 1),
-                        content: ""
-                    });
+                    rejected[rejectedIndex]
+                        .subLessons[currentSubLessonIndex]
+                        .content = content;
                 }
 
-                lesson.subLessons[currentSubLessonIndex].content =
-                    content;
-
-                sessionStorage.setItem(
-                    REJECTED_KEY,
-                    JSON.stringify(rejected)
-                );
-
-                console.log("✅ Rejected lesson content saved.");
+                saveRejectedLessons(rejected);
             }
         }
     }
 
-    // Exit edit mode
     const editor =
         document.getElementById("lessonContentEditor");
 
@@ -1967,7 +1901,6 @@ function saveLessonContent(content) {
 
     isEditMode = false;
 
-    // Refresh display
     renderReadingLesson();
 }
 
