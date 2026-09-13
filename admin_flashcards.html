@@ -1995,42 +1995,62 @@
        GET FLASHCARDS
     ========================================== */
 
-    function getFlashcards() {
+let flashcardsCache = [];
 
-        const saved =
-            memoryStore.getItem(FLASHCARD_KEY);
 
-        if (saved) {
+/* =========================================
+   GET FLASHCARDS DIRECTLY FROM DATABASE
+========================================= */
 
-            try {
-                const data = JSON.parse(saved);
+async function loadFlashcardsFromDatabase() {
 
-                return Array.isArray(data)
-                    ? data
-                    : [];
+    try {
 
-            } catch (error) {
-                return [];
+        const response = await fetch("/api/flashcards", {
+            method: "GET",
+            headers: {
+                "Accept": "application/json"
             }
+        });
 
+        if (!response.ok) {
+            throw new Error("Failed to load flashcards");
         }
 
-        return [];
-    }
+        const data = await response.json();
 
+        flashcardsCache =
+            Array.isArray(data) ? data : [];
 
-    /* =========================================
-       SAVE FLASHCARDS
-    ========================================== */
+        renderFlashcards();
 
-    function saveFlashcards(data) {
+    } catch (error) {
 
-        memoryStore.setItem(
-            FLASHCARD_KEY,
-            JSON.stringify(data)
+        console.error(
+            "Error loading flashcards:",
+            error
         );
 
+        flashcardsCache = [];
+
+        renderFlashcards();
+
+        showToast(
+            "Unable to load flashcards from database.",
+            "error"
+        );
     }
+}
+
+
+/* =========================================
+   GET FLASHCARDS
+========================================= */
+
+function getFlashcards() {
+
+    return flashcardsCache;
+}
 
 
     /* =========================================
