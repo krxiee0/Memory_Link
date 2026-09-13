@@ -3102,63 +3102,96 @@
     /* =========================================
        DELETE FLASHCARD
     ========================================== */
+async function deleteFlashcard(id) {
 
-    function deleteFlashcard(id) {
+    const flashcards = getFlashcards();
 
-        const flashcards =
-            getFlashcards();
+    const card = flashcards.find(function (item) {
+        return Number(item.id) === Number(id);
+    });
 
+    if (!card) {
+        alert("Flashcard not found.");
+        return;
+    }
 
-        const card =
-            flashcards.find(function(item) {
+    const confirmDelete = confirm(
+        "Are you sure you want to delete this flashcard?"
+    );
 
-                return String(item.id)
-                    === String(id);
+    if (!confirmDelete) {
+        return;
+    }
 
-            });
+    try {
 
-
-        if (!card) {
-            return;
-        }
-
-
-        const confirmDelete =
-            confirm(
-                "Delete this flashcard?"
-            );
-
-
-        if (!confirmDelete) {
-            return;
-        }
-
-
-        const updated =
-            flashcards.filter(
-                function(item) {
-
-                    return String(item.id)
-                        !== String(id);
-
+        /*
+         * IMPORTANT:
+         * Delete from DATABASE first.
+         */
+        const response = await fetch(
+            "/api/flashcards/" + encodeURIComponent(id),
+            {
+                method: "DELETE",
+                headers: {
+                    "Accept": "application/json"
                 }
-            );
-
-
-        saveFlashcards(
-            updated
+            }
         );
 
+        /*
+         * 204 = successfully deleted
+         * 404 = already gone from database
+         */
+        if (!response.ok && response.status !== 404) {
 
+            const errorText = await response.text();
+
+            throw new Error(
+                "Database delete failed: " +
+                response.status +
+                " " +
+                errorText
+            );
+        }
+
+        /*
+         * Remove from browser cache only
+         * AFTER database delete succeeds.
+         */
+        const updated = flashcards.filter(function (item) {
+
+            return Number(item.id) !== Number(id);
+
+        });
+
+        memoryStore.setItem(
+            FLASHCARD_KEY,
+            JSON.stringify(updated)
+        );
+
+        /*
+         * Refresh display.
+         */
         renderFlashcards();
 
-
-        showToast(
-            "Flashcard deleted successfully.",
-            "success"
+        alert(
+            "Flashcard deleted successfully!"
         );
 
+    } catch (error) {
+
+        console.error(
+            "Delete flashcard error:",
+            error
+        );
+
+        alert(
+            "Failed to delete flashcard from database.\n\n" +
+            error.message
+        );
     }
+}
 
 
     /* =========================================
