@@ -1141,35 +1141,25 @@
     // ─── CREATE SUB LESSONS ──────────────────────────────────────
 function createSubLessons(lesson) {
     const result = [];
-    const count = Number(lesson.numberOfLessons) || 0;
-    const existing = Array.isArray(lesson.subLessons)
-        ? lesson.subLessons
-        : [];
+    const count = lesson.numberOfLessons || 0;
 
-    for (let i = 0; i < count; i++) {
+    for (let i = 1; i <= count; i++) {
+        let content = "This is the learning content for Lesson " + i + " of " + lesson.title + ".";
 
-        const oldLesson = existing[i];
+        if (lesson.subLessons &&
+            lesson.subLessons[i - 1] &&
+            lesson.subLessons[i - 1].content) {
 
-        let title = "Lesson " + (i + 1);
-        let content = "";
+            const existingContent =
+                lesson.subLessons[i - 1].content;
 
-        if (oldLesson) {
-            title = oldLesson.title || title;
-            content = oldLesson.content || "";
-        }
-
-        // Only use default content when there is really no saved content
-        if (!content.trim()) {
-            content =
-                "This is the learning content for Lesson " +
-                (i + 1) +
-                " of " +
-                lesson.title +
-                ".";
+            if (!existingContent.includes("The administrator can later add")) {
+                content = existingContent;
+            }
         }
 
         result.push({
-            title: title,
+            title: "Lesson " + i,
             content: content
         });
     }
