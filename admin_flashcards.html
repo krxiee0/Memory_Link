@@ -1995,62 +1995,42 @@
        GET FLASHCARDS
     ========================================== */
 
-let flashcardsCache = [];
+    function getFlashcards() {
 
+        const saved =
+            memoryStore.getItem(FLASHCARD_KEY);
 
-/* =========================================
-   GET FLASHCARDS DIRECTLY FROM DATABASE
-========================================= */
+        if (saved) {
 
-async function loadFlashcardsFromDatabase() {
+            try {
+                const data = JSON.parse(saved);
 
-    try {
+                return Array.isArray(data)
+                    ? data
+                    : [];
 
-        const response = await fetch("/api/flashcards", {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
+            } catch (error) {
+                return [];
             }
-        });
 
-        if (!response.ok) {
-            throw new Error("Failed to load flashcards");
         }
 
-        const data = await response.json();
-
-        flashcardsCache =
-            Array.isArray(data) ? data : [];
-
-        renderFlashcards();
-
-    } catch (error) {
-
-        console.error(
-            "Error loading flashcards:",
-            error
-        );
-
-        flashcardsCache = [];
-
-        renderFlashcards();
-
-        showToast(
-            "Unable to load flashcards from database.",
-            "error"
-        );
+        return [];
     }
-}
 
 
-/* =========================================
-   GET FLASHCARDS
-========================================= */
+    /* =========================================
+       SAVE FLASHCARDS
+    ========================================== */
 
-function getFlashcards() {
+    function saveFlashcards(data) {
 
-    return flashcardsCache;
-}
+        memoryStore.setItem(
+            FLASHCARD_KEY,
+            JSON.stringify(data)
+        );
+
+    }
 
 
     /* =========================================
@@ -3119,62 +3099,43 @@ function getFlashcards() {
         );
 
 
-/* =========================================
-   DELETE FLASHCARD DIRECTLY FROM DATABASE
-========================================= */
+    /* =========================================
+       DELETE FLASHCARD
+    ========================================== */
 
-async function deleteFlashcard(id) {
+    function deleteFlashcard(id) {
 
-    const card =
-        flashcardsCache.find(function(item) {
-
-            return String(item.id)
-                === String(id);
-
-        });
+        const flashcards =
+            getFlashcards();
 
 
-    if (!card) {
-        return;
-    }
+        const card =
+            flashcards.find(function(item) {
+
+                return String(item.id)
+                    === String(id);
+
+            });
 
 
-    const confirmDelete =
-        confirm(
-            "Delete this flashcard?"
-        );
-
-
-    if (!confirmDelete) {
-        return;
-    }
-
-
-    try {
-
-        const response =
-            await fetch(
-                "/api/flashcards/" +
-                encodeURIComponent(id),
-                {
-                    method: "DELETE"
-                }
-            );
-
-
-        if (!response.ok) {
-
-            throw new Error(
-                "Database delete failed"
-            );
-
+        if (!card) {
+            return;
         }
 
 
-        /* REMOVE FROM CACHE */
+        const confirmDelete =
+            confirm(
+                "Delete this flashcard?"
+            );
 
-        flashcardsCache =
-            flashcardsCache.filter(
+
+        if (!confirmDelete) {
+            return;
+        }
+
+
+        const updated =
+            flashcards.filter(
                 function(item) {
 
                     return String(item.id)
@@ -3182,6 +3143,11 @@ async function deleteFlashcard(id) {
 
                 }
             );
+
+
+        saveFlashcards(
+            updated
+        );
 
 
         renderFlashcards();
@@ -3192,23 +3158,7 @@ async function deleteFlashcard(id) {
             "success"
         );
 
-
-    } catch (error) {
-
-        console.error(
-            "Flashcard delete failed:",
-            error
-        );
-
-
-        showToast(
-            "Failed to delete flashcard from database.",
-            "error"
-        );
-
     }
-
-}
 
 
     /* =========================================
