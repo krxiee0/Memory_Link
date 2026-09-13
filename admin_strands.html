@@ -710,10 +710,10 @@ async function deleteStrand(id) {
           return Number(s.id) !== Number(id);
         });
 
-        memoryStore.setItem(
-          STRAND_KEY,
-          JSON.stringify(updated)
-        );
+memoryStore.setItem(
+  STORAGE_KEY,
+  JSON.stringify(updated)
+);
 
         closeConfirmModal();
         displayStrands();
