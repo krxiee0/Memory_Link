@@ -797,7 +797,8 @@
             .editor-toolbar button { width: 30px !important; height: 30px !important; font-size: 12px !important; }
         }
     </style>
-    <script src="/db-sync.js"></script>
+    <!-- NOTE: db-sync.js is intentionally NOT loaded here.
+         This page handles its own API sync to prevent duplicate sync requests. -->
 </head>
 
 <body>
@@ -1069,137 +1070,189 @@
 </div>
 
 <script>
+    "use strict";
 
-    // ─── STORAGE KEYS ──────────────────────────────────────────────
-    const STORAGE_KEY = "memoryLinkLessons";
-    const PENDING_KEY = "memoryLinkPendingLessons";
-    const REJECTED_KEY = "memoryLinkRejectedLessons";
-
-    // ─── API HELPERS ───────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════
+    // API CONFIG
+    // ═══════════════════════════════════════════════════════════
     const API_BASE = "/api/lessons";
 
+    // ═══════════════════════════════════════════════════════════
+    // IN-MEMORY CACHE (no sessionStorage, no race conditions)
+    // ═══════════════════════════════════════════════════════════
+    let _approvedCache = [];
+    let _pendingCache = [];
+    let _rejectedCache = [];
+
+    function getApprovedLessons() { return _approvedCache; }
+    function saveApprovedLessons(a) { _approvedCache = Array.isArray(a) ? a : []; }
+
+    function getPendingLessons() { return _pendingCache; }
+    function savePendingLessons(p) { _pendingCache = Array.isArray(p) ? p : []; }
+
+    function getRejectedLessons() { return _rejectedCache; }
+    function saveRejectedLessons(r) { _rejectedCache = Array.isArray(r) ? r : []; }
+
+    // Keep memoryStore shim for compatibility with existing code paths
+    const memoryStore = {
+        getItem(key) {
+            if (key === "memoryLinkLessons") return JSON.stringify(_approvedCache);
+            if (key === "memoryLinkPendingLessons") return JSON.stringify(_pendingCache);
+            if (key === "memoryLinkRejectedLessons") return JSON.stringify(_rejectedCache);
+            if (key === "memoryLinkUser") return sessionStorage.getItem("memoryLinkUser");
+            return sessionStorage.getItem(key);
+        },
+        setItem(key, value) {
+            if (key === "memoryLinkLessons") _approvedCache = safeParse(value);
+            else if (key === "memoryLinkPendingLessons") _pendingCache = safeParse(value);
+            else if (key === "memoryLinkRejectedLessons") _rejectedCache = safeParse(value);
+            else sessionStorage.setItem(key, value);
+        },
+        removeItem(key) {
+            if (key === "memoryLinkLessons") _approvedCache = [];
+            else if (key === "memoryLinkPendingLessons") _pendingCache = [];
+            else if (key === "memoryLinkRejectedLessons") _rejectedCache = [];
+            else sessionStorage.removeItem(key);
+        }
+    };
+
+    function safeParse(v) {
+        try { const p = JSON.parse(v); return Array.isArray(p) ? p : []; }
+        catch { return []; }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // API HELPERS
+    // ═══════════════════════════════════════════════════════════
     async function apiGetAll() {
-        const res = await fetch(API_BASE);
-        if (!res.ok) throw new Error("Failed to load lessons: " + res.status);
+        const res = await fetch(API_BASE, {
+            headers: { "Accept": "application/json" }
+        });
+        if (!res.ok) throw new Error("Load failed: " + res.status);
         return res.json();
     }
 
     async function apiSync(lessons) {
-        const payload = lessons.map(function (l) {
-            return {
-                id: l.id,
-                title: l.title,
-                category: l.category,
-                duration: l.duration || null,
-                description: l.description,
-                numberOfLessons: l.numberOfLessons,
-                status: l.status || "approved",
-                submittedBy: l.submittedBy || null,
-                subLessons: l.subLessons || []
-            };
-        });
+        const payload = lessons.map(l => ({
+            id: l.id,
+            title: l.title,
+            category: l.category,
+            duration: l.duration || null,
+            description: l.description,
+            numberOfLessons: l.numberOfLessons,
+            status: l.status || "approved",
+            submittedBy: l.submittedBy || null,
+            subLessons: l.subLessons || []
+        }));
 
         const res = await fetch(API_BASE + "/sync", {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
             body: JSON.stringify(payload)
         });
 
-        if (!res.ok) throw new Error("Sync failed: " + res.status);
+        if (!res.ok) {
+            const text = await res.text();
+            throw new Error("Sync failed: " + res.status + " " + text);
+        }
         return res.json();
     }
 
-    // Rebuild the three local buckets from a server response
     function rehydrateLocalCache(serverLessons) {
-        const approved = [];
-        const pending = [];
-        const rejected = [];
+        _approvedCache = [];
+        _pendingCache = [];
+        _rejectedCache = [];
 
         (serverLessons || []).forEach(function (l) {
+            if (!l || typeof l !== "object") return;
             const status = l.status || "approved";
-            const copy = { ...l };
-            if (status === "pending") pending.push(copy);
-            else if (status === "rejected") rejected.push(copy);
-            else approved.push(copy);
+            if (status === "pending") _pendingCache.push(l);
+            else if (status === "rejected") _rejectedCache.push(l);
+            else _approvedCache.push(l);
         });
-
-        memoryStore.setItem(STORAGE_KEY, JSON.stringify(approved));
-        savePendingLessons(pending);
-        saveRejectedLessons(rejected);
     }
 
-    async function persistToServer() {
-        try {
-            const approved = JSON.parse(memoryStore.getItem(STORAGE_KEY) || '[]');
-            const pending = getPendingLessons();
-            const rejected = getRejectedLessons();
+    let _syncInFlight = null;
 
+    async function persistToServer() {
+        // Prevent overlapping syncs — queue them
+        if (_syncInFlight) {
+            await _syncInFlight.catch(function () {});
+        }
+
+        const promise = (async function () {
             const all = [
-                ...approved.map(function (l) { return { ...l, status: "approved" }; }),
-                ...pending.map(function (l) { return { ...l, status: "pending" }; }),
-                ...rejected.map(function (l) { return { ...l, status: "rejected" }; })
+                ..._approvedCache.map(l => ({ ...l, status: "approved" })),
+                ..._pendingCache.map(l => ({ ...l, status: "pending" })),
+                ..._rejectedCache.map(l => ({ ...l, status: "rejected" }))
             ];
+
+            console.log("📤 [admin_lessons] Syncing", all.length, "lessons to server...");
 
             const saved = await apiSync(all);
             rehydrateLocalCache(saved);
-            console.log("✅ Synced with server:", saved.length, "lessons");
+
+            console.log("✅ [admin_lessons] Server returned", saved.length, "lessons");
+            return saved;
+        })();
+
+        _syncInFlight = promise;
+        try {
+            return await promise;
         } catch (e) {
-            console.error("❌ Sync error:", e);
-            alert("Could not save to the server. Please check your connection and try again.");
+            console.error("❌ [admin_lessons] Sync error:", e);
+            alert("Save failed: " + e.message);
+            throw e;
+        } finally {
+            if (_syncInFlight === promise) _syncInFlight = null;
         }
     }
 
-    // ─── CHECK LOGIN ──────────────────────────────────────────────
-    const savedUser = memoryStore.getItem("memoryLinkUser");
-    if (!savedUser) window.location.replace("/login");
+    // ═══════════════════════════════════════════════════════════
+    // LOGIN CHECK
+    // ═══════════════════════════════════════════════════════════
+    const savedUser = sessionStorage.getItem("memoryLinkUser");
+    if (!savedUser) {
+        window.location.replace("/login");
+    }
     let user = null;
-    try { user = JSON.parse(savedUser); } catch { memoryStore.removeItem("memoryLinkUser"); window.location.replace("/login"); }
-    if (user && user.role !== "admin") window.location.replace("/strands");
+    try {
+        user = JSON.parse(savedUser);
+    } catch {
+        sessionStorage.removeItem("memoryLinkUser");
+        window.location.replace("/login");
+    }
+    if (user && user.role !== "admin") {
+        window.location.replace("/strands");
+    }
     if (user) {
         document.getElementById("userName").textContent = user.username || "Admin";
         document.getElementById("userRole").textContent = "Administrator";
         document.getElementById("userAvatar").textContent = (user.username || "A").charAt(0).toUpperCase();
     }
 
-    // ─── GET URL PARAMETERS ────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════
+    // URL PARAMETERS
+    // ═══════════════════════════════════════════════════════════
     function getURLParameter(name) {
-        const urlParams = new URLSearchParams(window.location.search);
-        return urlParams.get(name);
+        return new URLSearchParams(window.location.search).get(name);
     }
 
-    // ─── PENDING / REJECTED STORAGE ──────────────────────────────
-    function getPendingLessons() {
-        try {
-            const data = memoryStore.getItem(PENDING_KEY);
-            return data ? JSON.parse(data) : [];
-        } catch { return []; }
-    }
-
-    function savePendingLessons(pending) {
-        memoryStore.setItem(PENDING_KEY, JSON.stringify(pending));
-    }
-
-    function getRejectedLessons() {
-        try {
-            const data = memoryStore.getItem(REJECTED_KEY);
-            return data ? JSON.parse(data) : [];
-        } catch { return []; }
-    }
-
-    function saveRejectedLessons(rejected) {
-        memoryStore.setItem(REJECTED_KEY, JSON.stringify(rejected));
-    }
-
-    // ─── CREATE SUB LESSONS ──────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════
+    // CREATE SUB LESSONS
+    // ═══════════════════════════════════════════════════════════
     function createSubLessons(lesson) {
         const result = [];
         const count = lesson.numberOfLessons || 0;
         for (let i = 1; i <= count; i++) {
             let content = "This is the learning content for Lesson " + i + " of " + lesson.title + ".";
             if (lesson.subLessons && lesson.subLessons[i - 1] && lesson.subLessons[i - 1].content) {
-                const existingContent = lesson.subLessons[i - 1].content;
-                if (!existingContent.includes("The administrator can later add")) {
-                    content = existingContent;
+                const existing = lesson.subLessons[i - 1].content;
+                if (existing && !existing.includes("The administrator can later add")) {
+                    content = existing;
                 }
             }
             result.push({
@@ -1210,90 +1263,63 @@
         return result;
     }
 
-    // ─── GET ALL LESSONS (APPROVED + PENDING + REJECTED) ────────
+    // ═══════════════════════════════════════════════════════════
+    // GET ALL LESSONS (combined view)
+    // ═══════════════════════════════════════════════════════════
     function getLessons() {
-        const saved = memoryStore.getItem(STORAGE_KEY);
-        let approved = [];
-        try {
-            approved = saved ? JSON.parse(saved) : [];
-            approved.forEach(function(lesson) {
-                if (!lesson.subLessons || lesson.subLessons.length !== lesson.numberOfLessons) {
-                    lesson.subLessons = createSubLessons(lesson);
-                }
-            });
-        } catch { approved = []; }
+        const all = [];
 
-        const pending = getPendingLessons();
-        const rejected = getRejectedLessons();
-
-        const allLessons = [];
-
-        approved.forEach(function(lesson) {
-            allLessons.push({
-                ...lesson,
-                status: 'approved',
-                subLessons: createSubLessons(lesson)
-            });
+        _approvedCache.forEach(function (lesson) {
+            const sub = (lesson.subLessons && lesson.subLessons.length === lesson.numberOfLessons)
+                ? lesson.subLessons : createSubLessons(lesson);
+            all.push({ ...lesson, status: "approved", subLessons: sub });
         });
 
-        pending.forEach(function(lesson) {
-            allLessons.push({
-                ...lesson,
-                status: 'pending',
-                subLessons: createSubLessons(lesson)
-            });
+        _pendingCache.forEach(function (lesson) {
+            const sub = (lesson.subLessons && lesson.subLessons.length === lesson.numberOfLessons)
+                ? lesson.subLessons : createSubLessons(lesson);
+            all.push({ ...lesson, status: "pending", subLessons: sub });
         });
 
-        rejected.forEach(function(lesson) {
-            allLessons.push({
-                ...lesson,
-                status: 'rejected',
-                subLessons: createSubLessons(lesson)
-            });
+        _rejectedCache.forEach(function (lesson) {
+            const sub = (lesson.subLessons && lesson.subLessons.length === lesson.numberOfLessons)
+                ? lesson.subLessons : createSubLessons(lesson);
+            all.push({ ...lesson, status: "rejected", subLessons: sub });
         });
 
-        return allLessons;
+        return all;
     }
 
-    function saveApprovedLessons(lessons) {
-        const approved = lessons.filter(function(l) { return l.status === 'approved'; });
-        const cleaned = approved.map(function(l) {
-            const { status, ...rest } = l;
-            return rest;
-        });
-        memoryStore.setItem(STORAGE_KEY, JSON.stringify(cleaned));
-    }
-
-    // ─── DISPLAY LESSONS ────────────────────────────────────────────
-    let currentTab = 'all';
+    // ═══════════════════════════════════════════════════════════
+    // DISPLAY LESSONS
+    // ═══════════════════════════════════════════════════════════
+    let currentTab = "all";
     let currentFilter = null;
 
     function displayLessons() {
         const lessons = getLessons();
-        const search = document.getElementById("searchInput").value.toLowerCase().trim();
+        const search = (document.getElementById("searchInput").value || "").toLowerCase().trim();
 
         let filtered = lessons;
 
-        if (currentTab === 'pending') {
-            filtered = filtered.filter(function(l) { return l.status === 'pending'; });
-        } else if (currentTab === 'approved') {
-            filtered = filtered.filter(function(l) { return l.status === 'approved'; });
-        } else if (currentTab === 'rejected') {
-            filtered = filtered.filter(function(l) { return l.status === 'rejected'; });
+        if (currentTab === "pending") {
+            filtered = filtered.filter(l => l.status === "pending");
+        } else if (currentTab === "approved") {
+            filtered = filtered.filter(l => l.status === "approved");
+        } else if (currentTab === "rejected") {
+            filtered = filtered.filter(l => l.status === "rejected");
         }
 
         if (search) {
-            filtered = filtered.filter(function(lesson) {
-                return lesson.title.toLowerCase().includes(search) ||
-                    lesson.category.toLowerCase().includes(search) ||
-                    lesson.description.toLowerCase().includes(search);
-            });
+            filtered = filtered.filter(l =>
+                (l.title || "").toLowerCase().includes(search) ||
+                (l.category || "").toLowerCase().includes(search) ||
+                (l.description || "").toLowerCase().includes(search)
+            );
         }
 
         if (currentFilter) {
-            filtered = filtered.filter(function(lesson) {
-                return lesson.category === currentFilter;
-            });
+            filtered = filtered.filter(l => l.category === currentFilter);
         }
 
         const grid = document.getElementById("lessonGrid");
@@ -1304,26 +1330,21 @@
 
         if (filtered.length === 0) {
             empty.style.display = "flex";
-            if (currentTab === 'pending') {
-                emptyMsg.textContent = "No pending lessons from students. All clear!";
-            } else if (currentTab === 'rejected') {
-                emptyMsg.textContent = "No rejected lessons.";
-            } else if (currentTab === 'approved') {
-                emptyMsg.textContent = "No approved lessons yet.";
-            } else {
-                emptyMsg.textContent = "Add a new lesson to get started.";
-            }
+            if (currentTab === "pending") emptyMsg.textContent = "No pending lessons from students. All clear!";
+            else if (currentTab === "rejected") emptyMsg.textContent = "No rejected lessons.";
+            else if (currentTab === "approved") emptyMsg.textContent = "No approved lessons yet.";
+            else emptyMsg.textContent = "Add a new lesson to get started.";
         } else {
             empty.style.display = "none";
-            filtered.forEach(function(lesson) {
+            filtered.forEach(function (lesson) {
                 const card = document.createElement("div");
                 card.className = "lesson-card";
-                if (lesson.status === 'pending') card.classList.add("pending-card");
-                if (lesson.status === 'rejected') card.classList.add("rejected-card");
+                if (lesson.status === "pending") card.classList.add("pending-card");
+                if (lesson.status === "rejected") card.classList.add("rejected-card");
 
-                const isPending = lesson.status === 'pending';
-                const isRejected = lesson.status === 'rejected';
-                const isApproved = lesson.status === 'approved';
+                const isPending = lesson.status === "pending";
+                const isRejected = lesson.status === "rejected";
+                const isApproved = lesson.status === "approved";
 
                 card.innerHTML = `
                     <div class="lesson-cover">
@@ -1336,7 +1357,7 @@
                         <p>${escapeHTML(lesson.description)}</p>
                         <div class="lesson-meta">
                             <span><i class="fa-solid fa-book"></i> ${lesson.numberOfLessons} lessons</span>
-                            ${lesson.submittedBy ? `<span><i class="fa-solid fa-user"></i> ${escapeHTML(lesson.submittedBy)}</span>` : ''}
+                            ${lesson.submittedBy ? `<span><i class="fa-solid fa-user"></i> ${escapeHTML(lesson.submittedBy)}</span>` : ""}
                         </div>
                         <div class="card-actions">
                             ${isPending ? `
@@ -1346,17 +1367,17 @@
                                 <button class="decline-btn" onclick="declineLesson(${lesson.id})">
                                     <i class="fa-solid fa-xmark"></i> Decline
                                 </button>
-                            ` : ''}
+                            ` : ""}
                             ${isApproved ? `
                                 <button class="edit-btn" onclick="editLesson(${lesson.id})">
                                     <i class="fa-solid fa-pen"></i> Edit
                                 </button>
-                            ` : ''}
+                            ` : ""}
                             ${isRejected ? `
                                 <button class="edit-btn" onclick="editLesson(${lesson.id})">
                                     <i class="fa-solid fa-pen"></i> Edit & Resubmit
                                 </button>
-                            ` : ''}
+                            ` : ""}
                             <button class="delete-btn" onclick="confirmDeleteLesson(${lesson.id})">
                                 <i class="fa-solid fa-trash"></i> Delete
                             </button>
@@ -1364,37 +1385,33 @@
                     </div>
                 `;
 
-                if (isApproved) {
-                    card.addEventListener("click", function(event) {
-                        if (event.target.closest(".card-actions")) return;
+                card.addEventListener("click", function (event) {
+                    if (event.target.closest(".card-actions")) return;
+                    if (isApproved) {
                         openLessonSelector(lesson.id);
-                    });
-                } else {
-                    card.addEventListener("click", function(event) {
-                        if (event.target.closest(".card-actions")) return;
-                        const lessonObj = getLessons().find(function(l) { return l.id === lesson.id; });
-                        if (lessonObj && lessonObj.subLessons && lessonObj.subLessons.length > 0) {
-                            openReadingModal(lesson.id, 0);
-                        }
-                    });
-                }
+                    } else {
+                        openReadingModal(lesson.id, 0);
+                    }
+                });
 
                 grid.appendChild(card);
             });
         }
 
+        // Stats
         const allLessons = getLessons();
         document.getElementById("totalLessons").textContent = allLessons.length;
-        document.getElementById("pendingCount").textContent = allLessons.filter(function(l) { return l.status === 'pending'; }).length;
-        document.getElementById("rejectedCount").textContent = allLessons.filter(function(l) { return l.status === 'rejected'; }).length;
-        document.getElementById("approvedCount").textContent = allLessons.filter(function(l) { return l.status === 'approved'; }).length;
+        document.getElementById("pendingCount").textContent = allLessons.filter(l => l.status === "pending").length;
+        document.getElementById("rejectedCount").textContent = allLessons.filter(l => l.status === "rejected").length;
+        document.getElementById("approvedCount").textContent = allLessons.filter(l => l.status === "approved").length;
 
         document.getElementById("allBadge").textContent = allLessons.length;
-        document.getElementById("pendingBadge").textContent = allLessons.filter(function(l) { return l.status === 'pending'; }).length;
-        document.getElementById("approvedBadge").textContent = allLessons.filter(function(l) { return l.status === 'approved'; }).length;
-        document.getElementById("rejectedBadge").textContent = allLessons.filter(function(l) { return l.status === 'rejected'; }).length;
+        document.getElementById("pendingBadge").textContent = allLessons.filter(l => l.status === "pending").length;
+        document.getElementById("approvedBadge").textContent = allLessons.filter(l => l.status === "approved").length;
+        document.getElementById("rejectedBadge").textContent = allLessons.filter(l => l.status === "rejected").length;
 
-        document.getElementById("lessonCount").textContent = filtered.length + (filtered.length === 1 ? " lesson" : " lessons");
+        document.getElementById("lessonCount").textContent =
+            filtered.length + (filtered.length === 1 ? " lesson" : " lessons");
 
         updateFilterBadge();
         updatePageHeader();
@@ -1407,22 +1424,29 @@
     }
 
     function escapeHTML(value) {
-        return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        return String(value == null ? "" : value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
     }
 
-    // ─── TABS ──────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════
+    // TABS
+    // ═══════════════════════════════════════════════════════════
     function switchTab(tab) {
         currentTab = tab;
-        document.querySelectorAll('.tab-btn').forEach(function(btn) {
-            btn.classList.remove('active');
-            if (btn.dataset.tab === tab) {
-                btn.classList.add('active');
-            }
+        document.querySelectorAll(".tab-btn").forEach(function (btn) {
+            btn.classList.remove("active");
+            if (btn.dataset.tab === tab) btn.classList.add("active");
         });
         displayLessons();
     }
 
-    // ─── FILTER ────────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════
+    // FILTER
+    // ═══════════════════════════════════════════════════════════
     function updateFilterBadge() {
         const container = document.getElementById("filterBadgeContainer");
         if (currentFilter) {
@@ -1446,13 +1470,13 @@
         if (currentFilter) {
             title.textContent = currentFilter + " Lessons";
             desc.textContent = 'Showing lessons for "' + currentFilter + '" strand. Review pending submissions and manage approved lessons.';
-        } else if (currentTab === 'pending') {
+        } else if (currentTab === "pending") {
             title.textContent = "Pending Lessons";
             desc.textContent = "Review lessons submitted by students. Approve or decline each submission.";
-        } else if (currentTab === 'rejected') {
+        } else if (currentTab === "rejected") {
             title.textContent = "Rejected Lessons";
             desc.textContent = "Lessons that were declined. You can edit and resubmit them.";
-        } else if (currentTab === 'approved') {
+        } else if (currentTab === "approved") {
             title.textContent = "Approved Lessons";
             desc.textContent = "All approved lessons available for students.";
         } else {
@@ -1475,67 +1499,57 @@
 
     function loadFilterFromURL() {
         const strandParam = getURLParameter("strand");
-        if (strandParam) {
-            if (strandParam === "STEM A" || strandParam === "STEM B") {
-                setFilter(strandParam);
-                return true;
-            }
+        if (strandParam === "STEM A" || strandParam === "STEM B") {
+            setFilter(strandParam);
         }
-        return false;
     }
 
-    // ─── APPROVE / DECLINE LESSONS ──────────────────────────────
+    // ═══════════════════════════════════════════════════════════
+    // APPROVE / DECLINE
+    // ═══════════════════════════════════════════════════════════
     function approveLesson(id) {
-        const lesson = getLessons().find(function(l) { return l.id === id; });
+        const lesson = getLessons().find(l => l.id === id);
         if (!lesson) return;
 
         openConfirmModal(
             "Approve Lesson",
             'Are you sure you want to <strong>approve</strong> the lesson "<strong>' + escapeHTML(lesson.title) + '</strong>"? It will become available to students.',
-            function() {
-                let pending = getPendingLessons();
-                pending = pending.filter(function(l) { return l.id !== id; });
-                savePendingLessons(pending);
-
-                let approved = JSON.parse(memoryStore.getItem(STORAGE_KEY) || '[]');
+            function () {
+                _pendingCache = _pendingCache.filter(l => l.id !== id);
                 const { status, ...lessonData } = lesson;
                 lessonData.subLessons = createSubLessons(lessonData);
-                approved.push(lessonData);
-                memoryStore.setItem(STORAGE_KEY, JSON.stringify(approved));
+                _approvedCache.push(lessonData);
 
                 displayLessons();
-                persistToServer();
+                persistToServer().catch(function () {});
             },
             null
         );
     }
 
     function declineLesson(id) {
-        const lesson = getLessons().find(function(l) { return l.id === id; });
+        const lesson = getLessons().find(l => l.id === id);
         if (!lesson) return;
 
         openConfirmModal(
             "Decline Lesson",
             'Are you sure you want to <strong>decline</strong> the lesson "<strong>' + escapeHTML(lesson.title) + '</strong>"? The student will be notified.',
-            function() {
-                let pending = getPendingLessons();
-                pending = pending.filter(function(l) { return l.id !== id; });
-                savePendingLessons(pending);
-
-                let rejected = getRejectedLessons();
+            function () {
+                _pendingCache = _pendingCache.filter(l => l.id !== id);
                 const { status, ...lessonData } = lesson;
                 lessonData.subLessons = createSubLessons(lessonData);
-                rejected.push(lessonData);
-                saveRejectedLessons(rejected);
+                _rejectedCache.push(lessonData);
 
                 displayLessons();
-                persistToServer();
+                persistToServer().catch(function () {});
             },
             null
         );
     }
 
-    // ─── MODAL CONTROL ────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════
+    // ADD / EDIT LESSON MODAL
+    // ═══════════════════════════════════════════════════════════
     let editingId = null;
 
     function openModal() {
@@ -1552,7 +1566,7 @@
         editingId = null;
     }
 
-    document.getElementById("lessonForm").addEventListener("submit", function(event) {
+    document.getElementById("lessonForm").addEventListener("submit", function (event) {
         event.preventDefault();
 
         const title = document.getElementById("lessonTitle").value.trim();
@@ -1567,6 +1581,7 @@
 
         const editId = this.dataset.editId;
         const isEdit = !!editId;
+
         const lessonData = {
             editId: editId,
             title: title,
@@ -1575,34 +1590,42 @@
             numberOfLessons: numberOfLessons
         };
 
-        const actionText = isEdit ? "update" : "create";
-        const lessonTitle = title;
         openConfirmModal(
             isEdit ? "Update Lesson" : "Create New Lesson",
-            'Are you sure you want to <strong>' + actionText + '</strong> the lesson "<strong>' + escapeHTML(lessonTitle) + '</strong>"?',
-            function(data) {
-                saveLessonData(data);
-            },
+            'Are you sure you want to <strong>' + (isEdit ? "update" : "create") + '</strong> the lesson "<strong>' + escapeHTML(title) + '</strong>"?',
+            function (data) { saveLessonData(data); },
             lessonData
         );
     });
 
     function saveLessonData(data) {
-        let lessons = JSON.parse(memoryStore.getItem(STORAGE_KEY) || '[]');
-
         if (data.editId) {
-            const index = lessons.findIndex(function(lesson) { return lesson.id == Number(data.editId); });
-            if (index !== -1) {
-                const oldSubLessons = lessons[index].subLessons || [];
-                lessons[index] = {
-                    id: lessons[index].id,
-                    title: data.title,
-                    category: data.category,
-                    description: data.description,
-                    numberOfLessons: data.numberOfLessons,
-                    subLessons: oldSubLessons
-                };
-                lessons[index].subLessons = createSubLessons(lessons[index]);
+            const id = Number(data.editId);
+
+            // Search across all three buckets
+            const buckets = [
+                { arr: _approvedCache, save: function (a) { _approvedCache = a; } },
+                { arr: _pendingCache, save: function (a) { _pendingCache = a; } },
+                { arr: _rejectedCache, save: function (a) { _rejectedCache = a; } }
+            ];
+
+            for (const bucket of buckets) {
+                const idx = bucket.arr.findIndex(l => Number(l.id) === id);
+                if (idx !== -1) {
+                    const old = bucket.arr[idx];
+                    const updated = {
+                        id: old.id,
+                        title: data.title,
+                        category: data.category,
+                        description: data.description,
+                        numberOfLessons: data.numberOfLessons,
+                        subLessons: old.subLessons || []
+                    };
+                    updated.subLessons = createSubLessons(updated);
+                    bucket.arr[idx] = updated;
+                    bucket.save(bucket.arr);
+                    break;
+                }
             }
         } else {
             const newLesson = {
@@ -1614,82 +1637,71 @@
                 subLessons: []
             };
             newLesson.subLessons = createSubLessons(newLesson);
-            lessons.push(newLesson);
+            _approvedCache.push(newLesson);
         }
 
-        memoryStore.setItem(STORAGE_KEY, JSON.stringify(lessons));
         closeModal();
         displayLessons();
-        persistToServer();
+        persistToServer().catch(function () {});
     }
 
     function editLesson(id) {
-        const lessons = JSON.parse(memoryStore.getItem(STORAGE_KEY) || '[]');
-        const lesson = lessons.find(function(item) { return item.id === id; });
+        const numericId = Number(id);
+        const all = [
+            ..._approvedCache,
+            ..._pendingCache,
+            ..._rejectedCache
+        ];
+        const found = all.find(l => Number(l.id) === numericId);
+        if (!found) return;
 
-        const pending = getPendingLessons();
-        const pendingLesson = pending.find(function(item) { return item.id === id; });
-        const rejected = getRejectedLessons();
-        const rejectedLesson = rejected.find(function(item) { return item.id === id; });
-
-        const foundLesson = lesson || pendingLesson || rejectedLesson;
-        if (!foundLesson) return;
-
-        editingId = id;
+        editingId = found.id;
         document.getElementById("modalTitle").textContent = "Edit Lesson";
-        document.getElementById("lessonTitle").value = foundLesson.title;
-        document.getElementById("lessonCategory").value = foundLesson.category;
-        document.getElementById("lessonDescription").value = foundLesson.description;
-        document.getElementById("lessonNumber").value = foundLesson.numberOfLessons;
-        document.getElementById("lessonForm").dataset.editId = id;
+        document.getElementById("lessonTitle").value = found.title;
+        document.getElementById("lessonCategory").value = found.category;
+        document.getElementById("lessonDescription").value = found.description;
+        document.getElementById("lessonNumber").value = found.numberOfLessons;
+        document.getElementById("lessonForm").dataset.editId = found.id;
         document.getElementById("lessonModal").classList.add("show");
     }
 
     function confirmDeleteLesson(id) {
-        const lessons = getLessons();
-        const lesson = lessons.find(function(item) { return item.id === id; });
+        const lesson = getLessons().find(l => l.id === id);
         if (!lesson) return;
 
         openConfirmModal(
             "Delete Lesson",
             'Are you sure you want to permanently delete the lesson "<strong>' + escapeHTML(lesson.title) + '</strong>"? This action cannot be undone.',
-            function(lessonId) {
-                let approved = JSON.parse(memoryStore.getItem(STORAGE_KEY) || '[]');
-                approved = approved.filter(function(item) { return item.id !== lessonId; });
-                memoryStore.setItem(STORAGE_KEY, JSON.stringify(approved));
-
-                let pending = getPendingLessons();
-                pending = pending.filter(function(item) { return item.id !== lessonId; });
-                savePendingLessons(pending);
-
-                let rejected = getRejectedLessons();
-                rejected = rejected.filter(function(item) { return item.id !== lessonId; });
-                saveRejectedLessons(rejected);
+            function (lessonId) {
+                _approvedCache = _approvedCache.filter(l => l.id !== lessonId);
+                _pendingCache = _pendingCache.filter(l => l.id !== lessonId);
+                _rejectedCache = _rejectedCache.filter(l => l.id !== lessonId);
 
                 displayLessons();
-                persistToServer();
+                persistToServer().catch(function () {});
             },
             id
         );
     }
 
-    // ─── LESSON SELECTOR ──────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════
+    // LESSON SELECTOR
+    // ═══════════════════════════════════════════════════════════
     let selectedLessonId = null;
     let currentSubLessonIndex = 0;
     let isEditMode = false;
 
     function openLessonSelector(id) {
-        const lessons = getLessons();
-        const lesson = lessons.find(function(item) { return item.id === id; });
-        if (!lesson || lesson.status !== 'approved') {
-            if (lesson) {
-                openReadingModal(id, 0);
-            }
+        const lesson = getLessons().find(l => l.id === id);
+        if (!lesson) return;
+
+        if (lesson.status !== "approved") {
+            openReadingModal(id, 0);
             return;
         }
 
         selectedLessonId = id;
-        lesson.subLessons = createSubLessons(lesson);
+        const subs = createSubLessons(lesson);
 
         document.getElementById("selectorTitle").textContent = lesson.title;
         document.getElementById("selectorDescription").textContent = lesson.description;
@@ -1697,10 +1709,11 @@
         const grid = document.getElementById("lessonNumberGrid");
         grid.innerHTML = "";
 
-        lesson.subLessons.forEach(function(subLesson, index) {
+        subs.forEach(function (subLesson, index) {
             const item = document.createElement("div");
             item.className = "lesson-number-item";
-            const hasContent = subLesson.content && subLesson.content.length > 50 && !subLesson.content.includes("The administrator can later add");
+            const hasContent = subLesson.content && subLesson.content.length > 50 &&
+                !subLesson.content.includes("The administrator can later add");
             const statusClass = hasContent ? "has-content" : "empty";
             const statusText = hasContent ? "✓ Has Content" : "✗ Empty";
             item.innerHTML = `
@@ -1710,7 +1723,7 @@
                     <span>${escapeHTML(subLesson.title)} <span class="sublesson-status ${statusClass}">${statusText}</span></span>
                 </div>
             `;
-            item.addEventListener("click", function() {
+            item.addEventListener("click", function () {
                 openReadingModal(id, index);
             });
             grid.appendChild(item);
@@ -1723,51 +1736,43 @@
         document.getElementById("lessonSelectorModal").classList.remove("show");
     }
 
-    // ─── RICH TEXT EDITOR FUNCTIONS ──────────────────────────────
+    // ═══════════════════════════════════════════════════════════
+    // RICH TEXT EDITOR
+    // ═══════════════════════════════════════════════════════════
     function formatText(command, value) {
         if (!isEditMode) return;
-
         const editor = document.getElementById("lessonContentEditor");
         editor.focus();
-
-        if (command === 'formatBlock') {
+        if (command === "formatBlock") {
             document.execCommand(command, false, value);
         } else {
             document.execCommand(command, false, null);
         }
-
         updateToolbarState();
     }
 
     function updateToolbarState() {
-        const toolbarButtons = document.querySelectorAll('#editorToolbar button');
-        toolbarButtons.forEach(function(btn) {
-            const cmd = btn.getAttribute('onclick');
-            if (cmd) {
-                const match = cmd.match(/formatText\('([^']+)'/);
-                if (match) {
-                    const command = match[1];
-                    try {
-                        if (document.queryCommandState(command)) {
-                            btn.classList.add('active');
-                        } else {
-                            btn.classList.remove('active');
-                        }
-                    } catch(e) {
-                        btn.classList.remove('active');
-                    }
-                }
+        document.querySelectorAll("#editorToolbar button").forEach(function (btn) {
+            const cmd = btn.getAttribute("onclick");
+            if (!cmd) return;
+            const match = cmd.match(/formatText\('([^']+)'/);
+            if (!match) return;
+            try {
+                if (document.queryCommandState(match[1])) btn.classList.add("active");
+                else btn.classList.remove("active");
+            } catch (e) {
+                btn.classList.remove("active");
             }
         });
     }
 
-    // ─── READING / EDIT MODAL ────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════
+    // READING / EDIT MODAL
+    // ═══════════════════════════════════════════════════════════
     function openReadingModal(lessonId, subLessonIndex) {
-        const lessons = getLessons();
-        const lesson = lessons.find(function(item) { return item.id === lessonId; });
+        const lesson = getLessons().find(l => l.id === lessonId);
         if (!lesson) return;
 
-        lesson.subLessons = createSubLessons(lesson);
         selectedLessonId = lessonId;
         currentSubLessonIndex = subLessonIndex;
         isEditMode = false;
@@ -1777,19 +1782,19 @@
     }
 
     function renderReadingLesson() {
-        const lessons = getLessons();
-        const lesson = lessons.find(function(item) { return item.id === selectedLessonId; });
+        const lesson = getLessons().find(l => l.id === selectedLessonId);
         if (!lesson) return;
 
-        lesson.subLessons = createSubLessons(lesson);
-        const current = lesson.subLessons[currentSubLessonIndex];
+        const subs = createSubLessons(lesson);
+        const current = subs[currentSubLessonIndex];
         if (!current) return;
 
         document.getElementById("readingCategory").textContent = lesson.category;
         document.getElementById("readingTitle").textContent = current.title;
-        document.getElementById("readingProgressText").textContent = "Lesson " + (currentSubLessonIndex + 1) + " of " + lesson.subLessons.length;
+        document.getElementById("readingProgressText").textContent =
+            "Lesson " + (currentSubLessonIndex + 1) + " of " + subs.length;
 
-        const progress = ((currentSubLessonIndex + 1) / lesson.subLessons.length) * 100;
+        const progress = ((currentSubLessonIndex + 1) / subs.length) * 100;
         document.getElementById("readingProgressBar").style.width = progress + "%";
 
         const editor = document.getElementById("lessonContentEditor");
@@ -1798,15 +1803,15 @@
         editor.style.background = "#fafbfe";
 
         document.getElementById("prevLessonBtn").disabled = currentSubLessonIndex === 0;
-        document.getElementById("nextLessonBtn").disabled = currentSubLessonIndex === lesson.subLessons.length - 1;
+        document.getElementById("nextLessonBtn").disabled = currentSubLessonIndex === subs.length - 1;
 
         const editSaveBtn = document.getElementById("editSaveBtn");
         editSaveBtn.innerHTML = '<i class="fa-solid fa-pen"></i> Edit';
         editSaveBtn.className = "edit-save-btn";
         isEditMode = false;
 
-        document.querySelectorAll('#editorToolbar button').forEach(function(btn) {
-            btn.classList.remove('active');
+        document.querySelectorAll("#editorToolbar button").forEach(function (btn) {
+            btn.classList.remove("active");
         });
 
         document.getElementById("readingModal").classList.add("show");
@@ -1826,17 +1831,19 @@
             isEditMode = true;
         } else {
             const content = editor.innerHTML.trim();
-            if (!content || content === '<br>') {
+            if (!content || content === "<br>") {
                 alert("Please enter the lesson content.");
                 return;
             }
 
-            const lesson = getLessons().find(function(item) { return item.id === selectedLessonId; });
-            const lessonTitle = lesson ? lesson.title : "Lesson";
+            const lesson = getLessons().find(l => l.id === selectedLessonId);
+            const title = lesson ? lesson.title : "Lesson";
+
             openConfirmModal(
                 "Save Content",
-                'Are you sure you want to save the content for "<strong>' + escapeHTML(lessonTitle) + ' - ' + escapeHTML(editor.innerText.substring(0, 50)) + '...</strong>"?',
-                function() {
+                'Are you sure you want to save the content for "<strong>' + escapeHTML(title) +
+                " - " + escapeHTML(editor.innerText.substring(0, 50)) + '...</strong>"?',
+                function () {
                     saveLessonContent(editor.innerHTML);
                 },
                 editor.innerHTML
@@ -1845,37 +1852,47 @@
     }
 
     function saveLessonContent(content) {
-        let lessons = JSON.parse(memoryStore.getItem(STORAGE_KEY) || '[]');
-        let lessonIndex = lessons.findIndex(function(item) { return item.id === selectedLessonId; });
+        const id = selectedLessonId;
+        const idx = currentSubLessonIndex;
+        let updated = false;
 
-        if (lessonIndex !== -1) {
-            lessons[lessonIndex].subLessons = createSubLessons(lessons[lessonIndex]);
-            if (currentSubLessonIndex !== null && lessons[lessonIndex].subLessons[currentSubLessonIndex]) {
-                lessons[lessonIndex].subLessons[currentSubLessonIndex].content = content;
+        // Try each bucket
+        const buckets = [
+            { get: function () { return _approvedCache; }, set: function (a) { _approvedCache = a; } },
+            { get: function () { return _pendingCache; }, set: function (a) { _pendingCache = a; } },
+            { get: function () { return _rejectedCache; }, set: function (a) { _rejectedCache = a; } }
+        ];
+
+        for (const bucket of buckets) {
+            const arr = bucket.get();
+            const lessonIdx = arr.findIndex(l => Number(l.id) === Number(id));
+            if (lessonIdx === -1) continue;
+
+            const lesson = arr[lessonIdx];
+            if (!lesson.subLessons || lesson.subLessons.length === 0) {
+                lesson.subLessons = createSubLessons(lesson);
             }
-            memoryStore.setItem(STORAGE_KEY, JSON.stringify(lessons));
-        } else {
-            let pending = getPendingLessons();
-            let pendingIndex = pending.findIndex(function(item) { return item.id === selectedLessonId; });
-            if (pendingIndex !== -1) {
-                pending[pendingIndex].subLessons = createSubLessons(pending[pendingIndex]);
-                if (currentSubLessonIndex !== null && pending[pendingIndex].subLessons[currentSubLessonIndex]) {
-                    pending[pendingIndex].subLessons[currentSubLessonIndex].content = content;
-                }
-                savePendingLessons(pending);
-            } else {
-                let rejected = getRejectedLessons();
-                let rejectedIndex = rejected.findIndex(function(item) { return item.id === selectedLessonId; });
-                if (rejectedIndex !== -1) {
-                    rejected[rejectedIndex].subLessons = createSubLessons(rejected[rejectedIndex]);
-                    if (currentSubLessonIndex !== null && rejected[rejectedIndex].subLessons[currentSubLessonIndex]) {
-                        rejected[rejectedIndex].subLessons[currentSubLessonIndex].content = content;
-                    }
-                    saveRejectedLessons(rejected);
-                }
+            // Ensure we have enough slots
+            while (lesson.subLessons.length < lesson.numberOfLessons) {
+                lesson.subLessons.push({
+                    title: "Lesson " + (lesson.subLessons.length + 1),
+                    content: "This is the learning content for Lesson " + (lesson.subLessons.length + 1) + " of " + lesson.title + "."
+                });
             }
+            // ⚠️ Directly set the content — DO NOT call createSubLessons again
+            lesson.subLessons[idx].content = content;
+
+            bucket.set(arr);
+            updated = true;
+            break;
         }
 
+        if (!updated) {
+            alert("Could not find the lesson. Please refresh and try again.");
+            return;
+        }
+
+        // Reset editor UI
         const editor = document.getElementById("lessonContentEditor");
         const btn = document.getElementById("editSaveBtn");
         editor.contentEditable = "false";
@@ -1884,8 +1901,14 @@
         btn.className = "edit-save-btn";
         isEditMode = false;
 
-        persistToServer();
-        renderReadingLesson();
+        // Persist to backend, then re-render
+        persistToServer()
+            .then(function () {
+                renderReadingLesson();
+            })
+            .catch(function () {
+                renderReadingLesson();
+            });
     }
 
     function previousLesson() {
@@ -1894,13 +1917,11 @@
         if (isEditMode) {
             openConfirmModal(
                 "Unsaved Changes",
-                'You have unsaved changes. Do you want to save before moving to the previous lesson?',
-                function() {
+                "You have unsaved changes. Do you want to save before moving to the previous lesson?",
+                function () {
                     const editor = document.getElementById("lessonContentEditor");
                     const content = editor.innerHTML.trim();
-                    if (content && content !== '<br>') {
-                        saveLessonContent(content);
-                    }
+                    if (content && content !== "<br>") saveLessonContent(content);
                     currentSubLessonIndex--;
                     renderReadingLesson();
                 }
@@ -1913,22 +1934,19 @@
     }
 
     function nextLesson() {
-        const lessons = getLessons();
-        const lesson = lessons.find(function(item) { return item.id === selectedLessonId; });
+        const lesson = getLessons().find(l => l.id === selectedLessonId);
         if (!lesson) return;
-        lesson.subLessons = createSubLessons(lesson);
-        if (currentSubLessonIndex >= lesson.subLessons.length - 1) return;
+        const subs = createSubLessons(lesson);
+        if (currentSubLessonIndex >= subs.length - 1) return;
 
         if (isEditMode) {
             openConfirmModal(
                 "Unsaved Changes",
-                'You have unsaved changes. Do you want to save before moving to the next lesson?',
-                function() {
+                "You have unsaved changes. Do you want to save before moving to the next lesson?",
+                function () {
                     const editor = document.getElementById("lessonContentEditor");
                     const content = editor.innerHTML.trim();
-                    if (content && content !== '<br>') {
-                        saveLessonContent(content);
-                    }
+                    if (content && content !== "<br>") saveLessonContent(content);
                     currentSubLessonIndex++;
                     renderReadingLesson();
                 }
@@ -1944,46 +1962,36 @@
         if (isEditMode) {
             openConfirmModal(
                 "Unsaved Changes",
-                'You have unsaved changes. Do you want to save before going back?',
-                function() {
+                "You have unsaved changes. Do you want to save before going back?",
+                function () {
                     const editor = document.getElementById("lessonContentEditor");
                     const content = editor.innerHTML.trim();
-                    if (content && content !== '<br>') {
-                        saveLessonContent(content);
-                    }
+                    if (content && content !== "<br>") saveLessonContent(content);
                     document.getElementById("readingModal").classList.remove("show");
                     isEditMode = false;
-                    const lesson = getLessons().find(function(item) { return item.id === selectedLessonId; });
-                    if (lesson && lesson.status === 'approved') {
-                        openLessonSelector(selectedLessonId);
-                    } else {
-                        displayLessons();
-                    }
+                    const lesson = getLessons().find(l => l.id === selectedLessonId);
+                    if (lesson && lesson.status === "approved") openLessonSelector(selectedLessonId);
+                    else displayLessons();
                 }
             );
             return;
         }
         document.getElementById("readingModal").classList.remove("show");
         isEditMode = false;
-        const lesson = getLessons().find(function(item) { return item.id === selectedLessonId; });
-        if (lesson && lesson.status === 'approved') {
-            openLessonSelector(selectedLessonId);
-        } else {
-            displayLessons();
-        }
+        const lesson = getLessons().find(l => l.id === selectedLessonId);
+        if (lesson && lesson.status === "approved") openLessonSelector(selectedLessonId);
+        else displayLessons();
     }
 
     function closeReadingModal() {
         if (isEditMode) {
             openConfirmModal(
                 "Unsaved Changes",
-                'You have unsaved changes. Do you want to save before closing?',
-                function() {
+                "You have unsaved changes. Do you want to save before closing?",
+                function () {
                     const editor = document.getElementById("lessonContentEditor");
                     const content = editor.innerHTML.trim();
-                    if (content && content !== '<br>') {
-                        saveLessonContent(content);
-                    }
+                    if (content && content !== "<br>") saveLessonContent(content);
                     document.getElementById("readingModal").classList.remove("show");
                     isEditMode = false;
                 }
@@ -1994,7 +2002,9 @@
         isEditMode = false;
     }
 
-    // ─── CONFIRM MODAL ────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════
+    // CONFIRM MODAL
+    // ═══════════════════════════════════════════════════════════
     let confirmCallback = null;
     let confirmData = null;
 
@@ -2012,42 +2022,48 @@
         confirmData = null;
     }
 
-    document.getElementById("confirmActionBtn").addEventListener("click", function() {
+    document.getElementById("confirmActionBtn").addEventListener("click", function () {
         if (confirmCallback) {
-            confirmCallback(confirmData);
+            try {
+                confirmCallback(confirmData);
+            } catch (e) {
+                console.error("Confirm action error:", e);
+            }
         }
         closeConfirmModal();
     });
 
-    // ─── SIDEBAR ──────────────────────────────────────────────────
+    // ═══════════════════════════════════════════════════════════
+    // SIDEBAR
+    // ═══════════════════════════════════════════════════════════
     const sidebar = document.getElementById("sidebar");
-    const main = document.getElementById("main");
+    const mainEl = document.getElementById("main");
     const sidebarToggle = document.getElementById("sidebarToggle");
     const sidebarOverlay = document.getElementById("sidebarOverlay");
     const mobileBurgerBtn = document.getElementById("mobileBurgerBtn");
 
-    sidebarToggle.addEventListener("click", function() {
+    sidebarToggle.addEventListener("click", function () {
         if (window.innerWidth <= 750) {
             sidebar.classList.remove("show");
             sidebarOverlay.classList.remove("show");
         } else {
             sidebar.classList.toggle("collapsed");
-            main.classList.toggle("expanded");
+            mainEl.classList.toggle("expanded");
         }
     });
 
-    mobileBurgerBtn.addEventListener("click", function() {
+    mobileBurgerBtn.addEventListener("click", function () {
         sidebar.classList.add("show");
         sidebarOverlay.classList.add("show");
     });
 
-    sidebarOverlay.addEventListener("click", function() {
+    sidebarOverlay.addEventListener("click", function () {
         sidebar.classList.remove("show");
         sidebarOverlay.classList.remove("show");
     });
 
-    document.querySelectorAll(".sidebar-link").forEach(function(link) {
-        link.addEventListener("click", function() {
+    document.querySelectorAll(".sidebar-link").forEach(function (link) {
+        link.addEventListener("click", function () {
             if (window.innerWidth <= 750) {
                 sidebar.classList.remove("show");
                 sidebarOverlay.classList.remove("show");
@@ -2055,50 +2071,53 @@
         });
     });
 
-    // ─── MODAL CLOSE ON OVERLAY ──────────────────────────────────
-    document.getElementById("lessonModal").addEventListener("click", function(event) {
-        if (event.target === this) closeModal();
+    // ═══════════════════════════════════════════════════════════
+    // MODAL OVERLAY CLICKS
+    // ═══════════════════════════════════════════════════════════
+    document.getElementById("lessonModal").addEventListener("click", function (e) {
+        if (e.target === this) closeModal();
     });
-    document.getElementById("lessonSelectorModal").addEventListener("click", function(event) {
-        if (event.target === this) closeLessonSelector();
+    document.getElementById("lessonSelectorModal").addEventListener("click", function (e) {
+        if (e.target === this) closeLessonSelector();
     });
-    document.getElementById("readingModal").addEventListener("click", function(event) {
-        if (event.target === this) closeReadingModal();
+    document.getElementById("readingModal").addEventListener("click", function (e) {
+        if (e.target === this) closeReadingModal();
     });
 
-    document.addEventListener("keydown", function(event) {
+    document.addEventListener("keydown", function (event) {
         if (event.key === "Escape") {
-            if (document.getElementById("confirmModal").classList.contains("show")) {
-                return;
-            }
+            if (document.getElementById("confirmModal").classList.contains("show")) return;
             closeModal();
             closeLessonSelector();
             closeReadingModal();
         }
     });
 
-    // ─── LOGOUT ──────────────────────────────────────────────────
-    document.getElementById("logoutButton").addEventListener("click", function(event) {
+    // ═══════════════════════════════════════════════════════════
+    // LOGOUT
+    // ═══════════════════════════════════════════════════════════
+    document.getElementById("logoutButton").addEventListener("click", function (event) {
         event.preventDefault();
-        memoryStore.removeItem("memoryLinkUser");
+        sessionStorage.removeItem("memoryLinkUser");
         window.location.replace("/login");
     });
 
-    // ─── INIT ────────────────────────────────────────────────────
-    async function loadLessonsFromServer() {
+    // ═══════════════════════════════════════════════════════════
+    // INIT — Load lessons from server
+    // ═══════════════════════════════════════════════════════════
+    async function init() {
         try {
             const data = await apiGetAll();
             rehydrateLocalCache(data);
-            console.log("✅ Loaded", data.length, "lessons from server");
+            console.log("✅ [admin_lessons] Loaded", data.length, "lessons from server");
         } catch (e) {
-            console.error("❌ Could not load lessons from API:", e);
-            // Keep whatever is cached locally so the page still works offline
+            console.error("❌ [admin_lessons] Load failed:", e);
         }
         displayLessons();
+        loadFilterFromURL();
     }
 
-    loadLessonsFromServer();
-    loadFilterFromURL();
+    init();
 
 </script>
 
