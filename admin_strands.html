@@ -663,25 +663,75 @@
     });
   });
 
-  function deleteStrand(id) {
-    event.stopPropagation();
-    event.preventDefault();
-    const strands = getStrands();
-    const strand = strands.find(s => s.id === id);
-    if (!strand) return;
-    openConfirmModal({
-      type: "delete",
-      title: "Delete Strand?",
-      message: `Are you sure you want to delete "${strand.name}"? This action cannot be undone.`,
-      buttonText: "Delete",
-      onConfirm: function() {
-        const updated = strands.filter(s => s.id !== id);
-        saveStrands(updated);
+async function deleteStrand(id) {
+  event.stopPropagation();
+  event.preventDefault();
+
+  const strands = getStrands();
+  const strand = strands.find(s => Number(s.id) === Number(id));
+
+  if (!strand) return;
+
+  openConfirmModal({
+    type: "delete",
+    title: "Delete Strand?",
+    message: `Are you sure you want to delete "${strand.name}"? This action cannot be undone.`,
+    buttonText: "Delete",
+
+    onConfirm: async function() {
+      try {
+
+        // DELETE DIRECTLY FROM DATABASE
+        const response = await fetch(
+          "/api/strands/" + encodeURIComponent(id),
+          {
+            method: "DELETE",
+            headers: {
+              "Accept": "application/json"
+            }
+          }
+        );
+
+        // 204 = deleted successfully
+        // 404 = already deleted
+        if (!response.ok && response.status !== 404) {
+          const errorText = await response.text();
+
+          throw new Error(
+            "Database delete failed: " +
+            response.status +
+            " " +
+            errorText
+          );
+        }
+
+        // Remove from browser cache AFTER database delete
+        const updated = strands.filter(function(s) {
+          return Number(s.id) !== Number(id);
+        });
+
+        memoryStore.setItem(
+          STRAND_KEY,
+          JSON.stringify(updated)
+        );
+
         closeConfirmModal();
         displayStrands();
+
+        alert("Learning strand deleted successfully!");
+
+      } catch (error) {
+
+        console.error("Delete strand error:", error);
+
+        alert(
+          "Failed to delete learning strand from database.\n\n" +
+          error.message
+        );
       }
-    });
-  }
+    }
+  });
+}
 
   // ─── sidebar ──────────────────────────────────────────────────
   const sidebar = document.getElementById("sidebar");
