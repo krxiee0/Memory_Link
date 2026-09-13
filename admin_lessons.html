@@ -1398,14 +1398,14 @@
         );
     });
 
-    function saveLessonData(data) {
-        const payload = {
-            id: data.editId || null,
-            title: data.title,
-            category: data.category,
-            description: data.description,
-            numberOfLessons: data.numberOfLessons
-        };
+const payload = {
+    id: data.editId || null,
+    title: data.title,
+    category: data.category,
+    description: data.description,
+    numberOfLessons: data.numberOfLessons,
+    subLessons: data.subLessons || []
+};
 
         fetch(API_URL + "?action=save", {
             method: "POST",
