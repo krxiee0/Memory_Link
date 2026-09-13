@@ -10,6 +10,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/lessons")
+@CrossOrigin(origins = "*")
 public class LessonController {
 
     private final LessonRepository repo;
@@ -24,32 +25,22 @@ public class LessonController {
         return repo.findAll();
     }
 
-
     // GET ONE LESSON
     @GetMapping("/{id}")
     public ResponseEntity<Lesson> one(@PathVariable Long id) {
-
         return repo.findById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
     // CREATE NEW LESSON
     @PostMapping
-    public ResponseEntity<Lesson> create(
-            @RequestBody Lesson lesson) {
-
-        // Let MySQL generate the ID
+    public ResponseEntity<Lesson> create(@RequestBody Lesson lesson) {
         lesson.setId(null);
-
         normalize(lesson);
-
         Lesson saved = repo.save(lesson);
-
         return ResponseEntity.ok(saved);
     }
-
 
     // UPDATE EXISTING LESSON
     @PutMapping("/{id}")
@@ -59,181 +50,108 @@ public class LessonController {
 
         return repo.findById(id)
                 .map(existing -> {
-
                     existing.setTitle(incoming.getTitle());
                     existing.setCategory(incoming.getCategory());
                     existing.setDuration(incoming.getDuration());
                     existing.setDescription(incoming.getDescription());
-                    existing.setNumberOfLessons(
-                            incoming.getNumberOfLessons()
-                    );
+                    existing.setNumberOfLessons(incoming.getNumberOfLessons());
                     existing.setStatus(incoming.getStatus());
-                    existing.setSubmittedBy(
-                            incoming.getSubmittedBy()
-                    );
-                    existing.setSubLessons(
-                            incoming.getSubLessons()
-                    );
+                    existing.setSubmittedBy(incoming.getSubmittedBy());
+                    existing.setSubLessons(incoming.getSubLessons());
 
                     normalize(existing);
 
-                    return ResponseEntity.ok(
-                            repo.save(existing)
-                    );
+                    return ResponseEntity.ok(repo.save(existing));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
     // DELETE LESSON
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(
-            @PathVariable Long id) {
-
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         if (!repo.existsById(id)) {
             return ResponseEntity.notFound().build();
         }
-
         repo.deleteById(id);
-
         return ResponseEntity.noContent().build();
     }
-
 
     /*
      * SYNC LESSONS FROM FRONTEND
      *
-     * Existing database records are updated.
-     * New records are inserted.
-     *
-     * We DO NOT delete the whole table.
+     * Frontend sends the full list (approved + pending + rejected).
+     * We update existing rows, insert new ones, and REMOVE rows that
+     * the frontend no longer has (so deletes propagate to MySQL).
      */
     @PutMapping("/sync")
-    public List<Lesson> sync(
-            @RequestBody List<Lesson> data) {
+    public List<Lesson> sync(@RequestBody List<Lesson> data) {
 
         if (data == null) {
             return repo.findAll();
         }
 
         List<Lesson> result = new ArrayList<>();
+        List<Long> incomingIds = new ArrayList<>();
 
         for (Lesson incoming : data) {
 
-            if (incoming == null) {
-                continue;
-            }
+            if (incoming == null) continue;
 
-
-            /*
-             * NEW LESSON
-             *
-             * id == null means MySQL/JPA
-             * should generate the ID.
-             */
+            // NEW LESSON
             if (incoming.getId() == null) {
-
                 normalize(incoming);
-
-                Lesson saved =
-                        repo.save(incoming);
-
+                Lesson saved = repo.save(incoming);
                 result.add(saved);
-
+                incomingIds.add(saved.getId());
                 continue;
             }
 
-
-            /*
-             * EXISTING LESSON
-             *
-             * Find it first.
-             */
-            Lesson existing =
-                    repo.findById(incoming.getId())
-                            .orElse(null);
-
+            // EXISTING LESSON
+            Lesson existing = repo.findById(incoming.getId()).orElse(null);
 
             if (existing != null) {
-
-                existing.setTitle(
-                        incoming.getTitle()
-                );
-
-                existing.setCategory(
-                        incoming.getCategory()
-                );
-
-                existing.setDuration(
-                        incoming.getDuration()
-                );
-
-                existing.setDescription(
-                        incoming.getDescription()
-                );
-
-                existing.setNumberOfLessons(
-                        incoming.getNumberOfLessons()
-                );
-
-                existing.setStatus(
-                        incoming.getStatus()
-                );
-
-                existing.setSubmittedBy(
-                        incoming.getSubmittedBy()
-                );
-
-                existing.setSubLessons(
-                        incoming.getSubLessons()
-                );
+                existing.setTitle(incoming.getTitle());
+                existing.setCategory(incoming.getCategory());
+                existing.setDuration(incoming.getDuration());
+                existing.setDescription(incoming.getDescription());
+                existing.setNumberOfLessons(incoming.getNumberOfLessons());
+                existing.setStatus(incoming.getStatus());
+                existing.setSubmittedBy(incoming.getSubmittedBy());
+                existing.setSubLessons(incoming.getSubLessons());
 
                 normalize(existing);
 
-                Lesson saved =
-                        repo.save(existing);
-
+                Lesson saved = repo.save(existing);
                 result.add(saved);
-
+                incomingIds.add(saved.getId());
             } else {
-
-                /*
-                 * The frontend has an ID that does not
-                 * exist in MySQL.
-                 *
-                 * Treat it as a NEW record.
-                 */
+                // Frontend has an ID that doesn't exist in MySQL.
+                // Insert as new.
                 incoming.setId(null);
-
                 normalize(incoming);
-
-                Lesson saved =
-                        repo.save(incoming);
-
+                Lesson saved = repo.save(incoming);
                 result.add(saved);
+                incomingIds.add(saved.getId());
             }
         }
 
-        return repo.findAll();
-    }
-
-
-    /*
-     * DEFAULT VALUES
-     */
-    private void normalize(Lesson lesson) {
-
-        if (lesson.getStatus() == null ||
-                lesson.getStatus().isBlank()) {
-
-            lesson.setStatus("approved");
+        // DELETE rows that the frontend has removed
+        List<Lesson> allInDb = repo.findAll();
+        for (Lesson dbLesson : allInDb) {
+            if (!incomingIds.contains(dbLesson.getId())) {
+                repo.deleteById(dbLesson.getId());
+            }
         }
 
-        if (lesson.getSubLessons() == null) {
+        return result;
+    }
 
-            lesson.setSubLessons(
-                    new ArrayList<>()
-            );
+    private void normalize(Lesson lesson) {
+        if (lesson.getStatus() == null || lesson.getStatus().isBlank()) {
+            lesson.setStatus("approved");
+        }
+        if (lesson.getSubLessons() == null) {
+            lesson.setSubLessons(new ArrayList<>());
         }
     }
 }
