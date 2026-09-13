@@ -1815,154 +1815,165 @@ const newLesson = {
         }
     }
 
-    function saveLessonContent(content) {
-        let lessons = JSON.parse(memoryStore.getItem(STORAGE_KEY) || '[]');
-        let lessonIndex = lessons.findIndex(function(item) { return item.id === selectedLessonId; });
-        
-        if (lessonIndex !== -1) {
-            lessons[lessonIndex].subLessons = createSubLessons(lessons[lessonIndex]);
-            if (currentSubLessonIndex !== null && lessons[lessonIndex].subLessons[currentSubLessonIndex]) {
-                lessons[lessonIndex].subLessons[currentSubLessonIndex].content = content;
+function saveLessonContent(content) {
+
+    if (!content || !content.trim()) {
+        alert("Please enter the lesson content.");
+        return;
+    }
+
+    let lessons = JSON.parse(
+        memoryStore.getItem(STORAGE_KEY) || "[]"
+    );
+
+    let lessonIndex = lessons.findIndex(function(item) {
+        return Number(item.id) === Number(selectedLessonId);
+    });
+
+    if (lessonIndex !== -1) {
+
+        const lesson = lessons[lessonIndex];
+
+        // IMPORTANT:
+        // Do NOT recreate subLessons before saving.
+        if (!Array.isArray(lesson.subLessons)) {
+            lesson.subLessons = [];
+        }
+
+        while (
+            lesson.subLessons.length <
+            Number(lesson.numberOfLessons)
+        ) {
+            lesson.subLessons.push({
+                title:
+                    "Lesson " +
+                    (lesson.subLessons.length + 1),
+                content: ""
+            });
+        }
+
+        if (lesson.subLessons[currentSubLessonIndex]) {
+
+            lesson.subLessons[currentSubLessonIndex].content =
+                content;
+
+            lesson.subLessons[currentSubLessonIndex].title =
+                "Lesson " +
+                (currentSubLessonIndex + 1);
+        }
+
+        // Save without destroying the existing subLessons
+        sessionStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(lessons)
+        );
+
+        console.log(
+            "✅ Lesson content saved:",
+            lesson.subLessons[currentSubLessonIndex]
+        );
+
+    } else {
+
+        // Check pending lessons
+        let pending = getPendingLessons();
+
+        let pendingIndex = pending.findIndex(function(item) {
+            return Number(item.id) === Number(selectedLessonId);
+        });
+
+        if (pendingIndex !== -1) {
+
+            const lesson = pending[pendingIndex];
+
+            if (!Array.isArray(lesson.subLessons)) {
+                lesson.subLessons = [];
             }
-            memoryStore.setItem(STORAGE_KEY, JSON.stringify(lessons));
+
+            while (
+                lesson.subLessons.length <
+                Number(lesson.numberOfLessons)
+            ) {
+                lesson.subLessons.push({
+                    title:
+                        "Lesson " +
+                        (lesson.subLessons.length + 1),
+                    content: ""
+                });
+            }
+
+            lesson.subLessons[currentSubLessonIndex].content =
+                content;
+
+            sessionStorage.setItem(
+                PENDING_KEY,
+                JSON.stringify(pending)
+            );
+
+            console.log("✅ Pending lesson content saved.");
+
         } else {
-            let pending = getPendingLessons();
-            let pendingIndex = pending.findIndex(function(item) { return item.id === selectedLessonId; });
-            if (pendingIndex !== -1) {
-                pending[pendingIndex].subLessons = createSubLessons(pending[pendingIndex]);
-                if (currentSubLessonIndex !== null && pending[pendingIndex].subLessons[currentSubLessonIndex]) {
-                    pending[pendingIndex].subLessons[currentSubLessonIndex].content = content;
+
+            // Check rejected lessons
+            let rejected = getRejectedLessons();
+
+            let rejectedIndex = rejected.findIndex(function(item) {
+                return Number(item.id) === Number(selectedLessonId);
+            });
+
+            if (rejectedIndex !== -1) {
+
+                const lesson = rejected[rejectedIndex];
+
+                if (!Array.isArray(lesson.subLessons)) {
+                    lesson.subLessons = [];
                 }
-                savePendingLessons(pending);
-            } else {
-                let rejected = getRejectedLessons();
-                let rejectedIndex = rejected.findIndex(function(item) { return item.id === selectedLessonId; });
-                if (rejectedIndex !== -1) {
-                    rejected[rejectedIndex].subLessons = createSubLessons(rejected[rejectedIndex]);
-                    if (currentSubLessonIndex !== null && rejected[rejectedIndex].subLessons[currentSubLessonIndex]) {
-                        rejected[rejectedIndex].subLessons[currentSubLessonIndex].content = content;
-                    }
-                    saveRejectedLessons(rejected);
+
+                while (
+                    lesson.subLessons.length <
+                    Number(lesson.numberOfLessons)
+                ) {
+                    lesson.subLessons.push({
+                        title:
+                            "Lesson " +
+                            (lesson.subLessons.length + 1),
+                        content: ""
+                    });
                 }
+
+                lesson.subLessons[currentSubLessonIndex].content =
+                    content;
+
+                sessionStorage.setItem(
+                    REJECTED_KEY,
+                    JSON.stringify(rejected)
+                );
+
+                console.log("✅ Rejected lesson content saved.");
             }
         }
-
-        const editor = document.getElementById("lessonContentEditor");
-        const btn = document.getElementById("editSaveBtn");
-        editor.contentEditable = "false";
-        editor.style.background = "#fafbfe";
-        btn.innerHTML = '<i class="fa-solid fa-pen"></i> Edit';
-        btn.className = "edit-save-btn";
-        isEditMode = false;
-
-        renderReadingLesson();
     }
 
-    function previousLesson() {
-        if (currentSubLessonIndex <= 0) return;
-        
-        if (isEditMode) {
-            openConfirmModal(
-                "Unsaved Changes",
-                'You have unsaved changes. Do you want to save before moving to the previous lesson?',
-                function() {
-                    const editor = document.getElementById("lessonContentEditor");
-                    const content = editor.innerHTML.trim();
-                    if (content && content !== '<br>') {
-                        saveLessonContent(content);
-                    }
-                    currentSubLessonIndex--;
-                    renderReadingLesson();
-                }
-            );
-            return;
-        }
-        
-        currentSubLessonIndex--;
-        renderReadingLesson();
-    }
+    // Exit edit mode
+    const editor =
+        document.getElementById("lessonContentEditor");
 
-    function nextLesson() {
-        const lessons = getLessons();
-        const lesson = lessons.find(function(item) { return item.id === selectedLessonId; });
-        if (!lesson) return;
-        lesson.subLessons = createSubLessons(lesson);
-        if (currentSubLessonIndex >= lesson.subLessons.length - 1) return;
-        
-        if (isEditMode) {
-            openConfirmModal(
-                "Unsaved Changes",
-                'You have unsaved changes. Do you want to save before moving to the next lesson?',
-                function() {
-                    const editor = document.getElementById("lessonContentEditor");
-                    const content = editor.innerHTML.trim();
-                    if (content && content !== '<br>') {
-                        saveLessonContent(content);
-                    }
-                    currentSubLessonIndex++;
-                    renderReadingLesson();
-                }
-            );
-            return;
-        }
-        
-        currentSubLessonIndex++;
-        renderReadingLesson();
-    }
+    const btn =
+        document.getElementById("editSaveBtn");
 
-    function backToLessonSelector() {
-        if (isEditMode) {
-            openConfirmModal(
-                "Unsaved Changes",
-                'You have unsaved changes. Do you want to save before going back?',
-                function() {
-                    const editor = document.getElementById("lessonContentEditor");
-                    const content = editor.innerHTML.trim();
-                    if (content && content !== '<br>') {
-                        saveLessonContent(content);
-                    }
-                    document.getElementById("readingModal").classList.remove("show");
-                    isEditMode = false;
-                    const lesson = getLessons().find(function(item) { return item.id === selectedLessonId; });
-                    if (lesson && lesson.status === 'approved') {
-                        openLessonSelector(selectedLessonId);
-                    } else {
-                        displayLessons();
-                    }
-                }
-            );
-            return;
-        }
-        document.getElementById("readingModal").classList.remove("show");
-        isEditMode = false;
-        const lesson = getLessons().find(function(item) { return item.id === selectedLessonId; });
-        if (lesson && lesson.status === 'approved') {
-            openLessonSelector(selectedLessonId);
-        } else {
-            displayLessons();
-        }
-    }
+    editor.contentEditable = "false";
+    editor.style.background = "#fafbfe";
 
-    function closeReadingModal() {
-        if (isEditMode) {
-            openConfirmModal(
-                "Unsaved Changes",
-                'You have unsaved changes. Do you want to save before closing?',
-                function() {
-                    const editor = document.getElementById("lessonContentEditor");
-                    const content = editor.innerHTML.trim();
-                    if (content && content !== '<br>') {
-                        saveLessonContent(content);
-                    }
-                    document.getElementById("readingModal").classList.remove("show");
-                    isEditMode = false;
-                }
-            );
-            return;
-        }
-        document.getElementById("readingModal").classList.remove("show");
-        isEditMode = false;
-    }
+    btn.innerHTML =
+        '<i class="fa-solid fa-pen"></i> Edit';
+
+    btn.className = "edit-save-btn";
+
+    isEditMode = false;
+
+    // Refresh display
+    renderReadingLesson();
+}
 
     // ─── CONFIRM MODAL ────────────────────────────────────────────
     let confirmCallback = null;
