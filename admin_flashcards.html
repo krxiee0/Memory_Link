@@ -947,6 +947,95 @@
             border: none;
             background: #051650;
             color: white;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .save-btn:hover {
+            background: #18347d;
+        }
+
+        /* =========================================
+           TOAST NOTIFICATIONS
+        ========================================== */
+
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 100000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: white;
+            color: #1e293b;
+            padding: 14px 18px;
+            border-radius: 12px;
+            box-shadow:
+                0 12px 30px rgba(5, 22, 80, 0.18);
+            border-left: 4px solid #051650;
+            font-size: 13px;
+            font-weight: 600;
+            min-width: 260px;
+            max-width: 360px;
+            pointer-events: auto;
+            animation: toastIn 0.3s ease;
+        }
+
+        .toast.success {
+            border-left-color: #16a34a;
+        }
+
+        .toast.success i {
+            color: #16a34a;
+        }
+
+        .toast.error {
+            border-left-color: #dc2626;
+        }
+
+        .toast.error i {
+            color: #dc2626;
+        }
+
+        .toast i {
+            font-size: 16px;
+            color: #051650;
+            flex-shrink: 0;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+        }
+
+        .toast.hide {
+            animation: toastOut 0.3s ease forwards;
         }
 
         /* =========================================
@@ -1211,9 +1300,20 @@
             .mobile-burger-btn i {
                 font-size: 18px !important;
             }
+
+            .toast-container {
+                right: 12px;
+                left: 12px;
+                bottom: 12px;
+            }
+
+            .toast {
+                min-width: 0;
+                max-width: none;
+            }
         }
     </style>
-<script src="/db-sync.js"></script>
+    <script src="/db-sync.js"></script>
 </head>
 
 <body>
@@ -1620,7 +1720,7 @@
         </div>
 
 
-        <form id="flashcardForm">
+        <form id="flashcardForm" novalidate>
 
             <input
                 type="hidden"
@@ -1762,6 +1862,11 @@
     </div>
 
 </div>
+
+
+<!-- TOAST CONTAINER -->
+
+<div class="toast-container" id="toastContainer"></div>
 
 
 <script>
@@ -1929,6 +2034,59 @@
 
 
     /* =========================================
+       GENERATE UNIQUE ID
+    ========================================== */
+
+    function generateId() {
+
+        return (
+            Date.now().toString(36) +
+            Math.random().toString(36).slice(2, 8)
+        );
+
+    }
+
+
+    /* =========================================
+       TOAST NOTIFICATION
+    ========================================== */
+
+    function showToast(message, type = "success") {
+
+        const container =
+            document.getElementById("toastContainer");
+
+        const toast =
+            document.createElement("div");
+
+        toast.className = "toast " + type;
+
+        const icon =
+            type === "error"
+                ? "fa-circle-exclamation"
+                : "fa-circle-check";
+
+        toast.innerHTML = `
+            <i class="fa-solid ${icon}"></i>
+            <span>${message}</span>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(function() {
+
+            toast.classList.add("hide");
+
+            setTimeout(function() {
+                toast.remove();
+            }, 300);
+
+        }, 2600);
+
+    }
+
+
+    /* =========================================
        GET LESSON NAME
     ========================================== */
 
@@ -1988,7 +2146,7 @@
        LOAD STRANDS
     ========================================== */
 
-    function loadStrandsIntoSelect() {
+    function loadStrandsIntoSelect(selectedStrand = "") {
 
         const select =
             document.getElementById("strandSelect");
@@ -2020,6 +2178,10 @@
             select.appendChild(option);
 
         });
+
+        if (selectedStrand) {
+            select.value = selectedStrand;
+        }
 
     }
 
@@ -2496,7 +2658,7 @@
 
                         <button
                             class="action-btn edit-btn"
-                            onclick="editFlashcard(${Number(card.id)})"
+                            data-edit-id="${escapeHTML(card.id)}"
                             title="Edit">
 
                             <i class="fa-solid fa-pen"></i>
@@ -2505,7 +2667,7 @@
 
                         <button
                             class="action-btn delete-btn"
-                            onclick="deleteFlashcard(${Number(card.id)})"
+                            data-delete-id="${escapeHTML(card.id)}"
                             title="Delete">
 
                             <i class="fa-solid fa-trash"></i>
@@ -2519,6 +2681,32 @@
             `;
 
             table.appendChild(row);
+
+        });
+
+
+        /* =========================================
+           ATTACH ROW EVENT LISTENERS
+        ========================================== */
+
+        table.querySelectorAll("[data-edit-id]").forEach(function(btn) {
+
+            btn.addEventListener("click", function() {
+
+                editFlashcard(this.getAttribute("data-edit-id"));
+
+            });
+
+        });
+
+
+        table.querySelectorAll("[data-delete-id]").forEach(function(btn) {
+
+            btn.addEventListener("click", function() {
+
+                deleteFlashcard(this.getAttribute("data-delete-id"));
+
+            });
 
         });
 
@@ -2602,8 +2790,8 @@
         const card =
             flashcards.find(function(item) {
 
-                return Number(item.id)
-                    === Number(id);
+                return String(item.id)
+                    === String(id);
 
             });
 
@@ -2625,17 +2813,7 @@
             card.id;
 
 
-        loadStrandsIntoSelect();
-
-
-        const strandSelect =
-            document.getElementById(
-                "strandSelect"
-            );
-
-
-        strandSelect.value =
-            card.strand || "";
+        loadStrandsIntoSelect(card.strand || "");
 
 
         // Load lessons for selected strand
@@ -2797,8 +2975,9 @@
                     !answer
                 ) {
 
-                    alert(
-                        "Please complete all required fields."
+                    showToast(
+                        "Please complete all required fields.",
+                        "error"
                     );
 
                     return;
@@ -2819,8 +2998,8 @@
                         flashcards.findIndex(
                             function(card) {
 
-                                return Number(card.id)
-                                    === Number(editId);
+                                return String(card.id)
+                                    === String(editId);
 
                             }
                         );
@@ -2867,7 +3046,7 @@
                     const newCard = {
 
                         id:
-                            null,
+                            generateId(),
 
                         strand:
                             strand,
@@ -2909,10 +3088,11 @@
                 closeModal();
 
 
-                alert(
+                showToast(
                     editId
                         ? "Flashcard updated successfully!"
-                        : "Flashcard added successfully!"
+                        : "Flashcard added successfully!",
+                    "success"
                 );
 
             }
@@ -2932,8 +3112,8 @@
         const card =
             flashcards.find(function(item) {
 
-                return Number(item.id)
-                    === Number(id);
+                return String(item.id)
+                    === String(id);
 
             });
 
@@ -2958,8 +3138,8 @@
             flashcards.filter(
                 function(item) {
 
-                    return Number(item.id)
-                        !== Number(id);
+                    return String(item.id)
+                        !== String(id);
 
                 }
             );
@@ -2973,8 +3153,9 @@
         renderFlashcards();
 
 
-        alert(
-            "Flashcard deleted successfully."
+        showToast(
+            "Flashcard deleted successfully.",
+            "success"
         );
 
     }
