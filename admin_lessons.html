@@ -431,17 +431,7 @@
             box-shadow: 0 0 0 3px rgba(5,22,80,0.08);
         }
         .field-hint { display: block; color: #94a3b8; font-size: 10px; margin-top: 5px; }
-        .duration-wrapper { position: relative; }
-        .duration-wrapper input { padding-right: 65px; }
-        .duration-unit {
-            position: absolute;
-            right: 13px; top: 50%;
-            transform: translateY(-50%);
-            color: #64748b;
-            font-size: 12px;
-            font-weight: 600;
-            pointer-events: none;
-        }
+
         .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
         .cancel-btn, .save-btn, .confirm-btn {
             height: 42px; padding: 0 18px; border-radius: 10px;
@@ -994,14 +984,6 @@
                 <textarea id="lessonDescription" placeholder="Enter lesson description" required></textarea>
             </div>
             <div class="form-group">
-                <label for="lessonDuration">Duration</label>
-                <div class="duration-wrapper">
-                    <input type="number" id="lessonDuration" placeholder="Maximum 30" min="1" max="30" step="1" required>
-                    <span class="duration-unit">minutes</span>
-                </div>
-                <span class="field-hint">Maximum reading time is 30 minutes.</span>
-            </div>
-            <div class="form-group">
                 <label for="lessonNumber">Number of Lessons</label>
                 <input type="number" id="lessonNumber" placeholder="Example: 5" min="1" max="50" required>
                 <span class="field-hint">Example: 5 means Lesson 1 to Lesson 5.</span>
@@ -1304,7 +1286,6 @@
                         <h4>${escapeHTML(lesson.title)}</h4>
                         <p>${escapeHTML(lesson.description)}</p>
                         <div class="lesson-meta">
-                            <span><i class="fa-regular fa-clock"></i> ${escapeHTML(lesson.duration)} min</span>
                             <span><i class="fa-solid fa-book"></i> ${lesson.numberOfLessons} lessons</span>
                             ${lesson.submittedBy ? `<span><i class="fa-solid fa-user"></i> ${escapeHTML(lesson.submittedBy)}</span>` : ''}
                         </div>
@@ -1530,15 +1511,10 @@
         const title = document.getElementById("lessonTitle").value.trim();
         const category = document.getElementById("lessonCategory").value;
         const description = document.getElementById("lessonDescription").value.trim();
-        const duration = Number(document.getElementById("lessonDuration").value);
         const numberOfLessons = Number(document.getElementById("lessonNumber").value);
 
-        if (!title || !category || !description || !duration || !numberOfLessons) {
+        if (!title || !category || !description || !numberOfLessons) {
             alert("Please complete all fields.");
-            return;
-        }
-        if (duration < 1 || duration > 30) {
-            alert("Lesson duration must be between 1 and 30 minutes.");
             return;
         }
 
@@ -1549,7 +1525,6 @@
             title: title,
             category: category,
             description: description,
-            duration: duration,
             numberOfLessons: numberOfLessons
         };
 
@@ -1577,7 +1552,6 @@
                     title: data.title,
                     category: data.category,
                     description: data.description,
-                    duration: data.duration,
                     numberOfLessons: data.numberOfLessons,
                     subLessons: oldSubLessons
                 };
@@ -1589,7 +1563,6 @@ const newLesson = {
                 title: data.title,
                 category: data.category,
                 description: data.description,
-                duration: data.duration,
                 numberOfLessons: data.numberOfLessons,
                 subLessons: []
             };
@@ -1620,7 +1593,6 @@ const newLesson = {
         document.getElementById("lessonTitle").value = foundLesson.title;
         document.getElementById("lessonCategory").value = foundLesson.category;
         document.getElementById("lessonDescription").value = foundLesson.description;
-        document.getElementById("lessonDuration").value = foundLesson.duration;
         document.getElementById("lessonNumber").value = foundLesson.numberOfLessons;
         document.getElementById("lessonForm").dataset.editId = id;
         document.getElementById("lessonModal").classList.add("show");
@@ -2069,9 +2041,9 @@ const newLesson = {
     (function seedDemoData() {
         if (!memoryStore.getItem(STORAGE_KEY) && !memoryStore.getItem(PENDING_KEY)) {
             const defaultLessons = [
-                { id: 1, title: "ENGLISH 201", category: "STEM A", description: "English language and literature studies.", duration: 25, numberOfLessons: 5, subLessons: [] },
-                { id: 2, title: "SOC 101", category: "STEM A", description: "Introduction to society and culture.", duration: 25, numberOfLessons: 10, subLessons: [] },
-                { id: 3, title: "Introduction to Programming", category: "STEM A", description: "Basic programming concepts.", duration: 25, numberOfLessons: 8, subLessons: [] }
+                { id: 1, title: "ENGLISH 201", category: "STEM A", description: "English language and literature studies.", numberOfLessons: 5, subLessons: [] },
+                { id: 2, title: "SOC 101", category: "STEM A", description: "Introduction to society and culture.", numberOfLessons: 10, subLessons: [] },
+                { id: 3, title: "Introduction to Programming", category: "STEM A", description: "Basic programming concepts.", numberOfLessons: 8, subLessons: [] }
             ];
             defaultLessons.forEach(function(lesson) {
                 lesson.subLessons = createSubLessons(lesson);
@@ -2083,7 +2055,6 @@ const newLesson = {
                 title: "Sample Student Lesson",
                 category: "STEM A",
                 description: "This is a lesson submitted by a student for approval.",
-                duration: 20,
                 numberOfLessons: 3,
                 subLessons: [
                     { title: "Lesson 1", content: "<b>Introduction</b> to the topic." },
