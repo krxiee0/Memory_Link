@@ -1737,14 +1737,20 @@ const newLesson = {
         renderReadingLesson();
     }
 
-    function renderReadingLesson() {
-        const lessons = getLessons();
-        const lesson = lessons.find(function(item) { return item.id === selectedLessonId; });
-        if (!lesson) return;
+function renderReadingLesson() {
+    const lessons = getLessons();
 
-        lesson.subLessons = createSubLessons(lesson);
-        const current = lesson.subLessons[currentSubLessonIndex];
-        if (!current) return;
+    const lesson = lessons.find(function(item) {
+        return item.id === selectedLessonId;
+    });
+
+    if (!lesson) return;
+
+    lesson.subLessons = createSubLessons(lesson);
+
+    const current = lesson.subLessons[currentSubLessonIndex];
+
+    if (!current) return;
 
         document.getElementById("readingCategory").textContent = lesson.category;
         document.getElementById("readingTitle").textContent = current.title;
