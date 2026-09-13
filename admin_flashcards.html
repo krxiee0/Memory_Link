@@ -10,7 +10,6 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-        /* ... same styles as before ... */
         * {
             margin: 0;
             padding: 0;
@@ -93,6 +92,7 @@
             margin-bottom: 20px;
         }
 
+        /* Desktop toggle button - hidden on mobile */
         .sidebar-toggle {
             width: 40px;
             height: 40px;
@@ -101,14 +101,11 @@
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.10);
             color: white;
-
             display: flex;
             align-items: center;
             justify-content: center;
-
             font-size: 17px;
             cursor: pointer;
-
             transition: all 0.25s ease;
         }
 
@@ -124,7 +121,6 @@
         .user-profile {
             flex: 1;
             min-width: 0;
-
             display: flex;
             align-items: center;
             gap: 10px;
@@ -134,15 +130,12 @@
             width: 40px;
             height: 40px;
             min-width: 40px;
-
             border-radius: 50%;
             background: white;
             color: #051650;
-
             display: flex;
             align-items: center;
             justify-content: center;
-
             font-size: 14px;
             font-weight: 800;
         }
@@ -150,7 +143,6 @@
         .user-info {
             min-width: 0;
             overflow: hidden;
-
             transition:
                 opacity 0.2s ease,
                 width 0.3s ease;
@@ -161,11 +153,9 @@
             color: white;
             font-size: 13px;
             font-weight: 800;
-
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-
             margin-bottom: 3px;
         }
 
@@ -211,12 +201,9 @@
             font-size: 10px;
             font-weight: 700;
             letter-spacing: 1px;
-
             padding: 0 12px;
             margin-bottom: 10px;
-
             white-space: nowrap;
-
             transition: opacity 0.2s ease;
         }
 
@@ -240,25 +227,18 @@
         .menu a,
         .sidebar-bottom a {
             width: 100%;
-
             color: rgba(255, 255, 255, 0.72);
-
             display: flex;
             align-items: center;
             gap: 13px;
-
             padding: 13px 14px;
-
             border-radius: 12px;
-
             font-size: 13px;
             font-weight: 600;
-
             transition:
                 background 0.25s ease,
                 color 0.25s ease,
                 transform 0.15s ease;
-
             cursor: pointer;
             white-space: nowrap;
         }
@@ -327,16 +307,11 @@
         .main {
             margin-left: 250px;
             width: calc(100% - 250px);
-
             height: 100vh;
-
             padding: 0 35px 20px;
-
             overflow: hidden;
-
             display: flex;
             flex-direction: column;
-
             transition:
                 margin-left 0.3s ease,
                 width 0.3s ease;
@@ -348,38 +323,71 @@
         }
 
         /* =========================================
-           SCHOOL HEADER
+           SCHOOL HEADER - WITH BURGER MENU
         ========================================== */
 
         .site-header {
             height: 49px;
             min-height: 49px;
-
             margin-left: -35px;
             margin-right: -35px;
-
             padding: 0 25px;
-
             background: #051650;
-
             display: flex;
             align-items: center;
             justify-content: space-between;
-
             color: white;
-
             flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* Mobile burger button - hidden on desktop */
+        .mobile-burger-btn {
+            display: none;
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.25s ease;
+        }
+
+        .mobile-burger-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .mobile-burger-btn i {
+            font-size: 22px;
+            color: white;
         }
 
         .school-name {
             font-size: 21px;
             font-weight: 800;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .memory-link-title {
             font-size: 21px;
             font-weight: 800;
             letter-spacing: 0.3px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         /* =========================================
@@ -388,15 +396,11 @@
 
         .dashboard-content {
             flex: 1;
-
             display: flex;
             flex-direction: column;
-
             min-height: 0;
-
             overflow-y: auto;
             overflow-x: hidden;
-
             padding-right: 2px;
         }
 
@@ -415,58 +419,41 @@
 
         .welcome-card {
             flex: 0 0 170px;
-
             border-radius: 22px;
-
             padding: 27px 30px;
-
             color: white;
-
             background: linear-gradient(
                 135deg,
                 #051650,
                 #0a2368,
                 #18347d
             );
-
             position: relative;
             overflow: hidden;
-
             margin-top: 18px;
             margin-bottom: 16px;
-
             box-shadow:
                 0 15px 35px rgba(5, 22, 80, 0.18);
         }
 
         .welcome-card::before {
             content: "";
-
             position: absolute;
-
             width: 280px;
             height: 280px;
-
             border: 2px solid rgba(255, 255, 255, 0.08);
-
             border-radius: 50%;
-
             right: -80px;
             top: -130px;
         }
 
         .welcome-card::after {
             content: "";
-
             position: absolute;
-
             width: 190px;
             height: 190px;
-
             border: 2px solid rgba(255, 255, 255, 0.07);
-
             border-radius: 50%;
-
             right: 110px;
             bottom: -135px;
         }
@@ -480,16 +467,11 @@
             display: inline-flex;
             align-items: center;
             gap: 7px;
-
             padding: 6px 11px;
-
             background: rgba(255, 255, 255, 0.12);
-
             border-radius: 20px;
-
             font-size: 10px;
             font-weight: 700;
-
             margin-bottom: 9px;
         }
 
@@ -501,9 +483,7 @@
         .welcome-content p {
             color: rgba(255, 255, 255, 0.78);
             font-size: 13px;
-
             max-width: 700px;
-
             line-height: 1.5;
         }
 
@@ -513,67 +493,48 @@
 
         .stats {
             flex: 0 0 auto;
-
             display: grid;
-
             grid-template-columns:
                 repeat(3, 1fr);
-
             gap: 16px;
-
             margin-bottom: 16px;
         }
 
         .stat-card {
             background: white;
-
             border-radius: 17px;
-
             padding: 17px 18px;
-
             min-height: 110px;
-
             box-shadow:
                 0 5px 20px rgba(5, 22, 80, 0.06);
-
             border: 1px solid #edf1f7;
-
             display: flex;
             align-items: center;
-
             gap: 15px;
         }
 
         .stat-icon {
             width: 45px;
             height: 45px;
-
             border-radius: 12px;
-
             display: flex;
             align-items: center;
             justify-content: center;
-
             background: #eef2ff;
             color: #051650;
-
             font-size: 18px;
-
             flex-shrink: 0;
         }
 
         .stat-card h3 {
             color: #64748b;
-
             font-size: 11px;
             font-weight: 600;
-
             margin-bottom: 3px;
         }
 
         .stat-number {
             color: #051650;
-
             font-size: 25px;
             font-weight: 800;
         }
@@ -586,11 +547,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-
             gap: 15px;
-
             margin-bottom: 16px;
-
             flex-shrink: 0;
         }
 
@@ -602,70 +560,49 @@
 
         .search-box i {
             position: absolute;
-
             left: 15px;
             top: 50%;
-
             transform: translateY(-50%);
-
             color: #94a3b8;
         }
 
         .search-box input {
             width: 100%;
             height: 42px;
-
             padding: 0 15px 0 43px;
-
             border: 1px solid #e2e8f0;
-
             background: white;
-
             border-radius: 12px;
-
             outline: none;
-
             font-size: 13px;
         }
 
         .search-box input:focus {
             border-color: #051650;
-
             box-shadow:
                 0 0 0 3px rgba(5, 22, 80, 0.08);
         }
 
         .add-btn {
             height: 42px;
-
             padding: 0 20px;
-
             border: none;
             border-radius: 12px;
-
             background:
                 linear-gradient(
                     135deg,
                     #051650,
                     #18347d
                 );
-
             color: white;
-
             font-weight: 700;
-
             cursor: pointer;
-
             display: flex;
             align-items: center;
-
             gap: 9px;
-
             box-shadow:
                 0 8px 18px rgba(5, 22, 80, 0.20);
-
             transition: 0.25s;
-
             flex-shrink: 0;
         }
 
@@ -679,40 +616,28 @@
 
         .panel {
             background: white;
-
             border-radius: 18px;
-
             padding: 20px;
-
             border: 1px solid #edf1f7;
-
             box-shadow:
                 0 5px 20px rgba(5, 22, 80, 0.05);
-
             flex: 1;
-
             min-height: 0;
-
             overflow: hidden;
-
             display: flex;
             flex-direction: column;
         }
 
         .panel-header {
             display: flex;
-
             justify-content: space-between;
             align-items: center;
-
             margin-bottom: 15px;
-
             flex-shrink: 0;
         }
 
         .panel-header h3 {
             color: #051650;
-
             font-size: 16px;
             font-weight: 800;
         }
@@ -728,9 +653,7 @@
 
         .table-wrapper {
             flex: 1;
-
             overflow-y: auto;
-
             padding-right: 2px;
         }
 
@@ -745,43 +668,28 @@
 
         table {
             width: 100%;
-
             border-collapse: collapse;
-
             min-width: 850px;
         }
 
         th {
             text-align: left;
-
             background: #f8fafc;
-
             color: #64748b;
-
             font-size: 10px;
-
             text-transform: uppercase;
-
             letter-spacing: .5px;
-
             padding: 12px 13px;
-
             border-bottom: 1px solid #edf1f7;
-
             position: sticky;
-
             top: 0;
-
             z-index: 10;
         }
 
         td {
             padding: 14px 13px;
-
             border-bottom: 1px solid #f1f5f9;
-
             font-size: 12px;
-
             color: #334155;
         }
 
@@ -791,69 +699,45 @@
 
         .question-cell {
             font-weight: 700;
-
             color: #051650;
-
             max-width: 240px;
-
             word-break: break-word;
         }
 
         .answer-cell {
             max-width: 240px;
-
             word-break: break-word;
         }
 
         .strand-badge {
             display: inline-block;
-
             padding: 4px 9px;
-
             background: #eef2ff;
-
             color: #051650;
-
             border-radius: 20px;
-
             font-size: 10px;
-
             font-weight: 700;
         }
 
         .lesson-badge {
             display: inline-block;
-
             padding: 4px 9px;
-
             background: #f0fdf4;
-
             color: #15803d;
-
             border-radius: 20px;
-
             font-size: 10px;
-
             font-weight: 700;
-
             white-space: nowrap;
         }
 
         .lesson-number-badge {
             display: inline-block;
-
             padding: 4px 9px;
-
             background: #fff7ed;
-
             color: #c2410c;
-
             border-radius: 20px;
-
             font-size: 10px;
-
             font-weight: 700;
-
             white-space: nowrap;
         }
 
@@ -865,17 +749,12 @@
         .action-btn {
             width: 34px;
             height: 34px;
-
             border: none;
-
             border-radius: 9px;
-
             cursor: pointer;
-
             display: flex;
             align-items: center;
             justify-content: center;
-
             transition: 0.2s;
         }
 
@@ -899,34 +778,24 @@
 
         .empty-state {
             display: none;
-
             text-align: center;
-
             padding: 50px 20px;
-
             color: #94a3b8;
-
             flex: 1;
-
             align-items: center;
             justify-content: center;
-
             flex-direction: column;
         }
 
         .empty-state i {
             font-size: 40px;
-
             margin-bottom: 15px;
-
             color: #cbd5e1;
         }
 
         .empty-state h3 {
             color: #64748b;
-
             font-size: 15px;
-
             margin-bottom: 5px;
         }
 
@@ -935,54 +804,42 @@
         }
 
         /* =========================================
-           MODERN FLASHCARD MODAL
+           MODAL
         ========================================== */
 
         .modal {
             display: none;
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.62);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(4px);
             align-items: center;
             justify-content: center;
             z-index: 99999;
-            padding: 18px;
+            padding: 20px;
         }
 
         .modal.show {
             display: flex;
-            animation: modalFadeIn .18s ease;
         }
 
         .modal-box {
-            width: min(100%, 650px);
-            max-height: min(92vh, 760px);
+            width: 100%;
+            max-width: 520px;
+            max-height: 90vh;
             overflow-y: auto;
-            background: #fff;
-            border: 1px solid rgba(226, 232, 240, .9);
-            border-radius: 24px;
-            box-shadow: 0 30px 80px rgba(15, 23, 42, .28);
-            animation: modalIn .22s cubic-bezier(.2,.8,.2,1);
-            scrollbar-width: thin;
-        }
-
-        .modal-box::-webkit-scrollbar { width: 7px; }
-        .modal-box::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
+            background: white;
             border-radius: 20px;
-        }
-
-        @keyframes modalFadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            padding: 28px;
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.18);
+            animation: modalIn 0.2s ease;
         }
 
         @keyframes modalIn {
             from {
                 opacity: 0;
-                transform: translateY(18px) scale(.97);
+                transform: translateY(10px) scale(0.98);
             }
             to {
                 opacity: 1;
@@ -993,140 +850,61 @@
         .modal-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            gap: 18px;
-            padding: 24px 26px 20px;
-            border-bottom: 1px solid #eef2f7;
-            position: sticky;
-            top: 0;
-            background: rgba(255,255,255,.97);
-            backdrop-filter: blur(8px);
-            z-index: 2;
-        }
-
-        .modal-heading {
-            display: flex;
-            align-items: flex-start;
-            gap: 13px;
-        }
-
-        .modal-icon {
-            width: 44px;
-            height: 44px;
-            flex: 0 0 44px;
-            display: flex;
             align-items: center;
-            justify-content: center;
-            border-radius: 13px;
-            background: #eef2ff;
-            color: #051650;
-            font-size: 18px;
+            margin-bottom: 22px;
         }
 
         .modal-header h2 {
             color: #051650;
             font-size: 20px;
-            line-height: 1.2;
-            margin: 1px 0 4px;
-        }
-
-        .modal-subtitle {
-            margin: 0;
-            color: #94a3b8;
-            font-size: 11px;
-            line-height: 1.5;
         }
 
         .close-btn {
-            width: 38px;
-            height: 38px;
-            flex: 0 0 38px;
-            border: 1px solid #e2e8f0;
-            background: #f8fafc;
+            width: 34px;
+            height: 34px;
+            border: none;
+            background: #f1f5f9;
             color: #64748b;
-            border-radius: 11px;
+            border-radius: 9px;
             cursor: pointer;
-            transition: .18s ease;
-        }
-
-        .close-btn:hover {
-            background: #fee2e2;
-            color: #dc2626;
-            border-color: #fecaca;
-            transform: rotate(3deg);
-        }
-
-        #flashcardForm {
-            padding: 24px 26px 26px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0 16px;
         }
 
         .form-group {
-            margin-bottom: 18px;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
+            margin-bottom: 17px;
         }
 
         .form-group label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            display: block;
             color: #334155;
             font-size: 12px;
-            font-weight: 800;
-            margin-bottom: 8px;
-        }
-
-        .form-group label::after {
-            content: '*';
-            color: #dc2626;
-            font-size: 11px;
+            font-weight: 700;
+            margin-bottom: 7px;
         }
 
         .form-group input,
         .form-group textarea,
         .form-group select {
             width: 100%;
-            box-sizing: border-box;
-            border: 1px solid #dbe3ee;
-            border-radius: 12px;
-            padding: 12px 13px;
+            border: 1px solid #e2e8f0;
+            border-radius: 11px;
+            padding: 11px 13px;
             font-family: inherit;
             font-size: 13px;
             outline: none;
-            background: #fff;
-            color: #1e293b;
-            transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
-        }
-
-        .form-group select {
-            min-height: 45px;
-            cursor: pointer;
+            background: white;
         }
 
         .form-group textarea {
             resize: vertical;
-            min-height: 105px;
-            line-height: 1.55;
-        }
-
-        .form-group input::placeholder,
-        .form-group textarea::placeholder {
-            color: #b0bac8;
+            min-height: 80px;
         }
 
         .form-group input:focus,
         .form-group textarea:focus,
         .form-group select:focus {
             border-color: #051650;
-            box-shadow: 0 0 0 4px rgba(5, 22, 80, .08);
+            box-shadow:
+                0 0 0 3px rgba(5, 22, 80, 0.08);
         }
 
         .form-group select:disabled {
@@ -1139,104 +917,126 @@
             display: block;
             color: #94a3b8;
             font-size: 10px;
-            margin-top: 6px;
-            line-height: 1.4;
+            margin-top: 5px;
         }
 
         .modal-actions {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-            margin-top: 4px;
-            padding-top: 18px;
-            border-top: 1px solid #eef2f7;
+            margin-top: 22px;
         }
 
         .cancel-btn,
         .save-btn {
-            min-height: 44px;
-            padding: 0 19px;
-            border-radius: 11px;
+            height: 42px;
+            padding: 0 18px;
+            border-radius: 10px;
             cursor: pointer;
-            font-weight: 800;
+            font-weight: 700;
             font-size: 12px;
-            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
         }
 
         .cancel-btn {
             border: 1px solid #e2e8f0;
-            background: #fff;
+            background: white;
             color: #64748b;
-        }
-
-        .cancel-btn:hover {
-            background: #f8fafc;
-            transform: translateY(-1px);
         }
 
         .save-btn {
             border: none;
             background: #051650;
             color: white;
-            box-shadow: 0 7px 18px rgba(5, 22, 80, .18);
+            display: flex;
+            align-items: center;
+            gap: 7px;
         }
 
         .save-btn:hover {
-            background: #0a236e;
-            transform: translateY(-1px);
-            box-shadow: 0 10px 22px rgba(5, 22, 80, .23);
-        }
-
-        .save-btn:disabled {
-            opacity: .65;
-            cursor: wait;
-            transform: none;
-        }
-
-        .required-note {
-            color: #94a3b8;
-            font-size: 10px;
-            margin: -4px 0 17px;
-        }
-
-        .required-note span {
-            color: #dc2626;
+            background: #18347d;
         }
 
         /* =========================================
-           TOAST
+           TOAST NOTIFICATIONS
         ========================================== */
 
-        .memorylink-toast {
+        .toast-container {
             position: fixed;
-            right: 24px;
             bottom: 24px;
-            z-index: 100001;
+            right: 24px;
+            z-index: 100000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast {
             display: flex;
             align-items: center;
-            gap: 10px;
-            max-width: min(380px, calc(100vw - 32px));
-            padding: 13px 16px;
-            border-radius: 13px;
-            background: #fff;
-            color: #334155;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 18px 40px rgba(15, 23, 42, .18);
-            font-size: 12px;
-            font-weight: 700;
-            opacity: 0;
-            transform: translateY(12px);
-            pointer-events: none;
-            transition: .22s ease;
+            gap: 12px;
+            background: white;
+            color: #1e293b;
+            padding: 14px 18px;
+            border-radius: 12px;
+            box-shadow:
+                0 12px 30px rgba(5, 22, 80, 0.18);
+            border-left: 4px solid #051650;
+            font-size: 13px;
+            font-weight: 600;
+            min-width: 260px;
+            max-width: 360px;
+            pointer-events: auto;
+            animation: toastIn 0.3s ease;
         }
 
-        .memorylink-toast.show {
-            opacity: 1;
-            transform: translateY(0);
+        .toast.success {
+            border-left-color: #16a34a;
         }
 
-        .memorylink-toast.success i { color: #16a34a; }
-        .memorylink-toast.error i { color: #dc2626; }
+        .toast.success i {
+            color: #16a34a;
+        }
+
+        .toast.error {
+            border-left-color: #dc2626;
+        }
+
+        .toast.error i {
+            color: #dc2626;
+        }
+
+        .toast i {
+            font-size: 16px;
+            color: #051650;
+            flex-shrink: 0;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes toastOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+        }
+
+        .toast.hide {
+            animation: toastOut 0.3s ease forwards;
+        }
 
         /* =========================================
            MOBILE OVERLAY
@@ -1244,13 +1044,9 @@
 
         .sidebar-overlay {
             display: none;
-
             position: fixed;
-
             inset: 0;
-
             background: rgba(0, 0, 0, 0.35);
-
             z-index: 9998;
         }
 
@@ -1275,23 +1071,18 @@
 
             .main {
                 height: auto;
-
                 min-height: 100vh;
-
                 overflow: visible;
             }
 
             .dashboard-content {
                 display: block;
-
                 overflow: visible;
-
                 padding-right: 0;
             }
 
             .welcome-card {
                 height: auto;
-
                 min-height: 170px;
             }
 
@@ -1302,19 +1093,17 @@
 
             .table-wrapper {
                 overflow-x: auto;
-
                 overflow-y: visible;
             }
 
             .panel {
                 min-height: 400px;
-
                 overflow: visible;
             }
         }
 
         /* =========================================
-           MOBILE
+           MOBILE - WITH BURGER IN HEADER
         ========================================== */
 
         @media (max-width: 750px) {
@@ -1324,19 +1113,21 @@
                 overflow: auto;
             }
 
+            /* SHOW BURGER BUTTON ON MOBILE */
+            .mobile-burger-btn {
+                display: flex !important;
+            }
+
             .sidebar {
-                width: 250px;
-
+                width: 280px;
                 transform: translateX(-100%);
-
                 padding: 18px 17px;
+                transition: transform 0.3s ease;
             }
 
             .sidebar.collapsed {
-                width: 250px;
-
+                width: 280px;
                 padding: 18px 17px;
-
                 transform: translateX(-100%);
             }
 
@@ -1344,194 +1135,141 @@
                 transform: translateX(0);
             }
 
-            .sidebar .sidebar-top,
-            .sidebar.collapsed .sidebar-top {
-                flex-direction: row;
-
-                gap: 10px;
-
-                padding: 0 3px 16px;
-            }
-
-            .sidebar .sidebar-toggle,
-            .sidebar.collapsed .sidebar-toggle {
-                order: 2;
+            /* Hide desktop toggle on mobile */
+            .sidebar .sidebar-toggle {
+                display: none !important;
             }
 
             .sidebar .user-profile,
             .sidebar.collapsed .user-profile {
-                order: 1;
-
-                flex: 1;
-
-                justify-content: flex-start;
-
-                width: auto;
+                flex: 1 !important;
+                justify-content: flex-start !important;
+                width: auto !important;
             }
 
             .sidebar .user-info,
             .sidebar.collapsed .user-info {
-                width: auto;
-
-                opacity: 1;
-
-                pointer-events: auto;
+                width: auto !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
             }
 
             .sidebar .menu-title,
             .sidebar.collapsed .menu-title {
-                opacity: 1;
-
-                height: auto;
-
-                margin-bottom: 10px;
+                opacity: 1 !important;
+                height: auto !important;
+                margin-bottom: 10px !important;
             }
 
             .sidebar .menu a,
             .sidebar .sidebar-bottom a,
             .sidebar.collapsed .menu a,
             .sidebar.collapsed .sidebar-bottom a {
-                justify-content: flex-start;
-
-                padding-left: 14px;
-
-                padding-right: 14px;
-
-                gap: 13px;
+                justify-content: flex-start !important;
+                padding-left: 14px !important;
+                padding-right: 14px !important;
+                gap: 13px !important;
             }
 
             .sidebar .menu a span,
             .sidebar .sidebar-bottom a span,
             .sidebar.collapsed .menu a span,
             .sidebar.collapsed .sidebar-bottom a span {
-                display: inline;
+                display: inline !important;
             }
 
             .main,
             .main.expanded {
-                margin-left: 0;
-
-                width: 100%;
-
-                height: auto;
-
-                min-height: 100vh;
-
-                padding: 0 20px 30px;
-
-                overflow: visible;
+                margin-left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 100vh !important;
+                padding: 0 20px 30px !important;
+                overflow: visible !important;
             }
 
             .dashboard-content {
-                display: block;
-
-                overflow: visible;
-
-                padding-right: 0;
+                display: block !important;
+                overflow: visible !important;
+                padding-right: 0 !important;
             }
 
             .site-header {
-                margin-left: -20px;
+                margin-left: -20px !important;
+                margin-right: -20px !important;
+                padding: 0 14px !important;
+                gap: 8px !important;
+            }
 
-                margin-right: -20px;
-
-                padding: 0 18px;
+            .header-left {
+                gap: 8px !important;
+                flex: 1 !important;
+                min-width: 0 !important;
             }
 
             .school-name {
-                font-size: 15px;
+                font-size: 14px !important;
             }
 
             .memory-link-title {
-                font-size: 15px;
+                font-size: 14px !important;
             }
 
             .welcome-card {
-                margin-top: 18px;
-
-                padding: 25px;
-
-                min-height: 175px;
-
-                height: auto;
+                margin-top: 18px !important;
+                padding: 25px !important;
+                min-height: 175px !important;
+                height: auto !important;
             }
 
             .welcome-content h2 {
-                font-size: 21px;
+                font-size: 21px !important;
             }
 
             .stats {
                 grid-template-columns:
-                    1fr 1fr;
-
-                gap: 12px;
+                    1fr 1fr !important;
+                gap: 12px !important;
             }
 
             .stat-card {
-                padding: 15px;
+                padding: 15px !important;
             }
 
             .stat-number {
-                font-size: 23px;
+                font-size: 23px !important;
             }
 
             .action-bar {
-                flex-direction: column;
-
-                align-items: stretch;
+                flex-direction: column !important;
+                align-items: stretch !important;
             }
 
             .search-box {
-                max-width: none;
+                max-width: none !important;
             }
 
             .add-btn {
-                justify-content: center;
+                justify-content: center !important;
             }
 
             .table-wrapper {
-                overflow-x: auto;
-
-                overflow-y: visible;
+                overflow-x: auto !important;
+                overflow-y: visible !important;
             }
 
             table {
-                min-width: 850px;
+                min-width: 850px !important;
             }
 
             .panel {
-                min-height: 300px;
-
-                overflow: visible;
+                min-height: 300px !important;
+                overflow: visible !important;
             }
 
             .modal-box {
-                max-height: 94vh;
-                border-radius: 20px;
-            }
-
-            .modal-header {
-                padding: 20px;
-            }
-
-            #flashcardForm {
-                padding: 20px;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-                gap: 0;
-            }
-
-            .form-group.full-width {
-                grid-column: auto;
-            }
-
-            .modal-actions {
-                position: sticky;
-                bottom: 0;
-                background: rgba(255,255,255,.97);
-                padding-bottom: 2px;
+                padding: 22px !important;
+                max-height: 92vh !important;
             }
         }
 
@@ -1542,19 +1280,40 @@
         @media (max-width: 480px) {
 
             .stats {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr !important;
             }
 
             .school-name {
-                font-size: 12px;
+                font-size: 12px !important;
             }
 
             .memory-link-title {
-                font-size: 12px;
+                font-size: 12px !important;
+            }
+
+            .mobile-burger-btn {
+                width: 36px !important;
+                height: 36px !important;
+                min-width: 36px !important;
+            }
+
+            .mobile-burger-btn i {
+                font-size: 18px !important;
+            }
+
+            .toast-container {
+                right: 12px;
+                left: 12px;
+                bottom: 12px;
+            }
+
+            .toast {
+                min-width: 0;
+                max-width: none;
             }
         }
     </style>
-    <script src="/js/db-sync.js"></script>
+    <script src="/db-sync.js"></script>
 </head>
 
 <body>
@@ -1589,6 +1348,7 @@
 
             </div>
 
+            <!-- Desktop toggle button (hidden on mobile) -->
             <button
                 class="sidebar-toggle"
                 type="button"
@@ -1705,10 +1465,16 @@
 
     <main class="main" id="main">
 
-        <!-- SCHOOL HEADER -->
+        <!-- SCHOOL HEADER WITH BURGER -->
 
         <header class="site-header">
-            <div class="school-name">Xavier University Senior High School</div>
+            <div class="header-left">
+                <!-- BURGER BUTTON - VISIBLE ON MOBILE ONLY -->
+                <button class="mobile-burger-btn" id="mobileBurgerBtn" type="button" aria-label="Open Menu">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <div class="school-name">Xavier University Senior High School</div>
+            </div>
             <div class="memory-link-title">MemoryLink</div>
         </header>
 
@@ -1938,15 +1704,9 @@
 
         <div class="modal-header">
 
-            <div class="modal-heading">
-                <div class="modal-icon">
-                    <i class="fa-solid fa-layer-group"></i>
-                </div>
-                <div>
-                    <h2 id="modalTitle">Add Flashcard</h2>
-                    <p class="modal-subtitle">Create a clear, organized study card for your students.</p>
-                </div>
-            </div>
+            <h2 id="modalTitle">
+                Add Flashcard
+            </h2>
 
             <button
                 class="close-btn"
@@ -1960,55 +1720,141 @@
         </div>
 
 
-        <form id="flashcardForm">
+        <form id="flashcardForm" novalidate>
 
-            <input type="hidden" id="editId">
+            <input
+                type="hidden"
+                id="editId">
 
-            <p class="required-note"><span>*</span> Required fields</p>
 
-            <div class="form-grid">
+            <!-- STRAND -->
 
-                <div class="form-group">
-                    <label for="strandSelect">Strand</label>
-                    <select id="strandSelect" required>
-                        <option value="">Select Strand</option>
-                    </select>
-                </div>
+            <div class="form-group">
 
-                <div class="form-group">
-                    <label for="lessonSelect">Lesson / Subject</label>
-                    <select id="lessonSelect" required disabled>
-                        <option value="">Select Strand First</option>
-                    </select>
-                    <span class="helper-text">Choose a lesson under the selected strand.</span>
-                </div>
+                <label for="strandSelect">
+                    Strand
+                </label>
 
-                <div class="form-group full-width">
-                    <label for="lessonNumberSelect">Lesson Number</label>
-                    <select id="lessonNumberSelect" required disabled>
-                        <option value="">Select Lesson First</option>
-                    </select>
-                    <span class="helper-text">Select the lesson number where this flashcard belongs.</span>
-                </div>
+                <select
+                    id="strandSelect"
+                    required>
 
-                <div class="form-group full-width">
-                    <label for="questionInput">Question / Front</label>
-                    <textarea id="questionInput" placeholder="Enter the question or term..." required></textarea>
-                </div>
+                    <option value="">
+                        Select Strand
+                    </option>
 
-                <div class="form-group full-width">
-                    <label for="answerInput">Answer / Back</label>
-                    <textarea id="answerInput" placeholder="Enter the answer or definition..." required></textarea>
-                </div>
+                </select>
 
             </div>
 
+
+            <!-- LESSON / SUBJECT -->
+
+            <div class="form-group">
+
+                <label for="lessonSelect">
+                    Lesson / Subject
+                </label>
+
+                <select
+                    id="lessonSelect"
+                    required
+                    disabled>
+
+                    <option value="">
+                        Select Strand First
+                    </option>
+
+                </select>
+
+                <span class="helper-text">
+                    Lessons are based on the selected strand.
+                </span>
+
+            </div>
+
+
+            <!-- LESSON NUMBER -->
+
+            <div class="form-group">
+
+                <label for="lessonNumberSelect">
+                    Lesson Number
+                </label>
+
+                <select
+                    id="lessonNumberSelect"
+                    required
+                    disabled>
+
+                    <option value="">
+                        Select Lesson First
+                    </option>
+
+                </select>
+
+                <span class="helper-text">
+                    Lesson numbers are based on the selected lesson/subject.
+                </span>
+
+            </div>
+
+
+            <!-- QUESTION -->
+
+            <div class="form-group">
+
+                <label for="questionInput">
+                    Question / Front
+                </label>
+
+                <textarea
+                    id="questionInput"
+                    placeholder="Enter the question or term..."
+                    required></textarea>
+
+            </div>
+
+
+            <!-- ANSWER -->
+
+            <div class="form-group">
+
+                <label for="answerInput">
+                    Answer / Back
+                </label>
+
+                <textarea
+                    id="answerInput"
+                    placeholder="Enter the answer or definition..."
+                    required></textarea>
+
+            </div>
+
+
+            <!-- ACTIONS -->
+
             <div class="modal-actions">
-                <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
-                <button type="submit" class="save-btn" id="saveFlashcardBtn">
-                    <i class="fa-solid fa-floppy-disk"></i>
-                    <span>Save Flashcard</span>
+
+                <button
+                    type="button"
+                    class="cancel-btn"
+                    onclick="closeModal()">
+
+                    Cancel
+
                 </button>
+
+                <button
+                    type="submit"
+                    class="save-btn">
+
+                    <i class="fa-solid fa-floppy-disk"></i>
+
+                    Save Flashcard
+
+                </button>
+
             </div>
 
         </form>
@@ -2016,6 +1862,11 @@
     </div>
 
 </div>
+
+
+<!-- TOAST CONTAINER -->
+
+<div class="toast-container" id="toastContainer"></div>
 
 
 <script>
@@ -2169,267 +2020,1144 @@
 
 
     /* =========================================
-       SAVE FLASHCARD
-       Directly saves to Spring Boot / MySQL.
+       SAVE FLASHCARDS
     ========================================== */
 
-    document
-        .getElementById("flashcardForm")
-        .addEventListener("submit", async function(event) {
+    function saveFlashcards(data) {
 
-            event.preventDefault();
+        memoryStore.setItem(
+            FLASHCARD_KEY,
+            JSON.stringify(data)
+        );
 
-            const saveButton =
-                document.getElementById("saveFlashcardBtn");
-
-            const saveText =
-                saveButton.querySelector("span");
-
-            const strand =
-                document.getElementById("strandSelect").value.trim();
-
-            const lesson =
-                document.getElementById("lessonSelect").value.trim();
-
-            const lessonNumber =
-                document.getElementById("lessonNumberSelect").value.trim();
-
-            const question =
-                document.getElementById("questionInput").value.trim();
-
-            const answer =
-                document.getElementById("answerInput").value.trim();
-
-            const editId =
-                document.getElementById("editId").value.trim();
-
-            if (!strand || !lesson || !lessonNumber || !question || !answer) {
-                alert("Please complete all required fields.");
-                return;
-            }
-
-            saveButton.disabled = true;
-            saveText.textContent = editId ? "Updating..." : "Saving...";
-
-            const payload = {
-                strand,
-                lesson,
-                lessonNumber,
-                question,
-                answer
-            };
-
-            try {
-
-                let response;
-
-                if (editId) {
-                    response = await fetch(
-                        "/api/flashcards/" + encodeURIComponent(editId),
-                        {
-                            method: "PUT",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Accept": "application/json"
-                            },
-                            body: JSON.stringify(payload)
-                        }
-                    );
-                } else {
-                    response = await fetch(
-                        "/api/flashcards",
-                        {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Accept": "application/json"
-                            },
-                            body: JSON.stringify(payload)
-                        }
-                    );
-                }
-
-                if (!response.ok) {
-                    const message = await response.text();
-                    throw new Error(
-                        "Save failed: " + response.status + " " + message
-                    );
-                }
-
-                const savedCard = await response.json();
-
-                /* Update browser cache with the REAL database ID. */
-                let flashcards = getFlashcards();
-
-                if (editId) {
-                    const index = flashcards.findIndex(function(card) {
-                        return Number(card.id) === Number(editId);
-                    });
-
-                    if (index !== -1) {
-                        flashcards[index] = {
-                            ...flashcards[index],
-                            ...savedCard
-                        };
-                    } else {
-                        flashcards.push(savedCard);
-                    }
-                } else {
-                    flashcards.push(savedCard);
-                }
-
-                memoryStore.setItem(
-                    FLASHCARD_KEY,
-                    JSON.stringify(flashcards)
-                );
-
-                renderFlashcards();
-                closeModal();
-
-                showToast(
-                    editId
-                        ? "Flashcard updated successfully."
-                        : "Flashcard added successfully.",
-                    "success"
-                );
-
-            } catch (error) {
-
-                console.error("MemoryLink flashcard save error:", error);
-
-                showToast(
-                    "Could not save the flashcard. Please try again.",
-                    "error"
-                );
-
-            } finally {
-
-                saveButton.disabled = false;
-                saveText.textContent = "Save Flashcard";
-            }
-        });
+    }
 
 
     /* =========================================
-       DELETE FLASHCARD
-       Direct DELETE request to Spring Boot.
+       GENERATE UNIQUE ID
     ========================================== */
 
-    async function deleteFlashcard(id) {
+    function generateId() {
 
-        const flashcards = getFlashcards();
+        return (
+            Date.now().toString(36) +
+            Math.random().toString(36).slice(2, 8)
+        );
 
-        const card = flashcards.find(function(item) {
-            return Number(item.id) === Number(id);
+    }
+
+
+    /* =========================================
+       TOAST NOTIFICATION
+    ========================================== */
+
+    function showToast(message, type = "success") {
+
+        const container =
+            document.getElementById("toastContainer");
+
+        const toast =
+            document.createElement("div");
+
+        toast.className = "toast " + type;
+
+        const icon =
+            type === "error"
+                ? "fa-circle-exclamation"
+                : "fa-circle-check";
+
+        toast.innerHTML = `
+            <i class="fa-solid ${icon}"></i>
+            <span>${message}</span>
+        `;
+
+        container.appendChild(toast);
+
+        setTimeout(function() {
+
+            toast.classList.add("hide");
+
+            setTimeout(function() {
+                toast.remove();
+            }, 300);
+
+        }, 2600);
+
+    }
+
+
+    /* =========================================
+       GET LESSON NAME
+    ========================================== */
+
+    function getLessonName(lesson) {
+        return (lesson.title || lesson.name || "").toString().trim();
+    }
+
+
+    /* =========================================
+       GET LESSON STRAND
+    ========================================== */
+
+    function getLessonStrand(lesson) {
+        return (lesson.category || lesson.strand || "").toString().trim();
+    }
+
+
+    /* =========================================
+       GET LESSON NUMBERS
+    ========================================== */
+
+    function getLessonNumbers(lesson) {
+
+        if (!lesson) {
+            return [];
+        }
+
+        // Kung naay subLessons array, kuhaon ang title sa matag subLesson
+        if (Array.isArray(lesson.subLessons) && lesson.subLessons.length > 0) {
+
+            return lesson.subLessons.map(function(sub, index) {
+                return (sub.title || "Lesson " + (index + 1)).toString().trim();
+            });
+
+        }
+
+        // Kung naay numberOfLessons, maghimo og listahan
+        const count = Number(lesson.numberOfLessons || lesson.lessonCount || 0);
+
+        if (count > 0) {
+
+            const numbers = [];
+
+            for (let i = 1; i <= count; i++) {
+                numbers.push("Lesson " + i);
+            }
+
+            return numbers;
+        }
+
+        return ["Lesson 1"];
+
+    }
+
+
+    /* =========================================
+       LOAD STRANDS
+    ========================================== */
+
+    function loadStrandsIntoSelect(selectedStrand = "") {
+
+        const select =
+            document.getElementById("strandSelect");
+
+        const strands =
+            getStrands();
+
+        select.innerHTML =
+            '<option value="">Select Strand</option>';
+
+        strands.forEach(function(strand) {
+
+            const name =
+                strand.name ||
+                strand.title ||
+                "";
+
+            if (!name) {
+                return;
+            }
+
+            const option =
+                document.createElement("option");
+
+            option.value = name;
+
+            option.textContent = name;
+
+            select.appendChild(option);
+
         });
+
+        if (selectedStrand) {
+            select.value = selectedStrand;
+        }
+
+    }
+
+
+    /* =========================================
+       LOAD LESSONS BASED ON STRAND
+    ========================================== */
+
+    function loadLessonsIntoSelect(
+        selectedStrand,
+        selectedLesson = ""
+    ) {
+
+        const lessonSelect =
+            document.getElementById("lessonSelect");
+
+        const lessonNumberSelect =
+            document.getElementById("lessonNumberSelect");
+
+        lessonSelect.innerHTML =
+            '<option value="">Select Lesson / Subject</option>';
+
+        lessonNumberSelect.innerHTML =
+            '<option value="">Select Lesson First</option>';
+
+        lessonNumberSelect.disabled = true;
+
+        if (!selectedStrand) {
+
+            lessonSelect.disabled = true;
+
+            lessonSelect.innerHTML =
+                '<option value="">Select Strand First</option>';
+
+            return;
+        }
+
+
+        const lessons =
+            getLessons();
+
+
+        // Kuhaon ang mga lessons nga naay category (strand)
+        const filteredLessons =
+            lessons.filter(function(lesson) {
+
+                const lessonStrand =
+                    getLessonStrand(lesson);
+
+                return lessonStrand.toLowerCase()
+                    === selectedStrand.toLowerCase();
+
+            });
+
+
+        // Tanggalon ang mga duplicate nga lesson names
+        const uniqueLessons = [];
+
+        filteredLessons.forEach(function(lesson) {
+
+            const lessonName =
+                getLessonName(lesson);
+
+            if (
+                lessonName &&
+                !uniqueLessons.some(function(item) {
+                    return item.name.toLowerCase()
+                        === lessonName.toLowerCase();
+                })
+            ) {
+
+                uniqueLessons.push({
+                    name: lessonName,
+                    data: lesson
+                });
+
+            }
+
+        });
+
+
+        // Kung naay mga lessons nga nakit-an
+        uniqueLessons.forEach(function(item) {
+
+            const option =
+                document.createElement("option");
+
+            option.value = item.name;
+
+            option.textContent = item.name;
+
+            lessonSelect.appendChild(option);
+
+        });
+
+
+        // Kung wala'y lesson nga nakit-an sa memoryStore
+        if (uniqueLessons.length === 0) {
+
+            lessonSelect.innerHTML =
+                '<option value="">No lessons available for this strand</option>';
+
+            lessonSelect.disabled = true;
+
+            return;
+        }
+
+
+        lessonSelect.disabled = false;
+
+
+        // Pilia ang existing lesson kung nag-edit
+        if (selectedLesson) {
+
+            lessonSelect.value =
+                selectedLesson;
+
+            loadLessonNumbersIntoSelect(
+                selectedStrand,
+                selectedLesson
+            );
+        }
+
+    }
+
+
+    /* =========================================
+       LOAD LESSON NUMBERS BASED ON LESSON
+    ========================================== */
+
+    function loadLessonNumbersIntoSelect(
+        selectedStrand,
+        selectedLesson,
+        selectedNumber = ""
+    ) {
+
+        const lessonNumberSelect =
+            document.getElementById(
+                "lessonNumberSelect"
+            );
+
+        lessonNumberSelect.innerHTML =
+            '<option value="">Select Lesson Number</option>';
+
+        if (
+            !selectedStrand ||
+            !selectedLesson
+        ) {
+
+            lessonNumberSelect.disabled = true;
+
+            lessonNumberSelect.innerHTML =
+                '<option value="">Select Lesson First</option>';
+
+            return;
+        }
+
+
+        const lessons =
+            getLessons();
+
+
+        // Pangitaon ang selected lesson/subject
+        const matchingLesson =
+            lessons.find(function(lesson) {
+
+                const lessonName =
+                    getLessonName(lesson);
+
+                const lessonStrand =
+                    getLessonStrand(lesson);
+
+                return (
+                    lessonName.toLowerCase()
+                    ===
+                    selectedLesson.toLowerCase()
+                    &&
+                    lessonStrand.toLowerCase()
+                    ===
+                    selectedStrand.toLowerCase()
+                );
+
+            });
+
+
+        if (!matchingLesson) {
+
+            lessonNumberSelect.disabled = true;
+
+            lessonNumberSelect.innerHTML =
+                '<option value="">No lesson numbers available</option>';
+
+            return;
+        }
+
+
+        // Kuhaon ang lesson numbers
+        const lessonNumbers =
+            getLessonNumbers(matchingLesson);
+
+
+        // Tanggalon ang duplicate nga numbers
+        const uniqueNumbers =
+            [...new Set(lessonNumbers)];
+
+
+        uniqueNumbers.forEach(function(number) {
+
+            const option =
+                document.createElement("option");
+
+            option.value = number;
+
+            option.textContent = number;
+
+            lessonNumberSelect.appendChild(option);
+
+        });
+
+
+        lessonNumberSelect.disabled =
+            uniqueNumbers.length === 0;
+
+
+        if (selectedNumber) {
+
+            lessonNumberSelect.value =
+                selectedNumber;
+        }
+
+    }
+
+
+    /* =========================================
+       ESCAPE HTML
+    ========================================== */
+
+    function escapeHTML(value) {
+
+        return String(value ?? "")
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+
+    }
+
+
+    /* =========================================
+       RENDER FLASHCARDS
+    ========================================== */
+
+    function renderFlashcards() {
+
+        const table =
+            document.getElementById(
+                "flashcardTable"
+            );
+
+        const emptyState =
+            document.getElementById(
+                "emptyState"
+            );
+
+        const search =
+            document
+                .getElementById("searchInput")
+                .value
+                .toLowerCase()
+                .trim();
+
+
+        const allFlashcards =
+            getFlashcards();
+
+
+        let flashcards =
+            [...allFlashcards];
+
+
+        /* SEARCH */
+
+        if (search) {
+
+            flashcards =
+                flashcards.filter(function(card) {
+
+                    return (
+
+                        String(card.question || "")
+                            .toLowerCase()
+                            .includes(search)
+
+                        ||
+
+                        String(card.answer || "")
+                            .toLowerCase()
+                            .includes(search)
+
+                        ||
+
+                        String(card.strand || "")
+                            .toLowerCase()
+                            .includes(search)
+
+                        ||
+
+                        String(card.lesson || "")
+                            .toLowerCase()
+                            .includes(search)
+
+                        ||
+
+                        String(card.lessonNumber || "")
+                            .toLowerCase()
+                            .includes(search)
+
+                    );
+
+                });
+
+        }
+
+
+        table.innerHTML = "";
+
+
+        /* =========================================
+           STATISTICS
+        ========================================== */
+
+        document.getElementById(
+            "totalFlashcards"
+        ).textContent =
+            allFlashcards.length;
+
+
+        const uniqueStrands =
+            [
+                ...new Set(
+                    allFlashcards
+                        .map(function(card) {
+                            return String(
+                                card.strand || ""
+                            ).trim();
+                        })
+                        .filter(Boolean)
+                )
+            ];
+
+
+        document.getElementById(
+            "strandsCovered"
+        ).textContent =
+            uniqueStrands.length;
+
+
+        const uniqueLessons =
+            [
+                ...new Set(
+                    allFlashcards
+                        .map(function(card) {
+
+                            const strand =
+                                String(
+                                    card.strand || ""
+                                ).trim();
+
+                            const lesson =
+                                String(
+                                    card.lesson || ""
+                                ).trim();
+
+                            return strand + "||" + lesson;
+
+                        })
+                        .filter(function(value) {
+                            return value !== "||";
+                        })
+                )
+            ];
+
+
+        document.getElementById(
+            "lessonsCovered"
+        ).textContent =
+            uniqueLessons.length;
+
+
+        /* =========================================
+           EMPTY STATE
+        ========================================== */
+
+        if (flashcards.length === 0) {
+
+            emptyState.style.display =
+                "flex";
+
+            document.getElementById(
+                "flashcardCount"
+            ).textContent =
+                "0 flashcards";
+
+            return;
+        }
+
+
+        emptyState.style.display =
+            "none";
+
+
+        document.getElementById(
+            "flashcardCount"
+        ).textContent =
+
+            flashcards.length +
+
+            (
+                flashcards.length === 1
+                    ? " flashcard"
+                    : " flashcards"
+            );
+
+
+        /* =========================================
+           TABLE ROWS
+        ========================================== */
+
+        flashcards.forEach(function(
+            card,
+            index
+        ) {
+
+            const row =
+                document.createElement("tr");
+
+
+            row.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td class="question-cell">
+                    ${escapeHTML(card.question)}
+                </td>
+
+                <td class="answer-cell">
+                    ${escapeHTML(card.answer)}
+                </td>
+
+                <td>
+                    <span class="strand-badge">
+                        ${escapeHTML(card.strand)}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="lesson-badge">
+                        ${escapeHTML(card.lesson || "—")}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="lesson-number-badge">
+                        ${escapeHTML(card.lessonNumber || "—")}
+                    </span>
+                </td>
+
+                <td>
+
+                    <div class="action-buttons">
+
+                        <button
+                            class="action-btn edit-btn"
+                            data-edit-id="${escapeHTML(card.id)}"
+                            title="Edit">
+
+                            <i class="fa-solid fa-pen"></i>
+
+                        </button>
+
+                        <button
+                            class="action-btn delete-btn"
+                            data-delete-id="${escapeHTML(card.id)}"
+                            title="Delete">
+
+                            <i class="fa-solid fa-trash"></i>
+
+                        </button>
+
+                    </div>
+
+                </td>
+
+            `;
+
+            table.appendChild(row);
+
+        });
+
+
+        /* =========================================
+           ATTACH ROW EVENT LISTENERS
+        ========================================== */
+
+        table.querySelectorAll("[data-edit-id]").forEach(function(btn) {
+
+            btn.addEventListener("click", function() {
+
+                editFlashcard(this.getAttribute("data-edit-id"));
+
+            });
+
+        });
+
+
+        table.querySelectorAll("[data-delete-id]").forEach(function(btn) {
+
+            btn.addEventListener("click", function() {
+
+                deleteFlashcard(this.getAttribute("data-delete-id"));
+
+            });
+
+        });
+
+    }
+
+
+    /* =========================================
+       OPEN ADD MODAL
+    ========================================== */
+
+    function openAddModal() {
+
+        document.getElementById(
+            "modalTitle"
+        ).textContent =
+            "Add Flashcard";
+
+
+        document.getElementById(
+            "flashcardForm"
+        ).reset();
+
+
+        document.getElementById(
+            "editId"
+        ).value = "";
+
+
+        loadStrandsIntoSelect();
+
+
+        const lessonSelect =
+            document.getElementById(
+                "lessonSelect"
+            );
+
+        const lessonNumberSelect =
+            document.getElementById(
+                "lessonNumberSelect"
+            );
+
+
+        lessonSelect.disabled = true;
+
+        lessonSelect.innerHTML =
+            '<option value="">Select Strand First</option>';
+
+
+        lessonNumberSelect.disabled = true;
+
+        lessonNumberSelect.innerHTML =
+            '<option value="">Select Lesson First</option>';
+
+
+        document.getElementById(
+            "flashcardModal"
+        ).classList.add("show");
+
+
+        setTimeout(function() {
+
+            document.getElementById(
+                "strandSelect"
+            ).focus();
+
+        }, 100);
+
+    }
+
+
+    /* =========================================
+       EDIT FLASHCARD
+    ========================================== */
+
+    function editFlashcard(id) {
+
+        const flashcards =
+            getFlashcards();
+
+
+        const card =
+            flashcards.find(function(item) {
+
+                return String(item.id)
+                    === String(id);
+
+            });
+
 
         if (!card) {
             return;
         }
 
-        const questionPreview =
-            String(card.question || "This flashcard")
-                .replace(/\s+/g, " ")
-                .trim();
 
-        const confirmDelete = confirm(
-            "Delete this flashcard?\n\n" + questionPreview
+        document.getElementById(
+            "modalTitle"
+        ).textContent =
+            "Edit Flashcard";
+
+
+        document.getElementById(
+            "editId"
+        ).value =
+            card.id;
+
+
+        loadStrandsIntoSelect(card.strand || "");
+
+
+        // Load lessons for selected strand
+        loadLessonsIntoSelect(
+            card.strand || "",
+            card.lesson || ""
         );
+
+
+        // Load lesson numbers
+        loadLessonNumbersIntoSelect(
+            card.strand || "",
+            card.lesson || "",
+            card.lessonNumber || ""
+        );
+
+
+        document.getElementById(
+            "questionInput"
+        ).value =
+            card.question || "";
+
+
+        document.getElementById(
+            "answerInput"
+        ).value =
+            card.answer || "";
+
+
+        document.getElementById(
+            "flashcardModal"
+        ).classList.add("show");
+
+    }
+
+
+    /* =========================================
+       STRAND CHANGE
+    ========================================== */
+
+    document.getElementById(
+        "strandSelect"
+    ).addEventListener(
+        "change",
+        function() {
+
+            const selectedStrand =
+                this.value;
+
+
+            loadLessonsIntoSelect(
+                selectedStrand
+            );
+
+        }
+    );
+
+
+    /* =========================================
+       LESSON CHANGE
+    ========================================== */
+
+    document.getElementById(
+        "lessonSelect"
+    ).addEventListener(
+        "change",
+        function() {
+
+            const selectedStrand =
+                document.getElementById(
+                    "strandSelect"
+                ).value;
+
+
+            const selectedLesson =
+                this.value;
+
+
+            loadLessonNumbersIntoSelect(
+                selectedStrand,
+                selectedLesson
+            );
+
+        }
+    );
+
+
+    /* =========================================
+       SAVE FLASHCARD
+    ========================================== */
+
+    document
+        .getElementById("flashcardForm")
+        .addEventListener(
+            "submit",
+            function(event) {
+
+                event.preventDefault();
+
+
+                const strand =
+                    document
+                        .getElementById(
+                            "strandSelect"
+                        )
+                        .value
+                        .trim();
+
+
+                const lesson =
+                    document
+                        .getElementById(
+                            "lessonSelect"
+                        )
+                        .value
+                        .trim();
+
+
+                const lessonNumber =
+                    document
+                        .getElementById(
+                            "lessonNumberSelect"
+                        )
+                        .value
+                        .trim();
+
+
+                const question =
+                    document
+                        .getElementById(
+                            "questionInput"
+                        )
+                        .value
+                        .trim();
+
+
+                const answer =
+                    document
+                        .getElementById(
+                            "answerInput"
+                        )
+                        .value
+                        .trim();
+
+
+                const editId =
+                    document
+                        .getElementById(
+                            "editId"
+                        )
+                        .value;
+
+
+                if (
+                    !strand ||
+                    !lesson ||
+                    !lessonNumber ||
+                    !question ||
+                    !answer
+                ) {
+
+                    showToast(
+                        "Please complete all required fields.",
+                        "error"
+                    );
+
+                    return;
+                }
+
+
+                let flashcards =
+                    getFlashcards();
+
+
+                /* =================================
+                   EDIT
+                ================================= */
+
+                if (editId) {
+
+                    const index =
+                        flashcards.findIndex(
+                            function(card) {
+
+                                return String(card.id)
+                                    === String(editId);
+
+                            }
+                        );
+
+
+                    if (index !== -1) {
+
+                        flashcards[index] = {
+
+                            ...flashcards[index],
+
+                            strand:
+                                strand,
+
+                            lesson:
+                                lesson,
+
+                            lessonNumber:
+                                lessonNumber,
+
+                            question:
+                                question,
+
+                            answer:
+                                answer,
+
+                            updatedAt:
+                                new Date()
+                                    .toISOString()
+
+                        };
+
+                    }
+
+                }
+
+
+                /* =================================
+                   ADD
+                ================================= */
+
+                else {
+
+                    const newCard = {
+
+                        id:
+                            generateId(),
+
+                        strand:
+                            strand,
+
+                        lesson:
+                            lesson,
+
+                        lessonNumber:
+                            lessonNumber,
+
+                        question:
+                            question,
+
+                        answer:
+                            answer,
+
+                        createdAt:
+                            new Date()
+                                .toISOString()
+
+                    };
+
+
+                    flashcards.push(
+                        newCard
+                    );
+
+                }
+
+
+                saveFlashcards(
+                    flashcards
+                );
+
+
+                renderFlashcards();
+
+
+                closeModal();
+
+
+                showToast(
+                    editId
+                        ? "Flashcard updated successfully!"
+                        : "Flashcard added successfully!",
+                    "success"
+                );
+
+            }
+        );
+
+
+    /* =========================================
+       DELETE FLASHCARD
+    ========================================== */
+
+    function deleteFlashcard(id) {
+
+        const flashcards =
+            getFlashcards();
+
+
+        const card =
+            flashcards.find(function(item) {
+
+                return String(item.id)
+                    === String(id);
+
+            });
+
+
+        if (!card) {
+            return;
+        }
+
+
+        const confirmDelete =
+            confirm(
+                "Delete this flashcard?"
+            );
+
 
         if (!confirmDelete) {
             return;
         }
 
-        try {
 
-            /*
-             * If this is only a temporary browser ID,
-             * it may not exist in MySQL yet.
-             */
-            const numericId = Number(id);
-            const isTemporaryId =
-                Number.isFinite(numericId) && numericId > 100000000000;
+        const updated =
+            flashcards.filter(
+                function(item) {
 
-            if (!isTemporaryId) {
+                    return String(item.id)
+                        !== String(id);
 
-                const response = await fetch(
-                    "/api/flashcards/" + encodeURIComponent(id),
-                    {
-                        method: "DELETE",
-                        headers: {
-                            "Accept": "application/json"
-                        }
-                    }
-                );
-
-                if (!response.ok && response.status !== 404) {
-                    const message = await response.text();
-                    throw new Error(
-                        "Delete failed: " + response.status + " " + message
-                    );
                 }
-            }
-
-            const updated = flashcards.filter(function(item) {
-                return Number(item.id) !== Number(id);
-            });
-
-            /* Remove it from the browser cache too. */
-            memoryStore.setItem(
-                FLASHCARD_KEY,
-                JSON.stringify(updated)
             );
 
-            renderFlashcards();
 
-            showToast(
-                "Flashcard deleted successfully.",
-                "success"
-            );
-
-        } catch (error) {
-
-            console.error("MemoryLink flashcard delete error:", error);
-
-            showToast(
-                "Could not delete the flashcard. Please try again.",
-                "error"
-            );
-        }
-    }
+        saveFlashcards(
+            updated
+        );
 
 
-    /* =========================================
-       TOAST MESSAGE
-    ========================================== */
+        renderFlashcards();
 
-    function showToast(message, type = "success") {
 
-        let toast = document.getElementById("memoryLinkToast");
+        showToast(
+            "Flashcard deleted successfully.",
+            "success"
+        );
 
-        if (!toast) {
-            toast = document.createElement("div");
-            toast.id = "memoryLinkToast";
-            document.body.appendChild(toast);
-        }
-
-        toast.className = "memorylink-toast " + type;
-        toast.innerHTML =
-            '<i class="fa-solid ' +
-            (type === "success" ? "fa-circle-check" : "fa-circle-exclamation") +
-            '"></i><span></span>';
-
-        toast.querySelector("span").textContent = message;
-
-        requestAnimationFrame(function() {
-            toast.classList.add("show");
-        });
-
-        clearTimeout(window.memoryLinkToastTimer);
-
-        window.memoryLinkToastTimer = setTimeout(function() {
-            toast.classList.remove("show");
-        }, 2800);
     }
 
 
@@ -2439,15 +3167,10 @@
 
     function closeModal() {
 
-        document.getElementById("flashcardModal").classList.remove("show");
-        document.body.style.overflow = "";
+        document.getElementById(
+            "flashcardModal"
+        ).classList.remove("show");
 
-        const saveButton = document.getElementById("saveFlashcardBtn");
-        if (saveButton) {
-            saveButton.disabled = false;
-            const saveText = saveButton.querySelector("span");
-            if (saveText) saveText.textContent = "Save Flashcard";
-        }
     }
 
 
@@ -2475,43 +3198,45 @@
             "sidebarOverlay"
         );
 
+    const mobileBurgerBtn =
+        document.getElementById(
+            "mobileBurgerBtn"
+        );
+
 
     /* =========================================
-       SIDEBAR TOGGLE
+       SIDEBAR TOGGLE (Desktop)
     ========================================== */
 
     sidebarToggle.addEventListener(
         "click",
         function() {
 
-            /* MOBILE */
-
+            /* MOBILE - close sidebar */
             if (window.innerWidth <= 750) {
-
-                sidebar.classList.toggle(
-                    "show"
-                );
-
-                sidebarOverlay.classList.toggle(
-                    "show"
-                );
-
+                sidebar.classList.remove("show");
+                sidebarOverlay.classList.remove("show");
             }
 
-            /* DESKTOP */
-
+            /* DESKTOP - collapse/expand */
             else {
-
-                sidebar.classList.toggle(
-                    "collapsed"
-                );
-
-                main.classList.toggle(
-                    "expanded"
-                );
-
+                sidebar.classList.toggle("collapsed");
+                main.classList.toggle("expanded");
             }
 
+        }
+    );
+
+
+    /* =========================================
+       MOBILE BURGER - OPEN SIDEBAR
+    ========================================== */
+
+    mobileBurgerBtn.addEventListener(
+        "click",
+        function() {
+            sidebar.classList.add("show");
+            sidebarOverlay.classList.add("show");
         }
     );
 
