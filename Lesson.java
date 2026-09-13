@@ -29,9 +29,9 @@ public class Lesson {
 
     private String submittedBy;
 
-@Lob
-@Column(name = "sub_lessons", columnDefinition = "LONGTEXT")
-private String subLessonsJson;
+    @Lob
+    @Column(name = "sub_lessons", columnDefinition = "LONGTEXT")
+    private String subLessonsJson;
 
     @Transient
     private List<Map<String, Object>> subLessons = new ArrayList<>();
@@ -42,20 +42,6 @@ private String subLessonsJson;
     @PostLoad
     private void loadSubLessons() {
         subLessons = parseSubLessons(subLessonsJson);
-    }
-
-    @PrePersist
-    @PreUpdate
-    private void saveSubLessons() {
-        if (subLessons == null) {
-            subLessons = new ArrayList<>();
-        }
-        try {
-            subLessonsJson = new com.fasterxml.jackson.databind.ObjectMapper()
-                    .writeValueAsString(subLessons);
-        } catch (Exception e) {
-            subLessonsJson = "[]";
-        }
     }
 
     private static List<Map<String, Object>> parseSubLessons(String json) {
@@ -104,8 +90,24 @@ private String subLessonsJson;
         this.subLessons = parseSubLessons(subLessonsJson);
     }
 
-    public List<Map<String, Object>> getSubLessons() { return subLessons; }
+    public List<Map<String, Object>> getSubLessons() {
+        // Always derive from the JSON string so the controller
+        // always sees the latest persisted value.
+        if (subLessons == null || subLessons.isEmpty()) {
+            subLessons = parseSubLessons(subLessonsJson);
+        }
+        return subLessons;
+    }
+
     public void setSubLessons(List<Map<String, Object>> subLessons) {
         this.subLessons = subLessons == null ? new ArrayList<>() : subLessons;
+        // ⚠️ CRITICAL: Serialize immediately so Hibernate sees
+        // the String column change and issues the UPDATE.
+        try {
+            this.subLessonsJson = new com.fasterxml.jackson.databind.ObjectMapper()
+                    .writeValueAsString(this.subLessons);
+        } catch (Exception e) {
+            this.subLessonsJson = "[]";
+        }
     }
 }
