@@ -1943,15 +1943,16 @@
                     };
                 }
             } else {
-                const newQuiz = {
-                    title: title,
-                    strand: strand,
-                    lesson: lesson,
-                    lessonNumber: lessonNumber,
-                    description: description,
-                    questions: questions,
-                    createdAt: new Date().toISOString()
-                };
+const newQuiz = {
+    id: null,
+    title: title,
+    strand: strand,
+    lesson: lesson,
+    lessonNumber: lessonNumber,
+    description: description,
+    questions: questions,
+    createdAt: new Date().toISOString()
+};
                 quizzes.push(newQuiz);
                 console.log("✅ New quiz created:", newQuiz);
             }
