@@ -29,9 +29,9 @@ public class Lesson {
 
     private String submittedBy;
 
-    @Lob
-    @Column(columnDefinition = "LONGTEXT")
-    private String subLessonsJson;
+@Lob
+@Column(name = "sub_lessons", columnDefinition = "LONGTEXT")
+private String subLessonsJson;
 
     @Transient
     private List<Map<String, Object>> subLessons = new ArrayList<>();
