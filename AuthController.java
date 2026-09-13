@@ -21,64 +21,84 @@ public class AuthController {
     // =========================================================
     // REGISTER
     // =========================================================
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Student student) {
+@PostMapping("/register")
+public ResponseEntity<?> register(@RequestBody Student student) {
 
-        try {
+    try {
 
-            if (student == null) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of(
-                                "message",
-                                "Invalid registration data."
-                        ));
-            }
-
-            if (student.getFullName() == null
-                    || student.getStudentId() == null
-                    || student.getEmail() == null
-                    || student.getCourse() == null
-                    || student.getYearLevel() == null
-                    || student.getUsername() == null
-                    || student.getPassword() == null) {
-
-                return ResponseEntity.badRequest()
-                        .body(Map.of(
-                                "message",
-                                "Please complete all required fields."
-                        ));
-            }
-
-            Student saved = service.register(student);
-
-            return ResponseEntity.ok(
-                    Map.of(
+        if (student == null) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
                             "message",
-                            "Account created successfully!",
-                            "id",
-                            saved.getId()
-                    )
-            );
+                            "Invalid registration data."
+                    ));
+        }
 
-        } catch (IllegalArgumentException e) {
+        if (student.getFullName() == null
+                || student.getStudentId() == null
+                || student.getEmail() == null
+                || student.getCourse() == null
+                || student.getYearLevel() == null
+                || student.getUsername() == null
+                || student.getPassword() == null) {
 
             return ResponseEntity.badRequest()
                     .body(Map.of(
                             "message",
-                            e.getMessage()
-                    ));
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of(
-                            "message",
-                            "Registration failed. Please try again."
+                            "Please complete all required fields."
                     ));
         }
+
+        // =====================================================
+        // XU EMAIL VALIDATION
+        // Required format:
+        // 2564845165@my.xu.edu.ph
+        // =====================================================
+
+        String email = student.getEmail()
+                .trim()
+                .toLowerCase();
+
+        if (!email.matches("^\\d+@my\\.xu\\.edu\\.ph$")) {
+
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "message",
+                            "Please use a valid XU student email (e.g. 2564845165@my.xu.edu.ph)."
+                    ));
+        }
+
+        // Save to database
+        Student saved = service.register(student);
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "message",
+                        "Account created successfully!",
+                        "id",
+                        saved.getId()
+                )
+        );
+
+    } catch (IllegalArgumentException e) {
+
+        return ResponseEntity.badRequest()
+                .body(Map.of(
+                        "message",
+                        e.getMessage()
+                ));
+
+    } catch (Exception e) {
+
+        e.printStackTrace();
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                        "message",
+                        "Registration failed. Please try again."
+                ));
     }
+}
 
     // =========================================================
     // LOGIN
